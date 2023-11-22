@@ -1,0 +1,18 @@
+html, body, div {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    background-color: #222;
+}
+
+html, body {
+    overflow-y: hidden;
+}
+
+#app {
+    width: 90vw;
+    height: 90vh;
+    margin: 5vh 5vw 5vh 5vw;
+}
