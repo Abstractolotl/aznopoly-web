@@ -55,7 +55,7 @@ affinity: {}
 livenessProbe:
   httpGet:
     path: /
-    port: 3000
+    port: 8080
   initialDelaySeconds: 5
   periodSeconds: 15
   timeoutSeconds: 30
@@ -63,7 +63,7 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /
-    port: 3000
+    port: 8080
   initialDelaySeconds: 5
   periodSeconds: 15
   timeoutSeconds: 30
