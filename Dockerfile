@@ -18,6 +18,7 @@ COPY . .
 
 # build app for production with minification
 RUN yarn build
+COPY assets dist/assets
 
 EXPOSE 8080
 CMD [ "http-server", "dist" ]
