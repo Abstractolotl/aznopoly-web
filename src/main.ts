@@ -1,32 +1,29 @@
 import Phaser from 'phaser';
+import TitleScene from './scene/title-scene';
+import GameScene from './scene/game-scene';
 
-class ExampleScene extends Phaser.Scene {
-
-    preload() {
-        this.load.image('abstracto', 'assets/logo.png');
-    }
-
-    create() {
-        this.add.image(320, 320, 'abstracto');
-
-    }
-
-}
+export const WIDTH = 640;
+export const HEIGHT = 640;
 
 window.onload = () => {
-
     var game = new Phaser.Game({
         type: Phaser.AUTO,
-        width: 640,
-        height: 640,
+        width: WIDTH,
+        height: HEIGHT,
         parent: 'app',
-        scene: ExampleScene,
         scale: {
             mode: Phaser.Scale.FIT,
             autoCenter: Phaser.Scale.CENTER_BOTH
+        },
+        dom: {
+            createContainer: true
         }
     });
 
-    Object.assign(window, { game });
+    game.scene.add('title', TitleScene);
+    game.scene.add('game', GameScene);
 
+    game.scene.start('title');
+
+    Object.assign(window, { game });
 };
