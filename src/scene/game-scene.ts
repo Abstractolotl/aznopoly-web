@@ -5,14 +5,24 @@ import Arc = Phaser.GameObjects.Arc;
 export default class GameScene extends Phaser.Scene {
     name!: string;
     room!: string;
+    uuid: string | undefined;
 
     stateArc: Arc | undefined;
 
     init(data: any) {
+        console.log("Room: " + data.room)
+
         this.name = data.name;
         this.room = data.room;
 
         joinRoom(this.room, (packet: string) => {
+            let packetObject = JSON.parse(packet);
+
+            if ( packetObject.type === "UUID" ) {
+                this.uuid = packetObject.data!.toString();
+                console.log("UUID: " + this.uuid)
+            }
+
             console.log(packet)
         })
     }
