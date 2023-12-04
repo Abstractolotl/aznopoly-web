@@ -26,7 +26,7 @@ export default class AzNopolyClient {
         this.connect(roomId)
     }
 
-    public addClientEventListener(event: string, callback: (event: ClientEvent) => void) : void {
+    public addClientEventListener(event: string, callback: (event: ClientEvent) => void) {
         if (this.eventListeners.has(event)) {
             this.eventListeners.get(event)!.push(callback)
         } else {
@@ -38,15 +38,14 @@ export default class AzNopolyClient {
         return this.socket!.readyState === WebSocket.OPEN
     }
 
-    private connect(roomId: string) : void {
-        this.socket = new WebSocket("ws://" + BASE_URL + "/room/" + roomId)
+    private connect(roomId: string) {
+        this.socket = new WebSocket("wss://" + BASE_URL + "/room/" + roomId)
 
         this.socket.addEventListener("close", this.onClose)
         this.socket.addEventListener("message", this.onMessage)
     }
 
-
-    private onMessage(event: MessageEvent) : void {
+    private onMessage(event: MessageEvent) {
         if (this.debugMode) console.log("Received message: " + event.data)
 
         let packet;
@@ -58,13 +57,13 @@ export default class AzNopolyClient {
         }
 
         if (packet.type === "ROOM_WELCOME") {
-            this.publishClientEvent(packet.type, packet as RoomWelcomeEvent)
+            this.publishClientEvent(packet.type, packet as RoomWelcomeEvent);
         } else {
             if (this.debugMode) console.log("Unknown packet type: " + packet.type)
         }
     }
 
-    private publishClientEvent(event: string, data: ClientEvent) : void {
+    private publishClientEvent(event: string, data: ClientEvent) {
         if (this.eventListeners.has(event)) {
             this.eventListeners.get(event)!.forEach((callback) => {
                 callback(data)
@@ -74,7 +73,7 @@ export default class AzNopolyClient {
         }
     }
 
-    private onClose(): void {
+    private onClose() {
         if (this.debugMode) {
             console.log("Connection closed. Trying reconnect...")
         }
@@ -95,4 +94,7 @@ export default class AzNopolyClient {
         //idk problem für später
     } */
 
+    public sendPacket(data: string) {
+        this.socket!.send(data)
+    }
 }

@@ -22,7 +22,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     private onRoomWelcome(event: RoomWelcomeEvent) {
-        this.uuid = event.uuid;
+        this.uuid = event.data;
         console.log("UUID: " + this.uuid)
     }
 
@@ -36,9 +36,9 @@ export default class GameScene extends Phaser.Scene {
     update(time: number, delta: number) {
         super.update(time, delta);
         if ( !this.client.isConnected() ) {
-            this.stateArc!.fillColor = 0xFF9900
-        } else {
             this.stateArc!.fillColor = 0xFF5050
+        } else {
+            this.stateArc!.fillColor = 0xFF9900
         }
     }
 }
