@@ -1,11 +1,13 @@
 import { FONT_STYLE_BUTTON } from "../style";
-import { joinRoom, checkState } from "../client.ts";
 import Arc = Phaser.GameObjects.Arc;
+import AzNopolyClient, { ClientEvent, RoomWelcomeEvent } from "../client";
 
 export default class GameScene extends Phaser.Scene {
     name!: string;
     room!: string;
     uuid: string | undefined;
+
+    client!: AzNopolyClient;
 
     stateArc: Arc | undefined;
 
@@ -15,16 +17,14 @@ export default class GameScene extends Phaser.Scene {
         this.name = data.name;
         this.room = data.room;
 
-        joinRoom(this.room, (packet: string) => {
-            let packetObject = JSON.parse(packet);
 
-            if ( packetObject.type === "UUID" ) {
-                this.uuid = packetObject.data!.toString();
-                console.log("UUID: " + this.uuid)
-            }
+        this.client = new AzNopolyClient(this.room);
+        this.client.addClientEventListener("ROOM_WELCOME", this.onRoomWelcome as (event: ClientEvent) => void);
+    }
 
-            console.log(packet)
-        })
+    private onRoomWelcome(event: RoomWelcomeEvent) {
+        this.uuid = event.uuid;
+        console.log("UUID: " + this.uuid)
     }
 
     create() {
@@ -35,12 +35,10 @@ export default class GameScene extends Phaser.Scene {
     }
 
     update(time: number, delta: number) {
-        if ( checkState(WebSocket.CONNECTING) ) {
+        if ( !this.client.isConnected() ) {
             this.stateArc!.fillColor = 0xFF9900
-        } else if( !checkState(WebSocket.OPEN) ) {
-            this.stateArc!.fillColor = 0xFF5050
         } else {
-            this.stateArc!.fillColor = 0x00CC00
+            this.stateArc!.fillColor = 0xFF5050
         }
         super.update(time, delta);
     }
