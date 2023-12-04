@@ -17,7 +17,6 @@ export default class GameScene extends Phaser.Scene {
         this.name = data.name;
         this.room = data.room;
 
-
         this.client = new AzNopolyClient(this.room);
         this.client.addClientEventListener("ROOM_WELCOME", this.onRoomWelcome as (event: ClientEvent) => void);
     }
@@ -35,11 +34,11 @@ export default class GameScene extends Phaser.Scene {
     }
 
     update(time: number, delta: number) {
+        super.update(time, delta);
         if ( !this.client.isConnected() ) {
             this.stateArc!.fillColor = 0xFF9900
         } else {
             this.stateArc!.fillColor = 0xFF5050
         }
-        super.update(time, delta);
     }
 }
