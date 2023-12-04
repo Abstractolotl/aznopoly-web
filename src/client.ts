@@ -8,7 +8,7 @@ export interface ClientPacket {
 
 export interface RoomWelcomeEvent extends ClientPacket {
     type: "ROOM_WELCOME";
-    uuid: string;
+    data: string;
 }
 
 export interface ExampleEvent extends ClientPacket {
@@ -17,15 +17,16 @@ export interface ExampleEvent extends ClientPacket {
 }
 
 export default class AzNopolyClient {
-    private socket: WebSocket;
+
+    private socket: WebSocket | undefined;
     private debugMode: boolean = true;
     private eventListeners: Map<string, ((event: ClientEvent) => void)[]> = new Map<string, ((event: ClientEvent) => void)[]>();
 
     public constructor(roomId: string) {
-        this.socket = this.connect(roomId)
+        this.connect(roomId)
     }
 
-    public addClientEventListener(event: string, callback: (event: ClientEvent) => void) {
+    public addClientEventListener(event: string, callback: (event: ClientEvent) => void) : void {
         if (this.eventListeners.has(event)) {
             this.eventListeners.get(event)!.push(callback)
         } else {
@@ -34,18 +35,18 @@ export default class AzNopolyClient {
     }
 
     public isConnected() : boolean {
-        return this.socket.readyState === WebSocket.OPEN
+        return this.socket!.readyState === WebSocket.OPEN
     }
 
-    private connect(roomId: string) : WebSocket {
-        const socket = new WebSocket("ws://" + BASE_URL + "/room/" + roomId)
+    private connect(roomId: string) : void {
+        this.socket = new WebSocket("ws://" + BASE_URL + "/room/" + roomId)
+
         this.socket.addEventListener("close", this.onClose)
         this.socket.addEventListener("message", this.onMessage)
-        return socket;
     }
 
 
-    private onMessage(event: MessageEvent) {
+    private onMessage(event: MessageEvent) : void {
         if (this.debugMode) console.log("Received message: " + event.data)
 
         let packet;
@@ -56,7 +57,6 @@ export default class AzNopolyClient {
             return;
         }
 
-
         if (packet.type === "ROOM_WELCOME") {
             this.publishClientEvent(packet.type, packet as RoomWelcomeEvent)
         } else {
@@ -64,7 +64,7 @@ export default class AzNopolyClient {
         }
     }
 
-    private publishClientEvent(event: string, data: ClientEvent) {
+    private publishClientEvent(event: string, data: ClientEvent) : void {
         if (this.eventListeners.has(event)) {
             this.eventListeners.get(event)!.forEach((callback) => {
                 callback(data)
@@ -74,7 +74,7 @@ export default class AzNopolyClient {
         }
     }
 
-    private onClose() {
+    private onClose(): void {
         if (this.debugMode) {
             console.log("Connection closed. Trying reconnect...")
         }
@@ -94,9 +94,5 @@ export default class AzNopolyClient {
         let attempts = 0;
         //idk problem für später
     } */
-
-    private sendPacket(packet: string) {
-        this.socket.send(packet)
-    }
 
 }
