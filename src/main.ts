@@ -6,7 +6,7 @@ export const WIDTH = 640;
 export const HEIGHT = 640;
 
 window.onload = () => {
-    var game = new Phaser.Game({
+    let game = new Phaser.Game({
         type: Phaser.AUTO,
         width: WIDTH,
         height: HEIGHT,

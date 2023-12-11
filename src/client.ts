@@ -41,8 +41,18 @@ export default class AzNopolyClient {
     private connect(roomId: string) {
         this.socket = new WebSocket("wss://" + BASE_URL + "/room/" + roomId)
 
-        this.socket.addEventListener("close", this.onClose)
-        this.socket.addEventListener("message", this.onMessage)
+        this.socket.addEventListener("close", () => this.onClose())
+        this.socket.addEventListener("message", (e) => this.onMessage(e))
+    }
+
+    private publishClientEvent(event: string, data: ClientEvent) {
+        if (this.eventListeners.has(event)) {
+            this.eventListeners.get(event)!.forEach((callback) => {
+                callback(data)
+            })
+        } else {
+            if (this.debugMode) console.log("No event listeners for event " + event)
+        }
     }
 
     private onMessage(event: MessageEvent) {
@@ -60,16 +70,6 @@ export default class AzNopolyClient {
             this.publishClientEvent(packet.type, packet as RoomWelcomeEvent);
         } else {
             if (this.debugMode) console.log("Unknown packet type: " + packet.type)
-        }
-    }
-
-    private publishClientEvent(event: string, data: ClientEvent) {
-        if (this.eventListeners.has(event)) {
-            this.eventListeners.get(event)!.forEach((callback) => {
-                callback(data)
-            })
-        } else {
-            if (this.debugMode) console.log("No event listeners for event " + event)
         }
     }
 
