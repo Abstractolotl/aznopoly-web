@@ -41,8 +41,8 @@ export default class AzNopolyClient {
     private connect(roomId: string) {
         this.socket = new WebSocket("wss://" + BASE_URL + "/room/" + roomId)
 
-        this.socket.addEventListener("close", () => this.onClose())
-        this.socket.addEventListener("message", (e) => this.onMessage(e))
+        this.socket.addEventListener("close", this.onClose.bind(this))
+        this.socket.addEventListener("message", this.onMessage.bind(this))
     }
 
     private publishClientEvent(event: string, data: ClientEvent) {

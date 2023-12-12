@@ -1,6 +1,6 @@
 import { FONT_STYLE_BUTTON } from "../style";
 import Arc = Phaser.GameObjects.Arc;
-import AzNopolyClient, { RoomWelcomeEvent } from "../client";
+import AzNopolyClient, {ClientEvent, RoomWelcomeEvent} from "../client";
 
 export default class GameScene extends Phaser.Scene {
     name!: string;
@@ -18,7 +18,7 @@ export default class GameScene extends Phaser.Scene {
         this.room = data.room;
 
         this.client = new AzNopolyClient(this.room);
-        this.client.addClientEventListener("ROOM_WELCOME", (e) => this.onRoomWelcome(e as RoomWelcomeEvent));
+        this.client.addClientEventListener("ROOM_WELCOME", this.onRoomWelcome.bind(this) as (event: ClientEvent) => void);
     }
 
     private onRoomWelcome(event: RoomWelcomeEvent) {
