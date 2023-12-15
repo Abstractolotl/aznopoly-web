@@ -1,15 +1,21 @@
 import { FONT_STYLE_BUTTON } from "../style";
 import Arc = Phaser.GameObjects.Arc;
-import AzNopolyClient, {ClientEvent, RoomWelcomeEvent} from "../client";
+import AzNopolyClient, {ClientEventHandler, RoomWelcomeEvent} from "../client";
+import GameBoard from "../board/board";
 
 export default class GameScene extends Phaser.Scene {
-    name!: string;
-    room!: string;
-    uuid?: string;
+    private name!: string;
+    private room!: string;
+    private uuid?: string;
 
-    client!: AzNopolyClient;
+    private client!: AzNopolyClient;
 
-    stateArc: Arc | undefined;
+    private stateArc: Arc | undefined;
+    private board!: GameBoard;
+
+    preload() {
+        GameBoard.preload(this);
+    }
 
     init(data: any) {
         console.log("Room: " + data.room)
@@ -18,12 +24,7 @@ export default class GameScene extends Phaser.Scene {
         this.room = data.room;
 
         this.client = new AzNopolyClient(this.room);
-        this.client.addClientEventListener("ROOM_WELCOME", this.onRoomWelcome.bind(this) as (event: ClientEvent) => void);
-    }
-
-    private onRoomWelcome(event: RoomWelcomeEvent) {
-        this.uuid = event.data;
-        console.log("UUID: " + this.uuid)
+        this.client.addClientEventListener("ROOM_WELCOME", this.onRoomWelcome.bind(this) as ClientEventHandler);
     }
 
     create() {
@@ -31,6 +32,8 @@ export default class GameScene extends Phaser.Scene {
 
         this.add.text(100, 100, 'Game Scene', FONT_STYLE_BUTTON);
         this.add.text(100, 200, 'Hello ' + this.name, FONT_STYLE_BUTTON);
+        
+        this.board = new GameBoard(this, {x: 100, y: 300, size: 300});
     }
 
     update(time: number, delta: number) {
@@ -40,5 +43,18 @@ export default class GameScene extends Phaser.Scene {
         } else {
             this.stateArc!.fillColor = 0xFF9900
         }
+
     }
+
+    private onRoomWelcome(event: RoomWelcomeEvent) {
+        this.uuid = event.data.uuid;
+        console.log("UUID: ", this.uuid)
+        this.board.addPlayer(event.data.uuid);
+
+        setInterval(() => {
+            console.log("Moving player")
+            this.board.movePlayer(this.uuid!, 1)
+        }, 500);
+    }
+
 }

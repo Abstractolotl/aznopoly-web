@@ -1,6 +1,7 @@
 const BASE_URL = "aznopoly.abstractolotl.de/server";
 
 export type ClientEvent = RoomWelcomeEvent | ExampleEvent;
+export type ClientEventHandler = (event: ClientEvent) => void;
 
 export interface ClientPacket {
     type: string;
@@ -8,7 +9,9 @@ export interface ClientPacket {
 
 export interface RoomWelcomeEvent extends ClientPacket {
     type: "ROOM_WELCOME";
-    data: string;
+    data: {
+        uuid: string
+    };
 }
 
 export interface ExampleEvent extends ClientPacket {
@@ -20,7 +23,7 @@ export default class AzNopolyClient {
 
     private socket: WebSocket | undefined;
     private debugMode: boolean = true;
-    private eventListeners: Map<string, ((event: ClientEvent) => void)[]> = new Map<string, ((event: ClientEvent) => void)[]>();
+    private eventListeners: Map<string, ((event: ClientEvent) => void)[]> = new Map<string, ClientEventHandler[]>();
 
     public constructor(roomId: string) {
         this.connect(roomId)
