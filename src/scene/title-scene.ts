@@ -27,8 +27,6 @@ export default class TitleScene extends Phaser.Scene {
         this.domContainer.createFromCache('test');
         let input: HTMLInputElement = this.domContainer.getChildByID('test_input') as HTMLInputElement;        
         input.value = 'test';
-        
-        
 
         for (const btn of [this.btnJoinLobby, this.btnCreateLobby]) {
             btn.setInteractive();
@@ -44,10 +42,21 @@ export default class TitleScene extends Phaser.Scene {
 
         this.btnCreateLobby.on('pointerdown', () => {
             this.scene.start('game', {
-                name: input.value
+                name: input.value,
+                room: this.generateRoomName()
             });
         });
     }
 
+    generateRoomName(length: number = 6) : string {
+        let roomName = "";
+        let characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+        for (let i = 0; i < length; i++) {
+            roomName += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+
+        return roomName;
+    }
 }
 
