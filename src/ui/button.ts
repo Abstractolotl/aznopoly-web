@@ -19,19 +19,22 @@ export class AzNopolyButton {
     private isDown: boolean = false;
     private isHovered: boolean = false;
     private hoverTimer: number = 0;
-    
+
+    private onClick: () => void;
+
     constructor(scene: Scene, title: string, x: number, y: number, onClick: () => void, outlineWidth: number = 3, outlinePadding: number = 10) {
         this.x = x;
         this.y = y;
         this.outlineWidth = outlineWidth;
         this.outlinePadding = outlinePadding;
+        this.onClick = onClick;
 
         this.graphic = scene.add.graphics();
         this.buttonText = scene.add.text(x, y, title, FONT_STYLE_BUTTON);
         this.buttonText.setOrigin(0.5, 0.5);
         this.buttonText.setInteractive();
 
-        this.buttonText.on('pointerdown', this.onClick.bind(this));
+        this.buttonText.on('pointerdown', this.onPointerDown.bind(this));
         this.buttonText.on('pointerup', this.onPointerUp.bind(this));
         this.buttonText.on('pointerover', this.onHover.bind(this));
         this.buttonText.on('pointerout', this.onHoverOut.bind(this));
@@ -59,8 +62,7 @@ export class AzNopolyButton {
         }
     }
 
-    private onClick() {
-        console.log('clicked');
+    private onPointerDown() {
         this.isDown = true;
         this.isHovered = true;
     }
@@ -68,11 +70,13 @@ export class AzNopolyButton {
     private onPointerUp() {
         this.isDown = false;
         this.isHovered = false;
+        this.hoverTimer = MAX_HOVER_TIMER;
+
+        this.onClick();
     }
 
     private onHover() {
         this.isHovered = true;
-        console.log('hovered');
     }
 
     private onHoverOut() {
