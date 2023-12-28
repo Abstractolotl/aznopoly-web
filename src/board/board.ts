@@ -1,9 +1,19 @@
 import { Scene } from "phaser";
 import GameObject = Phaser.GameObjects.Shape;
+import AzNopolyClient from "../client";
+import { PacketType, PlayerPacket, RoomJoinPacket } from "../types/client";
 
 interface BoardPlayer {
     gameObject: GameObject,
     position: number,
+}
+
+
+export interface BoardPacket extends PlayerPacket {
+    data: {
+        function: string,
+        args: any[],
+    }
 }
 
 const PLAYER_SIZE = 16;
@@ -17,12 +27,14 @@ export default class GameBoard {
 
     private TILE_SIZE: number;
 
-    private players: Map<string, BoardPlayer>;
     private scene: Scene;
-
+    private client: AzNopolyClient;
+    
+    private players: Map<string, BoardPlayer>;
     private bounds: {x: number, y: number, size: number};
 
-    constructor(scene: Scene, {x, y, size}: {x: number, y: number, size: number}) {
+    constructor(client: AzNopolyClient,scene: Scene, {x, y, size}: {x: number, y: number, size: number}) {
+        this.client = client;
         this.scene = scene;
         this.players = new Map();
         this.bounds = {x, y, size};
@@ -33,26 +45,87 @@ export default class GameBoard {
         const targetScale = size / background.width;
         background.setScale(targetScale);
         background.setOrigin(0, 0);
-        console.log(background.getBounds());
+
+        this.client.addClientEventListener(PacketType.BOARD, this.onBoardPacket.bind(this) as ClientEventHandler);
+        this.client.addClientEventListener(PacketType.ROOM_JOIN, this.onRoomJoin.bind(this) as ClientEventHandler);
     }
 
-    addPlayer(uuid: string) {
-        const coords = GameBoard.getCoordForPos(0);
+    private onRoomJoin(event: RoomJoinPacket) {
+        if (!this.client.isHost) return;
+
+        this.addPlayer(event.data.uuid);
+
+        this.players.forEach((player, uuid) => {
+            const packet : BoardPacket = {
+                type: PacketType.BOARD,
+                data: {
+                    function: "addPlayer",
+                    args: [uuid, player.position],
+                },
+                sender: this.client.uuid,
+                target: event.data.uuid,
+            }
+            this.client.sendPacket(packet);
+        });
+    }
+
+    private onBoardPacket(packet: BoardPacket) {
+        if (this.client.isHost) return;
+        if (packet.target && packet.target !== this.client.uuid) return;
+
+        switch (packet.data.function) {
+            case "addPlayer":
+                this.addPlayer(packet.data.args[0], packet.data.args[1]);
+                break;
+            case "movePlayer":
+                this.movePlayer(packet.data.args[0], packet.data.args[1]);
+                break;
+        }
+    }
+
+    addPlayer(uuid: string, startPos: number = 0) {
+        if (this.client.isHost) {
+            this.client.sendPacket({
+                type: PacketType.BOARD,
+                data: {
+                    function: "addPlayer",
+                    args: [uuid, startPos],
+                },
+            })
+        }
+
+        if (this.players.has(uuid)) {
+            throw new Error(`Player with UUID ${uuid} already exists!`);
+        }
+
+        const coords = GameBoard.getCoordForPos(startPos);
         const color = this.getColorFromUUID(uuid);
-        this.players.set(uuid, {
+        const player = {
             gameObject: this.scene.add.rectangle(coords.x, coords.y, PLAYER_SIZE, PLAYER_SIZE, color),
-            position: 0,
-        })
+            position: startPos,
+        };
+        this.players.set(uuid, player)
+        return player;
     }
 
     movePlayer(uuid: string, distance: number) {
+        if (this.client.isHost) {
+            this.client.sendPacket({
+                type: PacketType.BOARD,
+                data: {
+                    function: "movePlayer",
+                    args: [uuid, distance],
+                },
+            })
+        }
+
         if (!Number.isInteger(distance)) {
             throw new Error(`Illegal parameter distance: Not an integer (${distance})`);
         }
 
-        const player = this.players.get(uuid);
+        let player = this.players.get(uuid);
         if (!player) {
-            throw new Error(`No player with given UUID (${uuid})`);
+            throw new Error(`Player with UUID ${uuid} does not exist!`);
         }
 
         player.position += distance;

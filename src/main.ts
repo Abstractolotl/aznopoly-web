@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 import TitleScene from './scene/title-scene';
 import GameScene from './scene/game-scene';
+import LobbyScene from './scene/lobby-scene';
 
-export const WIDTH = 640;
-export const HEIGHT = 640;
+export const WIDTH = 1280;
+export const HEIGHT = 720;
 
 window.onload = () => {
     let game = new Phaser.Game({
@@ -21,6 +22,7 @@ window.onload = () => {
     });
 
     game.scene.add('title', TitleScene);
+    game.scene.add('lobby', LobbyScene);
     game.scene.add('game', GameScene);
 
     game.scene.start('title');

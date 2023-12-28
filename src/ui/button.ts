@@ -45,9 +45,9 @@ export class AzNopolyButton {
     public update(time: number, delta: number) {
         if (this.isHovered) {
             if (this.isDown) {
-                this.hoverTimer += delta / 1000 * 5;
+                this.hoverTimer += delta / 1000 * 20;
             } else {
-                this.hoverTimer += delta / 1000;
+                this.hoverTimer += delta / 1000 * 10;
             }
             this.hoverTimer = Math.min(this.hoverTimer, MAX_HOVER_TIMER);
             const t = Math.min(Math.max(this.hoverTimer / MAX_HOVER_TIMER, 0), 1);
@@ -102,7 +102,7 @@ export class AzNopolyButton {
             this.graphic.fillStyle(outlineColor, 1);
         } else {
             this.buttonText.setStyle(FONT_STYLE_BUTTON);
-            this.graphic.fillStyle(fillColor, 1);
+            this.graphic.fillStyle(fillColor, 0);
         }
         this.graphic.fillRoundedRect(outlineX, outlineY, this.buttonText.width + paddingH * 2, this.buttonText.height + paddingV * 2, outlineRadius);
         
