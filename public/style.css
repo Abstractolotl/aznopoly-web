@@ -15,9 +15,9 @@ html, body {
 }
 
 #app {
-    width: 90vw;
-    height: 90vh;
-    margin: 5vh 5vw 5vh 5vw;
+    width: 96vw;
+    height: 96vh;
+    margin: 2vh 2vw 2vh 2vw;
 }
 
 label {

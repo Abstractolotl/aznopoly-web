@@ -1,15 +1,20 @@
+import AzNopolyGame from "../game";
 import { WIDTH } from "../main";
-import { FONT_STYLE_BUTTON, FONT_STYLE_BUTTON_HOVER, FONT_STYLE_HEADLINE } from "../style";
+import { RoomEvent } from "../room";
+import { AzNopolyButton } from "../ui/button";
 
 export default class TitleScene extends Phaser.Scene {
-    background!: Phaser.GameObjects.Image;
-    btnJoinLobby!: Phaser.GameObjects.Text;
-    btnCreateLobby!: Phaser.GameObjects.Text;
-    domContainer!: Phaser.GameObjects.DOMElement;
-
+    private background!: Phaser.GameObjects.Image;
+    private btnJoinLobby!: AzNopolyButton;
+    private btnCreateLobby!: AzNopolyButton;
+    
+    private domContainer!: Phaser.GameObjects.DOMElement;
+    private domNameInput!: HTMLInputElement;
+    private domLobbyCodeInput!: HTMLInputElement;
+    
     preload() {
-        this.load.image('abstracto', 'assets/title_background.png');
-        this.load.html('test', 'assets/test.html');
+        this.load.image('abstracto', 'assets/title.png');
+        this.load.html('input_mask', 'assets/title_screen.html');
     }
 
     create() {
@@ -17,46 +22,55 @@ export default class TitleScene extends Phaser.Scene {
         const targetScale = WIDTH / this.background.width;
         this.background.setScale(targetScale);
         this.background.setOrigin(0, 0);
-        console.log(this.background.getBounds());
-
-        this.add.text(320, 100, 'AzNopoly', FONT_STYLE_HEADLINE).setOrigin(0.5, 0);
-        this.btnJoinLobby = this.add.text(100, 350, 'Join Lobby', FONT_STYLE_BUTTON).setOrigin(0, 0);
-        this.btnCreateLobby = this.add.text(100, 400, 'Create Lobby', FONT_STYLE_BUTTON).setOrigin(0, 0);
 
         this.domContainer = this.add.dom(320, 300);
-        this.domContainer.createFromCache('test');
-        let input: HTMLInputElement = this.domContainer.getChildByID('test_input') as HTMLInputElement;        
-        input.value = 'test';
+        this.domContainer.createFromCache('input_mask');
+        this.domLobbyCodeInput = this.domContainer.getChildByID('title-lobby-code-input') as HTMLInputElement;     
+        this.domNameInput = this.domContainer.getChildByID('title-name-input') as HTMLInputElement;        
+        this.domNameInput.value = 'test';
 
-        for (const btn of [this.btnJoinLobby, this.btnCreateLobby]) {
-            btn.setInteractive();
-            btn.on('pointerover', () => {
-                btn.setX(110);
-                btn.setStyle(FONT_STYLE_BUTTON_HOVER);
-            });
-            btn.on('pointerout', () => {
-                btn.setX(100);
-                btn.setStyle(FONT_STYLE_BUTTON);
-            });
-        }
+        this.initButtons();
+    }
 
-        this.btnCreateLobby.on('pointerdown', () => {
-            this.scene.start('game', {
-                name: input.value,
-                room: this.generateRoomName()
-            });
-        });
+    update(time: number, delta: number): void {
+        this.btnJoinLobby.update(time, delta);
+        this.btnCreateLobby.update(time, delta);
+    }
+
+    private initButtons() {
+        const centerX = WIDTH / 2;
+        this.btnJoinLobby = new AzNopolyButton(this, 'Join Lobby', centerX - 250, 600, this.onJoinRoomClick.bind(this));
+        this.btnCreateLobby = new AzNopolyButton(this, 'Create Lobby', centerX + 250, 600, this.onCreateRoom.bind(this));
     }
 
     generateRoomName(length: number = 6) : string {
         let roomName = "";
-        let characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
         for (let i = 0; i < length; i++) {
             roomName += characters.charAt(Math.floor(Math.random() * characters.length));
         }
 
         return roomName;
+    }
+
+    private onJoinRoomClick() {
+        const name = this.domNameInput.value;
+        const room = this.domLobbyCodeInput.value;
+        this.joinRoom(room, name);
+    }
+
+    private onCreateRoom() {
+        const name = this.domNameInput.value;
+        const room = this.generateRoomName();
+        this.joinRoom(room, name);
+    }
+
+    private joinRoom(room: string, name: string) {
+        const aznopoly = new AzNopolyGame(room, name);
+        aznopoly.room.addEventListener(RoomEvent.READY, () => {
+            this.scene.start('lobby', { aznopoly });
+        }, { once: true });
     }
 }
 

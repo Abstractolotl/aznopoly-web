@@ -1,100 +1,82 @@
+import { ClientPacket, ClientPacketHandler, BasePacket, ClientState, PacketType, RoomInitPacket, RoomNamePacket } from "./types/client";
+
 const BASE_URL = "aznopoly.abstractolotl.de/server";
 
-export type ClientEvent = RoomWelcomeEvent | ExampleEvent;
+export default class AzNopolyClient extends EventTarget {
+    
+    public debugMode: boolean = true;
+    private socket?: WebSocket;
 
-export interface ClientPacket {
-    type: string;
-}
+    private state: ClientState = ClientState.DISCONNECTED;
+    private _id!: string;
 
-export interface RoomWelcomeEvent extends ClientPacket {
-    type: "ROOM_WELCOME";
-    data: string;
-}
-
-export interface ExampleEvent extends ClientPacket {
-    type: "EXAMPLE";
-    data: any;
-}
-
-export default class AzNopolyClient {
-
-    private socket: WebSocket | undefined;
-    private debugMode: boolean = true;
-    private eventListeners: Map<string, ((event: ClientEvent) => void)[]> = new Map<string, ((event: ClientEvent) => void)[]>();
-
-    public constructor(roomId: string) {
-        this.connect(roomId)
-    }
-
-    public addClientEventListener(event: string, callback: (event: ClientEvent) => void) {
-        if (this.eventListeners.has(event)) {
-            this.eventListeners.get(event)!.push(callback)
-        } else {
-            this.eventListeners.set(event, [callback])
+    public constructor() {
+        super();
+        if (this.debugMode) {
+            (window as any)["client"] = this;
         }
     }
 
-    public isConnected() : boolean {
-        return this.socket!.readyState === WebSocket.OPEN
-    }
+    public connect(roomId: string) {
+        if (this.debugMode) {
+            console.log("Connecting to room " + roomId)
+        }
 
-    private connect(roomId: string) {
+        this.state = ClientState.CONNECTING;
         this.socket = new WebSocket("wss://" + BASE_URL + "/room/" + roomId)
 
+        this.socket.addEventListener("open", this.onOpen.bind(this))
         this.socket.addEventListener("close", this.onClose.bind(this))
         this.socket.addEventListener("message", this.onMessage.bind(this))
     }
 
-    private publishClientEvent(event: string, data: ClientEvent) {
-        if (this.eventListeners.has(event)) {
-            this.eventListeners.get(event)!.forEach((callback) => {
-                callback(data)
-            })
-        } else {
-            if (this.debugMode) console.log("No event listeners for event " + event)
-        }
+    private publishClientEvent(event: PacketType, data: ClientPacket) {
+        this.dispatchEvent(new CustomEvent(event, { detail: data }));
     }
 
     private onMessage(event: MessageEvent) {
-        if (this.debugMode) console.log("Received message: " + event.data)
+        if (this.debugMode) console.log("Received message", event.type, ":\n", event.data)
 
         let packet;
         try {
             packet = JSON.parse(event.data);
+
+            if (packet.type === PacketType.ROOM_INIT) {
+                this._id = packet.data.uuid;
+            }
         } catch (e) {
             if (this.debugMode) console.log("Error parsing packet: " + e)
             return;
         }
 
-        if (packet.type === "ROOM_WELCOME") {
-            this.publishClientEvent(packet.type, packet as RoomWelcomeEvent);
-        } else {
-            if (this.debugMode) console.log("Unknown packet type: " + packet.type)
-        }
+        this.publishClientEvent(packet.type, packet);
     }
 
-    private onClose() {
+    private onOpen() {
         if (this.debugMode) {
-            console.log("Connection closed. Trying reconnect...")
+            console.log("Connection established.")
+        }
+        this.state = ClientState.CONNECTED;
+    }
+
+    private onClose(reason: any) {
+        if (this.debugMode) {
+            console.log("Connection closed: ", reason)
         }
 
-        try {
-            //this.tryReconnect()
-        } catch (e) {
-            // TODO do something
-        }
+        this.state = ClientState.DISCONNECTED;
     }
 
-    /* private onReconnect() {
-
+    public sendPacket(data: BasePacket) {
+        this.socket!.send(JSON.stringify(data))
     }
 
-    private tryReconnect() {
-        let attempts = 0;
-        //idk problem für später
-    } */
-
-    public sendPacket(data: string) {
-        this.socket!.send(data)
+    public get isConnected() : ClientState {
+        return this.state;
     }
+
+    public get id() : string {
+        return this._id;
+    }
+
 }
