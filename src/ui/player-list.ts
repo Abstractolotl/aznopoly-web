@@ -62,7 +62,7 @@ export default class PlayerList {
         const text = this.scene.add.text(this.x + 50, this.y, name, FONT_STYLE_BODY);
 
         let tail: Phaser.GameObjects.Image | undefined = undefined;
-        if (this.hostView) {
+        if (this.hostView && !host) {
             tail = this.scene.add.image(this.x + this.width, this.y, "player-kick");
             const tailScale = LINE_HEIGHT / tail.height;
             tail.setScale(tailScale, tailScale);
