@@ -1,7 +1,6 @@
 import AzNopolyClient from "./client";
 import AzNopolyGame from "./game";
-import { ClientPacketHandler, PacketType, RoomInitPacket, RoomJoinPacket, RoomLeavePacket, RoomNamePacket } from "./types/client";
-import { slot, Slot } from "ts-event-bus";
+import { PacketType, RoomInitPacket, RoomJoinPacket, RoomLeavePacket, RoomNamePacket } from "./types/client";
 
 interface Player {
     uuid: string;

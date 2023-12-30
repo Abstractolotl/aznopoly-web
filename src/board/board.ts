@@ -1,15 +1,16 @@
 import { Scene } from "phaser";
 import GameObject = Phaser.GameObjects.Shape;
 import AzNopolyClient from "../client";
-import { PacketType, PlayerPacket, RoomJoinPacket } from "../types/client";
+import { PacketType, PlayerPacket } from "../types/client";
+import AzNopolyGame from "../game";
 
 interface BoardPlayer {
     gameObject: GameObject,
     position: number,
 }
 
-
 export interface BoardPacket extends PlayerPacket {
+    type: PacketType.BOARD,
     data: {
         function: string,
         args: any[],
@@ -23,55 +24,55 @@ export default class GameBoard {
         scene.load.image("board_bg", "assets/title_background.png")
     }
 
-    //private background: Phaser.GameObjects.Image;
-
     private TILE_SIZE: number;
 
     private scene: Scene;
-    private client: AzNopolyClient;
-    
-    private players: Map<string, BoardPlayer>;
-    private bounds: {x: number, y: number, size: number};
+    private game: AzNopolyGame;
 
-    constructor(client: AzNopolyClient,scene: Scene, {x, y, size}: {x: number, y: number, size: number}) {
-        this.client = client;
+    private players: Map<string, BoardPlayer>;
+    private bounds: { x: number, y: number, size: number };
+
+    constructor(aznopoly: AzNopolyGame, scene: Scene, { x, y, size }: { x: number, y: number, size: number }) {
+        this.game = aznopoly;
         this.scene = scene;
         this.players = new Map();
-        this.bounds = {x, y, size};
+        this.bounds = { x, y, size };
 
         this.TILE_SIZE = size / 10;
-        
+
         const background = this.scene.add.image(x, y, "board_bg")
         const targetScale = size / background.width;
         background.setScale(targetScale);
         background.setOrigin(0, 0);
 
-        this.client.addClientEventListener(PacketType.BOARD, this.onBoardPacket.bind(this) as ClientEventHandler);
-        this.client.addClientEventListener(PacketType.ROOM_JOIN, this.onRoomJoin.bind(this) as ClientEventHandler);
+        this.game.client.addEventListener(PacketType.BOARD, this.onBoardPacket.bind(this) as EventListener);
+        // this.client.addEventListener(PacketType.ROOM_JOIN, this.onRoomJoin.bind(this) as EventListener);
     }
 
-    private onRoomJoin(event: RoomJoinPacket) {
-        if (!this.client.isHost) return;
+    // private onRoomJoin(event: CustomEvent<RoomJoinPacket>) {
+    //     const packet = event.detail;
+    //     if (!this.client.isHost) return;
 
-        this.addPlayer(event.data.uuid);
+    //     this.addPlayer(packet.data.uuid);
 
-        this.players.forEach((player, uuid) => {
-            const packet : BoardPacket = {
-                type: PacketType.BOARD,
-                data: {
-                    function: "addPlayer",
-                    args: [uuid, player.position],
-                },
-                sender: this.client.uuid,
-                target: event.data.uuid,
-            }
-            this.client.sendPacket(packet);
-        });
-    }
+    //     this.players.forEach((player, uuid) => {
+    //         const packet: BoardPacket = {
+    //             type: PacketType.BOARD,
+    //             data: {
+    //                 function: "addPlayer",
+    //                 args: [uuid, player.position],
+    //             },
+    //             sender: this.client.uuid,
+    //             target: packet.data.uuid,
+    //         }
+    //         this.client.sendPacket(packet);
+    //     });
+    // }
 
-    private onBoardPacket(packet: BoardPacket) {
-        if (this.client.isHost) return;
-        if (packet.target && packet.target !== this.client.uuid) return;
+    private onBoardPacket(event: CustomEvent<BoardPacket>) {
+        const packet = event.detail;
+        if (this.game.isHost) return;
+        if (packet.target && packet.target !== this.game.client.id) return;
 
         switch (packet.data.function) {
             case "addPlayer":
@@ -84,8 +85,8 @@ export default class GameBoard {
     }
 
     addPlayer(uuid: string, startPos: number = 0) {
-        if (this.client.isHost) {
-            this.client.sendPacket({
+        if (this.game.isHost) {
+            this.game.client.sendPacket({
                 type: PacketType.BOARD,
                 data: {
                     function: "addPlayer",
@@ -109,8 +110,8 @@ export default class GameBoard {
     }
 
     movePlayer(uuid: string, distance: number) {
-        if (this.client.isHost) {
-            this.client.sendPacket({
+        if (this.game.isHost) {
+            this.game.client.sendPacket({
                 type: PacketType.BOARD,
                 data: {
                     function: "movePlayer",
