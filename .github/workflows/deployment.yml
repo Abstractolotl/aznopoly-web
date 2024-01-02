@@ -26,7 +26,7 @@ jobs:
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
 
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag $HARBOR_URI/abstractolotl/aznopoly-web:$IMAGE_NAME --tag $HARBOR_URI/abstractolotl/aznopoly-web:latest
+        run: docker buildx build . --file Dockerfile --tag $HARBOR_URI/abstractolotl/aznopoly-web:${IMAGE_NAME} --tag $HARBOR_URI/abstractolotl/aznopoly-web:latest
         env:
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
           IMAGE_NAME: ${{ steps.image_name.outputs.image }}
@@ -46,7 +46,7 @@ jobs:
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v3
         with:
-          exec: helm upgrade --install --atomic --timeout 5m --history-max 5 --namespace=frontend --set image.tag=$IMAGE_NAME aznopoly-web helm-charts
+          exec: helm upgrade --install --atomic --timeout 5m --history-max 5 --namespace=frontend --set image.tag=${IMAGE_NAME} aznopoly-web helm-charts
           kubeconfig: '${{ secrets.KUBECONFIG }}'
         env:
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
