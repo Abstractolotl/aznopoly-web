@@ -57,9 +57,9 @@ export default class Room extends EventTarget {
     }
 
     private broadcastName(id: string, name: string) {
-        if (this.client.debugMode) {
-            console.log("Broadcasting name", id, name)
-        }
+        // if (this.client.debugMode) {
+        //     console.log("Broadcasting name", id, name)
+        // }
 
         const namePacket: RoomNamePacket = {
             type: PacketType.ROOM_NAME,
@@ -82,7 +82,6 @@ export default class Room extends EventTarget {
         this.dispatchEvent(new CustomEvent(RoomEvent.JOIN, { detail: packet.data.uuid }));
 
         if (this.aznopoly.isHost) {
-            console.log("I'm host")
             this._playerNames.forEach((name, id) => {
                 this.broadcastName(id, name);
             })
@@ -107,15 +106,16 @@ export default class Room extends EventTarget {
         this.dispatchEvent(new Event(RoomEvent.UPDATE));
     }
 
+    public getPlayerName(uuid: string): string {
+        return this._playerNames.get(uuid) || "Unknown";
+    }
+
     public get id() {
         return this._id;
     }
 
-    public get connectedPlayers() {
-        const arr = [...this._connectedIds].map((id) => ({ key: id, value: { name: this._playerNames.get(id) || "?????" } }));
-        const map = new Map(arr.map((obj) => [obj.key, obj.value]));
-
-        return map;
+    public get connectedPlayerIds() {
+        return [...this._connectedIds];
     }
 
     public get host() {

@@ -26,3 +26,13 @@ export function makeButton(scene: Scene, text: string, x: number, y: number, onC
     btn.on('pointerdown', onClick);
     return btn;
 }
+
+
+export function getColorFromUUID(uuid: string) {
+    let hash = 0;
+    for (let i = 0; i < uuid.length; i++) {
+        hash = uuid.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const color = Math.floor(Math.abs((Math.sin(hash) * 16777215) % 1) * 16777215);
+    return color;
+}

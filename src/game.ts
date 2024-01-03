@@ -39,7 +39,6 @@ export default class AzNopolyGame {
     }
 
     public isPlayerHost(uuid: string) {
-        console.log("IS HOST", this.room.host, uuid, this.room.host == uuid)
         return this.room.host == uuid;
     }
 

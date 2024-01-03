@@ -1,5 +1,6 @@
 import { FONT_STYLE_BODY, FONT_STYLE_BUTTON } from "../style";
 import GameObjects = Phaser.GameObjects;
+import { getColorFromUUID } from "../util";
 
 interface Entry {
     head: Phaser.GameObjects.Image;
@@ -37,9 +38,11 @@ export default class PlayerList {
         this.x = x;
         this.y = y;
         this.width = width;
+
+        this.create();
     }
 
-    public create() {
+    private create() {
         this.graphics = this.scene.add.graphics();
         this.graphics.fillStyle(0x000000, 0.5);        
         this.graphics.fillRoundedRect(this.x - PADDING, this.y - PADDING, this.width + (2 * PADDING),  (2 * PADDING) + (LINE_HEIGHT * 5) + (LINE_GAP * 4), 5);
@@ -47,17 +50,17 @@ export default class PlayerList {
         this.title = this.scene.add.text(this.x, this.y, 'Connected Players', FONT_STYLE_BODY);
     }
 
-    private updateTitle() {
-        this.title.setText(`Connected Players (${this.playerEntries.length} / 4)`);
+    public updateTitle(title: string = `Connected Players (${this.playerEntries.length} / 4)`) {
+        this.title.setText(title);
     }
 
     private createPlayerEntry(name: string, host: boolean): Entry {
         const headKey = host ? "host-crown" : "player-icon";
-        console.log("headKey", headKey);
         const head = this.scene.add.image(this.x, this.y, headKey);
         const headScale = LINE_HEIGHT / head.height;
         head.setScale(headScale, headScale);
         head.setOrigin(0, 0.5);
+        head.tint = getColorFromUUID(name);
 
         const text = this.scene.add.text(this.x + 50, this.y, name, FONT_STYLE_BODY);
 

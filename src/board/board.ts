@@ -1,8 +1,8 @@
 import { Scene } from "phaser";
 import GameObject = Phaser.GameObjects.Shape;
-import AzNopolyClient from "../client";
 import { PacketType, PlayerPacket } from "../types/client";
 import AzNopolyGame from "../game";
+import { getColorFromUUID } from "../util";
 
 interface BoardPlayer {
     gameObject: GameObject,
@@ -18,6 +18,7 @@ export interface BoardPacket extends PlayerPacket {
 }
 
 const PLAYER_SIZE = 16;
+const BOARD_SIDE_LENGTH = 12;
 export default class GameBoard {
 
     static preload(scene: Scene) {
@@ -27,52 +28,31 @@ export default class GameBoard {
     private TILE_SIZE: number;
 
     private scene: Scene;
-    private game: AzNopolyGame;
+    private aznopoly: AzNopolyGame;
 
     private players: Map<string, BoardPlayer>;
     private bounds: { x: number, y: number, size: number };
 
     constructor(aznopoly: AzNopolyGame, scene: Scene, { x, y, size }: { x: number, y: number, size: number }) {
-        this.game = aznopoly;
+        this.aznopoly = aznopoly;
         this.scene = scene;
         this.players = new Map();
         this.bounds = { x, y, size };
 
-        this.TILE_SIZE = size / 10;
+        this.TILE_SIZE = size / BOARD_SIDE_LENGTH;
 
         const background = this.scene.add.image(x, y, "board_bg")
         const targetScale = size / background.width;
         background.setScale(targetScale);
         background.setOrigin(0, 0);
 
-        this.game.client.addEventListener(PacketType.BOARD, this.onBoardPacket.bind(this) as EventListener);
-        // this.client.addEventListener(PacketType.ROOM_JOIN, this.onRoomJoin.bind(this) as EventListener);
+        this.aznopoly.client.addEventListener(PacketType.BOARD, this.onBoardPacket.bind(this) as EventListener);
     }
-
-    // private onRoomJoin(event: CustomEvent<RoomJoinPacket>) {
-    //     const packet = event.detail;
-    //     if (!this.client.isHost) return;
-
-    //     this.addPlayer(packet.data.uuid);
-
-    //     this.players.forEach((player, uuid) => {
-    //         const packet: BoardPacket = {
-    //             type: PacketType.BOARD,
-    //             data: {
-    //                 function: "addPlayer",
-    //                 args: [uuid, player.position],
-    //             },
-    //             sender: this.client.uuid,
-    //             target: packet.data.uuid,
-    //         }
-    //         this.client.sendPacket(packet);
-    //     });
-    // }
 
     private onBoardPacket(event: CustomEvent<BoardPacket>) {
         const packet = event.detail;
-        if (this.game.isHost) return;
-        if (packet.target && packet.target !== this.game.client.id) return;
+        if (this.aznopoly.isHost) return;
+        if (packet.target && packet.target !== this.aznopoly.client.id) return;
 
         switch (packet.data.function) {
             case "addPlayer":
@@ -85,8 +65,8 @@ export default class GameBoard {
     }
 
     addPlayer(uuid: string, startPos: number = 0) {
-        if (this.game.isHost) {
-            this.game.client.sendPacket({
+        if (this.aznopoly.isHost) {
+            this.aznopoly.client.sendPacket({
                 type: PacketType.BOARD,
                 data: {
                     function: "addPlayer",
@@ -100,18 +80,19 @@ export default class GameBoard {
         }
 
         const coords = GameBoard.getCoordForPos(startPos);
-        const color = this.getColorFromUUID(uuid);
+        const color = getColorFromUUID(this.aznopoly.room.getPlayerName(uuid));
         const player = {
             gameObject: this.scene.add.rectangle(coords.x, coords.y, PLAYER_SIZE, PLAYER_SIZE, color),
             position: startPos,
         };
         this.players.set(uuid, player)
+        this.movePlayer(uuid, 0);
         return player;
     }
 
     movePlayer(uuid: string, distance: number) {
-        if (this.game.isHost) {
-            this.game.client.sendPacket({
+        if (this.aznopoly.isHost) {
+            this.aznopoly.client.sendPacket({
                 type: PacketType.BOARD,
                 data: {
                     function: "movePlayer",
@@ -133,45 +114,72 @@ export default class GameBoard {
         const coords = GameBoard.getCoordForPos(player.position);
 
         player.gameObject.setPosition(this.bounds.x + coords.x * this.TILE_SIZE, this.bounds.y + coords.y * this.TILE_SIZE)
+        this.checkPlayerColisions();
     }
 
-    private getColorFromUUID(uuid: string) {
-        let hash = 0;
-        for (let i = 0; i < uuid.length; i++) {
-            hash = uuid.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const color = Math.floor(Math.abs((Math.sin(hash) * 16777215) % 1) * 16777215);
-        return color;
+    private checkPlayerColisions() {
+        const positions: { [key: number]: string[] } = {};
+        this.players.forEach((player, uuid) => {
+            if (positions[player.position]) {
+                positions[player.position].push(uuid);
+            } else {
+                positions[player.position] = [uuid];
+            }
+        });
+
+        Object.entries(positions).forEach(([position, uuids]) => {
+            if (uuids.length > 1) {
+                console.log(`Collision at position ${position} between ${uuids.join(", ")}`);
+                let i = 0; 
+                const offset = uuids.length * PLAYER_SIZE * -0.25;
+                uuids.forEach(_ => {
+                    const player = this.players.get(uuids[i]);
+                    player?.gameObject.setX(player.gameObject.x + offset + PLAYER_SIZE * i);
+                    i++;
+                })
+            }
+        })
     }
 
     static getCoordForPos(position: number) {
-        position = position % 40;
-        const sideLength = 10;
+        position = transformNumber(position);
+        position = position % (BOARD_SIDE_LENGTH * 4);
+        const sideLength = BOARD_SIDE_LENGTH;
         const sideIndex = Math.floor(position / sideLength);
-        const sidePosition = position % sideLength;
+        let sidePosition = position % sideLength;
         let offset_x = 0;
         let offset_y = 0;
 
+        const inawrds_offset = 0.5;
+
         switch (sideIndex) {
             case 0: // Bottom side
-                offset_x = sideLength - sidePosition;
-                offset_y = sideLength;
+                offset_x = sideLength - sidePosition - (sidePosition == 0 ? inawrds_offset : 0);
+                offset_y = sideLength - inawrds_offset;
                 break;
             case 1: // Left side
-                offset_x = 0;
-                offset_y = sideLength - sidePosition;
+                offset_x = inawrds_offset;
+                offset_y = sideLength - sidePosition - (sidePosition == 0 ? inawrds_offset : 0);
                 break;
             case 2: // Top side
-                offset_x = sidePosition;
-                offset_y = 0;
+                offset_x = sidePosition + (sidePosition == 0 ? inawrds_offset : 0);
+                offset_y = inawrds_offset;
                 break;
             case 3: // Right side
-                offset_x = sideLength;
-                offset_y = sidePosition;
+                offset_x = sideLength - inawrds_offset;
+                offset_y = sidePosition + (sidePosition == 0 ? inawrds_offset : 0);
                 break;
         }
 
         return { x: offset_x, y: offset_y };
     }
 
+}
+
+function transformNumber(e: number) {
+    for(let i = 0; i <= e; i++) {
+        if (i % 12 == 1) e++;
+        if (i % 12 == 11) e++;
+    }
+    return e;
 }

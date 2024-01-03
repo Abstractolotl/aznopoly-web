@@ -17,6 +17,12 @@ export enum PacketType {
     // Events related to the game board
     BOARD = "CLIENT_BOARD",
 
+    SCENE_CHANGE = "CLIENT_CHANGE_SCENE",
+    SCEEN_READY = "CLIENT_SCEEN_READY",
+
+    GAME_TURN_START = "CLIENT_GAME_TURN_START",
+    GAME_TURN_ROLL = "CLIENT_GAME_TURN_ROLL",
+
     // Unused
     EXAMPLE = "CLIENT_EXAMPLE",
 }
@@ -68,4 +74,29 @@ export enum ClientState {
     DISCONNECTED,
     CONNECTING,
     CONNECTED,
+}
+
+export interface SceneChangePacket extends PlayerPacket {
+    type: PacketType.SCENE_CHANGE;
+    data: {
+        scene: string,
+    };
+}
+
+export interface SceneReadyPacket extends PlayerPacket {
+    type: PacketType.SCEEN_READY;
+    data: {
+        scene: string,
+    };
+}
+
+export interface GameTurnStartPacket extends PlayerPacket {
+    type: PacketType.GAME_TURN_START;
+    data: {
+        player: string,
+    };
+}
+
+export interface GameTurnRollPacket extends PlayerPacket {
+    type: PacketType.GAME_TURN_ROLL;
 }
