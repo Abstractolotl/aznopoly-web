@@ -19,6 +19,7 @@ export class AzNopolyButton {
     private isDown: boolean = false;
     private isHovered: boolean = false;
     private hoverTimer: number = 0;
+    private enabled: boolean = true;
 
     private onClick: () => void;
 
@@ -62,12 +63,32 @@ export class AzNopolyButton {
         }
     }
 
+    public enable() {
+        this.buttonText.setInteractive();
+        this.buttonText.setAlpha(1);
+        this.enabled = true;
+    }
+
+    public disable() {
+        this.buttonText.disableInteractive();
+        this.buttonText.setAlpha(0);
+
+        this.enabled = false;
+
+        this.isDown = false;
+        this.isHovered = false;
+    }
+
     private onPointerDown() {
+        if (!this.enabled) return;
+
         this.isDown = true;
         this.isHovered = true;
     }
 
     private onPointerUp() {
+        if (!this.enabled) return;
+
         this.isDown = false;
         this.isHovered = false;
         this.hoverTimer = MAX_HOVER_TIMER;
@@ -76,10 +97,14 @@ export class AzNopolyButton {
     }
 
     private onHover() {
+        if (!this.enabled) return;
+
         this.isHovered = true;
     }
 
     private onHoverOut() {
+        if (!this.enabled) return;
+
         this.isHovered = false;
         this.hoverTimer = MAX_HOVER_TIMER;
         this.isDown = false;
