@@ -3,11 +3,18 @@ import GameObjects = Phaser.GameObjects;
 import { COLOR_CONTRAST, COLOR_PRIMARY } from "../style";
 import { easeOutElastic } from "../util";
 
+type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
 export const FONT_STYLE_BUTTON: Phaser.Types.GameObjects.Text.TextStyle = { fontFamily: 'Comfortaa', fontSize: 32, color: '#73c8e4', align: 'center' }
 export const FONT_STYLE_BUTTON_DOWN: Phaser.Types.GameObjects.Text.TextStyle = { fontFamily: 'Comfortaa', fontSize: 32, color: '#ffffff', align: 'center' }
 const MAX_HOVER_TIMER = 4;
 export class AzNopolyButton {
+
+    public static preload(scene: Scene) {
+        scene.load.audio('button-over', 'assets/button_over.mp3');
+        scene.load.audio('button-out', 'assets/button_out.mp3');
+        scene.load.audio('button-down', 'assets/button_down.mp3');
+    }
 
     private x: number;
     private y: number;
@@ -15,6 +22,10 @@ export class AzNopolyButton {
     private outlineWidth: number;
     private outlinePadding: number;
     private graphic!: Phaser.GameObjects.Graphics;
+
+    private audioOver!: Audio;
+    private audioOut!: Audio;
+    private audioDown!: Audio;
     
     private isDown: boolean = false;
     private isHovered: boolean = false;
@@ -40,6 +51,11 @@ export class AzNopolyButton {
         this.buttonText.on('pointerover', this.onHover.bind(this));
         this.buttonText.on('pointerout', this.onHoverOut.bind(this));
 
+        this.audioOver = scene.sound.add('button-over');
+        this.audioOut = scene.sound.add('button-out');
+        this.audioOut.volume = 0.5;
+        this.audioDown = scene.sound.add('button-down');
+
         this.updateButtonShape(this.outlineWidth, this.outlinePadding);
     }
 
@@ -51,6 +67,7 @@ export class AzNopolyButton {
                 this.hoverTimer += delta / 1000 * 10;
             }
             this.hoverTimer = Math.min(this.hoverTimer, MAX_HOVER_TIMER);
+
             const t = Math.min(Math.max(this.hoverTimer / MAX_HOVER_TIMER, 0), 1);
             const padding = Phaser.Math.Linear(this.outlinePadding, this.outlinePadding + 15, t)
             this.updateButtonShape(this.outlineWidth, padding);
@@ -84,6 +101,8 @@ export class AzNopolyButton {
 
         this.isDown = true;
         this.isHovered = true;
+
+        //this.audioOver.stop();
     }
 
     private onPointerUp() {
@@ -93,6 +112,7 @@ export class AzNopolyButton {
         this.isHovered = false;
         this.hoverTimer = MAX_HOVER_TIMER;
 
+        //this.audioDown.play();
         this.onClick();
     }
 
@@ -100,6 +120,9 @@ export class AzNopolyButton {
         if (!this.enabled) return;
 
         this.isHovered = true;
+
+        //this.audioOver.play();
+        //this.audioOver.seek = 1; // cheat
     }
 
     private onHoverOut() {
@@ -108,6 +131,10 @@ export class AzNopolyButton {
         this.isHovered = false;
         this.hoverTimer = MAX_HOVER_TIMER;
         this.isDown = false;
+
+        //this.audioOver.stop();
+        //this.audioOut.play();
+        //this.audioOut.seek = 0.25; // cheat
     }
 
     private updateButtonShape(outlineWidth: number, outlinePadding: number) {
