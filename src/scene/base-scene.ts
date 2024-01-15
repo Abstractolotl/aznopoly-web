@@ -20,9 +20,7 @@ export class BaseScene extends Phaser.Scene {
         if(!this.aznopoly.client) return;
         
         if (this.sync) {
-            if (!this.aznopoly.isHost) {
-                SceneSwitcher.updateScene(this.aznopoly, this.scene.key);
-            } else {
+            if (this.aznopoly.isHost) {
                 SceneSwitcher.waitForPlayers(this.aznopoly, this.scene.key, data.launchMethod).then(() => {
                     this.onAllPlayerReady();
                 });
@@ -32,6 +30,10 @@ export class BaseScene extends Phaser.Scene {
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             this.cleanPacketListeners();
         });
+    }
+
+    create() {
+        SceneSwitcher.updateScene(this.aznopoly, this.scene.key);
     }
 
     protected onAllPlayerReady() {

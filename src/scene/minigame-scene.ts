@@ -42,14 +42,15 @@ export default abstract class MinigameScene extends BaseScene {
         this.overlay = this.add.image(WIDTH/2, HEIGHT/2, 'minigame_ready').setOrigin(0, 0);
         this.overlay.setOrigin(0.5, 0.5);
         this.overlay.setDepth(1000);
+
+        super.create();
     }
 
     protected onAllPlayerReady(): void {
-        this.overlay.setTexture('minigame_start');
         setTimeout(() => {
             this.overlay.setVisible(false);
             this.startMiniGame();
-        }, 500);
+        }, 1500);
     }
 
     private startMiniGame() {
