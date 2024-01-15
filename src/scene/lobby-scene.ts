@@ -1,8 +1,5 @@
-import { FONT_STYLE_BUTTON, FONT_STYLE_HEADLINE } from "../style";
-import { makeButton } from "../util";
+import { FONT_STYLE_HEADLINE } from "../style";
 
-import GameObjects = Phaser.GameObjects;
-import AzNopolyGame from "../game";
 import { RoomEvent } from "../room";
 import TilingBackground from "../ui/tiling-background";
 import { AzNopolyButton } from "../ui/button";
@@ -14,8 +11,6 @@ import { BaseScene } from "./base-scene";
 export default class LobbyScene extends BaseScene {
 
     private playerList!: PlayerList;
-
-    private registeredEventListener: [string, EventListener][] = [];
 
     preload() {
         PlayerList.preload(this);
@@ -34,27 +29,6 @@ export default class LobbyScene extends BaseScene {
         this.addRoomEventListener();
     }
 
-    private addRoomEventListener() {
-        this.registeredEventListener.push([RoomEvent.JOIN, this.onPlayerJoin.bind(this) as EventListener]);
-        this.registeredEventListener.push([RoomEvent.LEAVE, this.onPlayerLeave.bind(this) as EventListener]);
-        this.registeredEventListener.push([RoomEvent.UPDATE, this.onPlayerUpdate.bind(this) as EventListener]);
-        
-        this.registeredEventListener.forEach(([event, listener]) => {
-            this.aznopoly.room.addEventListener(event, listener);
-        });
-
-        const onChangeScene = this.onChangeScene.bind(this) as EventListener;
-        this.registeredEventListener.push([PacketType.SCENE_CHANGE, onChangeScene])
-        this.aznopoly.client.addEventListener(PacketType.SCENE_CHANGE, onChangeScene);
-    }
-
-    private removeRoomEventListener() {
-        this.registeredEventListener.forEach(([event, listener]) => {
-            this.aznopoly.room.removeEventListener(event, listener);
-            this.aznopoly.client.removeEventListener(event, listener);
-        });
-    }
-
     private initButton() {
         // this.add.existing(new AzNopolyButton(this, "Exit", WIDTH - 400, HEIGHT - 120, () => {
         //     this.scene.stop('lobby');
@@ -67,19 +41,23 @@ export default class LobbyScene extends BaseScene {
         }));
     }
 
-    private onChangeScene(event: CustomEvent<SceneChangePacket>) {
-        const packet = event.detail;
-        if (!this.aznopoly.isPlayerHost(packet.sender)) return;
-
-        if (packet.data.scene === "GAME") {
-            this.startGameScene();
-        } else {
-            console.error(`Invalid scene: ${packet.data.scene}`);
-        }
+    private addRoomEventListener() {
+        const listener: [string, EventListener][] = [
+            [RoomEvent.JOIN, this.onPlayerJoin.bind(this) as EventListener],
+            [RoomEvent.LEAVE, this.onPlayerLeave.bind(this) as EventListener],
+            [RoomEvent.UPDATE, this.onPlayerUpdate.bind(this) as EventListener]
+        ]
+        listener.forEach(([event, listener]) => {
+            this.aznopoly.room.addEventListener(event, listener);
+        });
+        this.events.once('shutdown', () => {
+            listener.forEach(([event, listener]) => {
+                this.aznopoly.room.removeEventListener(event, listener);
+            });
+        });
     }
 
     private startGameScene() {
-        this.removeRoomEventListener();
         this.scene.start('game', { aznopoly: this.aznopoly });
     }
 

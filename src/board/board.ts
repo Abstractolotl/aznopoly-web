@@ -19,7 +19,7 @@ export interface BoardPacket extends PlayerPacket {
 
 const PLAYER_SIZE = 16;
 const BOARD_SIDE_LENGTH = 12;
-export default class GameBoard {
+export default class GameBoard extends Phaser.GameObjects.Container {
 
     static preload(scene: Scene) {
         scene.load.image("board_bg", "assets/title_background.png")
@@ -27,21 +27,22 @@ export default class GameBoard {
 
     private TILE_SIZE: number;
 
-    private scene: Scene;
     private aznopoly: AzNopolyGame;
 
     private players: Map<string, BoardPlayer>;
-    private bounds: { x: number, y: number, size: number };
+    private size: number;
 
-    constructor(aznopoly: AzNopolyGame, scene: Scene, { x, y, size }: { x: number, y: number, size: number }) {
+    constructor(aznopoly: AzNopolyGame, scene: Scene, x: number, y: number, size: number) {
+        super(scene, x, y);
+        this.size = size;
         this.aznopoly = aznopoly;
-        this.scene = scene;
         this.players = new Map();
-        this.bounds = { x, y, size };
 
         this.TILE_SIZE = size / BOARD_SIDE_LENGTH;
 
-        const background = this.scene.add.image(x, y, "board_bg")
+        const background = new Phaser.GameObjects.Image(scene, 0, 0, "board_bg");
+        this.add(background);
+        
         const targetScale = size / background.width;
         background.setScale(targetScale);
         background.setOrigin(0, 0);
@@ -82,9 +83,10 @@ export default class GameBoard {
         const coords = GameBoard.getCoordForPos(startPos);
         const color = getColorFromUUID(this.aznopoly.room.getPlayerName(uuid));
         const player = {
-            gameObject: this.scene.add.rectangle(coords.x, coords.y, PLAYER_SIZE, PLAYER_SIZE, color),
+            gameObject: new Phaser.GameObjects.Rectangle(this.scene, coords.x * this.TILE_SIZE, coords.y * this.TILE_SIZE, PLAYER_SIZE, PLAYER_SIZE, color),
             position: startPos,
         };
+        this.add(player.gameObject);
         this.players.set(uuid, player)
         this.movePlayer(uuid, 0);
         return player;
@@ -113,7 +115,7 @@ export default class GameBoard {
         player.position += distance;
         const coords = GameBoard.getCoordForPos(player.position);
 
-        player.gameObject.setPosition(this.bounds.x + coords.x * this.TILE_SIZE, this.bounds.y + coords.y * this.TILE_SIZE)
+        player.gameObject.setPosition(coords.x * this.TILE_SIZE, coords.y * this.TILE_SIZE)
         this.checkPlayerColisions();
     }
 
