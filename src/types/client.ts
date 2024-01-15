@@ -85,6 +85,7 @@ export interface SceneChangePacket extends PlayerPacket {
     type: PacketType.SCENE_CHANGE;
     data: {
         scene: string,
+        launchMethod: string,
     };
 }
 
