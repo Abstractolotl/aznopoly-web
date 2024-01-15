@@ -12,6 +12,14 @@ interface SimonSaysPacket extends PlayerPacket {
     }
 }
 
+interface SimonSaysActionPacket extends PlayerPacket {
+    type: PacketType.MINIGAME_SIMON_SAYS_ACTION,
+    data: {
+        action: string,
+        data: any,
+    }
+}
+
 const SCENE_NAME = "simon-says";
 export class SimonSaysScene extends MinigameScene {
     
@@ -37,21 +45,12 @@ export class SimonSaysScene extends MinigameScene {
     init(data: any): void {
         super.init(data);
         this.addPacketListener(PacketType.MINIGAME_SIMON_SAYS, this.onSimonSaysPacket.bind(this));
-    }
-
-    async onMinigameStart() {
-        this.activePlayer = this.aznopoly.room.connectedPlayerIds.slice();
-
-        await this.startRound(this.generateRandomSequence(4));
-        //await this.startRound(this.generateRandomSequence(5));
-        //await this.startRound(this.generateRandomSequence(6));
-
-        this.endGame(this.activePlayer, false);
+        if (!this.aznopoly.isHost) {
+            this.addPacketListener(PacketType.MINIGAME_SIMON_SAYS_ACTION, this.onSimonSaysActionPacket.bind(this));
+        }
     }
 
     create() {
-        super.create();
-
         this.soundRight = this.sound.add('right');
         this.soundWrong = this.sound.add('wrong');
 
@@ -82,14 +81,8 @@ export class SimonSaysScene extends MinigameScene {
         this.timerBar = new TimeBar(this, WIDTH / 2 - 100, HEIGHT / 2 - 150, 200, 15, 1000);
         this.timerBar.pause();
         this.add.existing(this.timerBar);
-    }
 
-    private generateRandomSequence(length: number) {
-        const sequence: number[] = [];
-        for (let i = 0; i < length; i++) {
-            sequence.push(Math.floor(Math.random() * 4));
-        }
-        return sequence;
+        super.create();
     }
 
     private onBoardClick(index: number) {
@@ -104,6 +97,7 @@ export class SimonSaysScene extends MinigameScene {
             }
         };
         this.aznopoly.client.sendPacket(packet);
+        console.log("sent", packet)
     };
 
     private onSimonSaysPacket(packet: SimonSaysPacket) {
@@ -114,22 +108,99 @@ export class SimonSaysScene extends MinigameScene {
         sequence.push(packet.data.buttonIndex);
     }
 
+    private onSimonSaysActionPacket(packet: SimonSaysActionPacket) {
+        switch(packet.data.action) {
+            case "playExampleSequence":
+                this.playExampleSequence(packet.data.data[0]);
+                break;
+            case "lockBoards":
+                this.lockBoards();
+                break;
+            case "unlockBoards":
+                this.unlockBoards();
+                break;
+            case "startTimer":
+                this.startTimer(packet.data.data[0]);
+                break;
+            case "showRoundResult":
+                this.showRoundResult(packet.data.data[0]);
+                break;
+        }
+    }
+
+    // STATE SYNC
+
+    private playExampleSequence(sequence: number[]) {
+        if(this.aznopoly.isHost) {
+            this.mirrorAction("playExampleSequence", [sequence]);
+        }
+
+        return this.exampleBoard.playSequence(sequence, 500);
+    }
+
     private lockBoards() {
+        if(this.aznopoly.isHost) {
+            this.mirrorAction("lockBoards", []);
+        }
+
         this.playerBoardsMap.forEach((board) => {
             board.lock();
         });
     }
 
     private unlockBoards() {
+        if(this.aznopoly.isHost) {
+            this.mirrorAction("unlockBoards", []);
+        }
+
         this.playerBoardsMap.forEach((board) => {
             board.unlock();
         });
     }
 
-    private clearSequences() {
-        this.playerSequenceMap.forEach((sequence) => {
-            sequence.length = 0;
-        });
+    private startTimer(time: number) {
+        if (this.aznopoly.isHost) {
+            this.mirrorAction("startTimer", [time]);
+        }
+
+        this.timerBar.resetTime(time);
+        this.timerBar.resume();
+    }
+
+    private showRoundResult(winner: string[]) {
+        if(this.aznopoly.isHost) {
+            this.mirrorAction("showRoundResult", [winner]);
+        }
+
+        if (winner.includes(this.aznopoly.client.id)) {
+            this.soundRight.play();
+        } else {
+            this.soundWrong.play();
+        }
+    }
+
+    private mirrorAction(action: string, data: any) {
+        const packet: SimonSaysActionPacket = {
+            type: PacketType.MINIGAME_SIMON_SAYS_ACTION,
+            sender: this.aznopoly.client.id,
+            data: {
+                action,
+                data
+            }
+        };
+        this.aznopoly.client.sendPacket(packet);
+    }
+
+    // HOST ONLY
+
+    async onMinigameStart() {
+        this.activePlayer = this.aznopoly.room.connectedPlayerIds.slice();
+
+        await this.startRound(this.generateRandomSequence(4));
+        //await this.startRound(this.generateRandomSequence(5));
+        //await this.startRound(this.generateRandomSequence(6));
+
+        this.endGame(this.activePlayer, false);
     }
 
     private async startRound(sequence: number[]) {
@@ -138,11 +209,11 @@ export class SimonSaysScene extends MinigameScene {
         this.clearSequences();
         this.lockBoards();
         const delay = 500;
-        await this.exampleBoard.playSequence(this.currentSequence, delay);
+        await this.playExampleSequence(this.currentSequence);
         this.unlockBoards();
 
         const totalTime = delay * this.currentSequence.length * 1.5 + 1000;
-        this.timerBar.resetTime(totalTime);
+        this.startTimer(totalTime);
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 this.lockBoards();
@@ -153,23 +224,32 @@ export class SimonSaysScene extends MinigameScene {
     }
 
     private onRoundOver() {
-        const mySequence = this.playerSequenceMap.get(this.aznopoly.client.id)!;
-
-        if (this.isSequenceCorrect(mySequence)) {
-            this.soundRight.play();
-        } else {
-            this.soundWrong.play();
-        }
-
-        this.activePlayer = this.activePlayer.filter((id) => {
+        const winner = this.activePlayer.filter((id) => {
             const sequence = this.playerSequenceMap.get(id)!;
             return this.isSequenceCorrect(sequence);
         });
-        
+
+        this.showRoundResult(winner);
+
+        this.activePlayer = winner;
+    }
+
+    private clearSequences() {
+        this.playerSequenceMap.forEach((sequence) => {
+            sequence.length = 0;
+        });
     }
 
     private isSequenceCorrect(sequence: number[]) {
         return sequence.length == this.currentSequence.length && sequence.every((value, index) => value == this.currentSequence[index]);
+    }
+
+    private generateRandomSequence(length: number) {
+        const sequence: number[] = [];
+        for (let i = 0; i < length; i++) {
+            sequence.push(Math.floor(Math.random() * 4));
+        }
+        return sequence;
     }
 
 }

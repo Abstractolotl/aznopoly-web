@@ -42,6 +42,7 @@ export default class GameScene extends BaseScene {
         this.currentTurnValue = this.add.text(WIDTH - 300, 350, "", FONT_STYLE_BODY);
 
         this.networkInit();
+        super.create();
     }
 
     private networkInit() {
