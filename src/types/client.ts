@@ -25,6 +25,8 @@ export enum PacketType {
 
     MINIGAME_RESULT = "CLIENT_MINIGAME_RESULT",
 
+    MINIGAME_SIMON_SAYS = "CLIENT_MINIGAME_SIMON_SAYS",
+
     // Unused
     EXAMPLE = "CLIENT_EXAMPLE",
 }
