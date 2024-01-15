@@ -1,7 +1,7 @@
 import { Scene } from "phaser";
 import AzNopolyGame from "../game";
 import { SceneSwitcher } from "../scene-switcher";
-import { PlayerPacket } from "../types/client";
+import { PacketType, PlayerPacket, SceneChangePacket } from "../types/client";
 
 
 export class BaseScene extends Phaser.Scene {
@@ -17,7 +17,9 @@ export class BaseScene extends Phaser.Scene {
     }
 
     init() {
-        if (this.aznopoly.client && this.sync) {
+        if(!this.aznopoly.client) return;
+        
+        if (this.sync) {
             if (!this.aznopoly.isHost) {
                 SceneSwitcher.updateScene(this.aznopoly, this.scene.key);
             } else {
@@ -26,6 +28,7 @@ export class BaseScene extends Phaser.Scene {
                 });
             }
         } 
+        this.addPacketListener(PacketType.SCENE_CHANGE, this.onChangeScene.bind(this));
     }
 
     protected onAllPlayerReady() {
@@ -45,6 +48,11 @@ export class BaseScene extends Phaser.Scene {
         this.packetListener.forEach(([type, listener]) => {
             this.aznopoly.client.removeEventListener(type, listener);
         });
+    }
+
+    private onChangeScene(packet: SceneChangePacket) {
+        if (!this.aznopoly.isPlayerHost(packet.sender)) return;
+        this.scene.start(packet.data.scene);
     }
 
 }

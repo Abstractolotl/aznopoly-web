@@ -27,7 +27,7 @@ window.onload = () => {
 
     game.scene.add('title', new TitleScene(aznopoly));
     game.scene.add('lobby', new LobbyScene(aznopoly));
-    game.scene.add('game', new GameScene());
+    game.scene.add('game', new GameScene(aznopoly));
 
     //Minigames
     game.scene.add('minigame-simon-says', new SimonSaysScene(aznopoly))
