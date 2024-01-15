@@ -98,6 +98,11 @@ export default class GameScene extends BaseScene {
     }
 
     private startTurn() {
+        if (this.currentPlayerIndex == 0) {
+            this.scene.pause();
+            this.scene.launch("minigame-simon-says", { launchMethod: "launch", previousScene: this.scene.key });
+        }
+
         const currentPlayer = this.aznopoly.room.connectedPlayerIds[this.currentPlayerIndex];
 
         const packet: GameTurnStartPacket = {
