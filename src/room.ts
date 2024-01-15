@@ -50,22 +50,19 @@ export default class Room extends EventTarget {
             this._connectedIds.add(client);
         });
 
-        this._playerNames.set(this.aznopoly.player.uuid, this.aznopoly.player.name);
-        this.broadcastName(this.aznopoly.player.uuid, this.aznopoly.player.name);
+        this._playerNames.set(this.aznopoly.client.id, this.aznopoly.player.name);
+        this.broadcastName(this.aznopoly.client.id, this.aznopoly.player.name);
 
         this.dispatchEvent(new Event(RoomEvent.READY));
     }
 
     private broadcastName(id: string, name: string) {
-        // if (this.client.debugMode) {
-        //     console.log("Broadcasting name", id, name)
-        // }
-
         const namePacket: RoomNamePacket = {
             type: PacketType.ROOM_NAME,
-            sender: id,
+            sender: this.client.id,
             data: {
-                name
+                name,
+                uuid: id,
             }
         }
         this.client.sendPacket(namePacket)
@@ -102,7 +99,7 @@ export default class Room extends EventTarget {
             console.warn("Player " + packet.sender + " tried to change their name, but the room is locked!");
         }
 
-        this._playerNames.set(packet.sender, packet.data.name);
+        this._playerNames.set(packet.data.uuid, packet.data.name);
         this.dispatchEvent(new Event(RoomEvent.UPDATE));
     }
 
