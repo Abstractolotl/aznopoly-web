@@ -3,8 +3,8 @@ import AzNopolyGame from "./game";
 import { PacketType, SceneChangePacket, SceneReadyPacket } from "./types/client";
 
 export const SceneSwitcher = {
-    waitForPlayers: (aznopoly: AzNopolyGame, sceneKey: string) => {
-        sendSceneChangePacket(aznopoly, sceneKey);
+    waitForPlayers: (aznopoly: AzNopolyGame, sceneKey: string, launchMethod: string) => {
+        sendSceneChangePacket(aznopoly, sceneKey, launchMethod);
         return new Promise<void>((resolve) => {
             new SceneReadyListener(aznopoly, sceneKey, () => {
                 resolve();
@@ -47,6 +47,20 @@ class SceneReadyListener {
 
         // Register the event listener
         this.aznopoly.client.addEventListener(PacketType.SCEEN_READY, sceneReadyListener);
+
+        if (this.aznopoly.room.connectedPlayerIds.length == 1) {
+            setTimeout(() => {
+                sceneReadyListener(new CustomEvent(PacketType.SCEEN_READY, {
+                    detail: {
+                        sender: this.aznopoly.client.id,
+                        data: {
+                            scene: this.sceneName,
+                        }
+                    }
+                    }));
+            }, 1000)
+            this.aznopoly.client.removeEventListener(PacketType.SCEEN_READY, sceneReadyListener);
+        }
     }
 
 }
@@ -62,12 +76,13 @@ function sendSceneReadyPacket(aznopoly: AzNopolyGame, sceneName: string) {
     aznopoly.client.sendPacket(packet);
 }
 
-function sendSceneChangePacket(aznopoly: AzNopolyGame, sceneName: string) {
+function sendSceneChangePacket(aznopoly: AzNopolyGame, sceneName: string, launchMethod: string) {
     const packet: SceneChangePacket = {
         type: PacketType.SCENE_CHANGE,
         sender: aznopoly.client.id,
         data: {
             scene: sceneName,
+            launchMethod,
         }
     }
     aznopoly.client.sendPacket(packet);

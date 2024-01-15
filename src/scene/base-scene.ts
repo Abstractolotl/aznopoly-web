@@ -16,19 +16,22 @@ export class BaseScene extends Phaser.Scene {
         this.sync = synced;
     }
 
-    init() {
+    init(data: any) {
         if(!this.aznopoly.client) return;
         
         if (this.sync) {
             if (!this.aznopoly.isHost) {
                 SceneSwitcher.updateScene(this.aznopoly, this.scene.key);
             } else {
-                SceneSwitcher.waitForPlayers(this.aznopoly, this.scene.key).then(() => {
+                SceneSwitcher.waitForPlayers(this.aznopoly, this.scene.key, data.launchMethod).then(() => {
                     this.onAllPlayerReady();
                 });
             }
         } 
         this.addPacketListener(PacketType.SCENE_CHANGE, this.onChangeScene.bind(this));
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            this.cleanPacketListeners();
+        });
     }
 
     protected onAllPlayerReady() {
@@ -44,7 +47,7 @@ export class BaseScene extends Phaser.Scene {
         this.aznopoly.client.addEventListener(type, listener);
     }
 
-    protected cleanPacketListeners() {
+    private cleanPacketListeners() {
         this.packetListener.forEach(([type, listener]) => {
             this.aznopoly.client.removeEventListener(type, listener);
         });
@@ -52,7 +55,13 @@ export class BaseScene extends Phaser.Scene {
 
     private onChangeScene(packet: SceneChangePacket) {
         if (!this.aznopoly.isPlayerHost(packet.sender)) return;
-        this.scene.start(packet.data.scene);
+
+        console.log("launching scene", packet.data.scene, "from", this.scene.key)
+        if (packet.data.launchMethod == "launch") {
+            this.scene.launch(packet.data.scene, { previousScene: this.scene.key});
+        } else {
+            this.scene.start(packet.data.scene, { previousScene: this.scene.key});
+        }
     }
 
 }
