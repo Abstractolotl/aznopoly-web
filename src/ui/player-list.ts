@@ -1,5 +1,4 @@
 import { FONT_STYLE_BODY, FONT_STYLE_BUTTON } from "../style";
-import GameObjects = Phaser.GameObjects;
 import { getColorFromUUID } from "../util";
 
 interface Entry {
@@ -12,7 +11,7 @@ interface Entry {
 const LINE_HEIGHT = FONT_STYLE_BODY.fontSize as number;
 const LINE_GAP = 10;
 const PADDING = 10;
-export default class PlayerList {
+export default class PlayerList extends Phaser.GameObjects.Container {
 
     static preload(scene: Phaser.Scene) {
         scene.load.image("host-crown", "assets/crown.png");
@@ -20,34 +19,28 @@ export default class PlayerList {
         scene.load.image("player-kick", "assets/player_kick.png");
     }
 
-    private x: number;
-    private y: number;
-    private width: number;
-
-
-    private scene: Phaser.Scene;
+    private entryWidth: number;
     private hostView: boolean;
 
-    private title!: GameObjects.Text;
-    private graphics!: GameObjects.Graphics;
+    private title!: Phaser.GameObjects.Text;
+    private graphics!: Phaser.GameObjects.Graphics;
     private playerEntries: Entry[] = [];
 
-    constructor(scene: Phaser.Scene, hostView: boolean, x: number, y: number, width: number) {
-        this.scene = scene;
+    constructor(scene: Phaser.Scene, hostView: boolean, x: number, y: number, entryWidth: number) {
+        super(scene);
+
         this.hostView = hostView;
         this.x = x;
         this.y = y;
-        this.width = width;
+        this.entryWidth = entryWidth;
 
-        this.create();
-    }
-
-    private create() {
-        this.graphics = this.scene.add.graphics();
+        this.graphics = new Phaser.GameObjects.Graphics(scene);
+        this.add(this.graphics);
         this.graphics.fillStyle(0x000000, 0.5);        
-        this.graphics.fillRoundedRect(this.x - PADDING, this.y - PADDING, this.width + (2 * PADDING),  (2 * PADDING) + (LINE_HEIGHT * 5) + (LINE_GAP * 4), 5);
+        this.graphics.fillRoundedRect(-PADDING, -PADDING, this.entryWidth + (2 * PADDING),  (2 * PADDING) + (LINE_HEIGHT * 5) + (LINE_GAP * 4), 5);
         
-        this.title = this.scene.add.text(this.x, this.y, 'Connected Players', FONT_STYLE_BODY);
+        this.title = new Phaser.GameObjects.Text(scene, 0, 0, "", FONT_STYLE_BODY);
+        this.add(this.title);
     }
 
     public updateTitle(title: string = `Connected Players (${this.playerEntries.length} / 4)`) {
@@ -56,17 +49,19 @@ export default class PlayerList {
 
     private createPlayerEntry(name: string, host: boolean): Entry {
         const headKey = host ? "host-crown" : "player-icon";
-        const head = this.scene.add.image(this.x, this.y, headKey);
+        const head = new Phaser.GameObjects.Image(this.scene, 0, 0, headKey);
+        this.add(head);
         const headScale = LINE_HEIGHT / head.height;
         head.setScale(headScale, headScale);
         head.setOrigin(0, 0.5);
         head.tint = getColorFromUUID(name);
 
-        const text = this.scene.add.text(this.x + 50, this.y, name, FONT_STYLE_BODY);
-
+        const text = new Phaser.GameObjects.Text(this.scene, 50, 0, name, FONT_STYLE_BODY);
+        this.add(text);
         let tail: Phaser.GameObjects.Image | undefined = undefined;
         if (this.hostView && !host) {
-            tail = this.scene.add.image(this.x + this.width, this.y, "player-kick");
+            tail = new Phaser.GameObjects.Image(this.scene, 0 + this.entryWidth, 0, "player-kick");
+            this.add(tail);
             const tailScale = LINE_HEIGHT / tail.height;
             tail.setScale(tailScale, tailScale);
             tail.setOrigin(1, 0.5);
@@ -97,7 +92,7 @@ export default class PlayerList {
     }
     
     private updatePlayerPositions() {
-        let y = this.y + LINE_GAP + LINE_HEIGHT;
+        let y = LINE_GAP + LINE_HEIGHT;
         this.playerEntries.forEach(entry => {
             entry.head.y = y + LINE_HEIGHT / 2;
             entry.text.y = y;

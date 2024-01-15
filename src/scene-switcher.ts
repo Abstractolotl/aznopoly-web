@@ -2,10 +2,22 @@ import AzNopolyClient from "./client";
 import AzNopolyGame from "./game";
 import { PacketType, SceneChangePacket, SceneReadyPacket } from "./types/client";
 
+export const SceneSwitcher = {
+    waitForPlayers: (aznopoly: AzNopolyGame, sceneKey: string) => {
+        sendSceneChangePacket(aznopoly, sceneKey);
+        return new Promise<void>((resolve) => {
+            new SceneReadyListener(aznopoly, sceneKey, () => {
+                resolve();
+            });
+        });
+    },
+    updateScene: sendSceneReadyPacket
+}
+
 /**
  * Waits for every player to send a "Ready" packet
  */
-export class SceneReadyListener {
+class SceneReadyListener {
 
     private aznopoly: AzNopolyGame;
 
@@ -39,7 +51,7 @@ export class SceneReadyListener {
 
 }
 
-export function sendSceneReadyPacket(aznopoly: AzNopolyGame, sceneName: string) {
+function sendSceneReadyPacket(aznopoly: AzNopolyGame, sceneName: string) {
     const packet: SceneReadyPacket = {
         type: PacketType.SCEEN_READY,
         sender: aznopoly.client.id,
@@ -50,7 +62,7 @@ export function sendSceneReadyPacket(aznopoly: AzNopolyGame, sceneName: string) 
     aznopoly.client.sendPacket(packet);
 }
 
-export function sendSceneChangePacket(aznopoly: AzNopolyGame, sceneName: string) {
+function sendSceneChangePacket(aznopoly: AzNopolyGame, sceneName: string) {
     const packet: SceneChangePacket = {
         type: PacketType.SCENE_CHANGE,
         sender: aznopoly.client.id,
