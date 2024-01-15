@@ -1,13 +1,14 @@
-
+import { Audio } from "../types";
 
 type Position = { x: number, y: number, size: number};
 type Callback = (btnIndex: number) => void;
 
 const MIN_CLICK_DURATION = 350;
-const LOCK_DURATION = 500;
+const LOCK_DURATION = 50;
 export class SimonSaysBoard {
 
     static preload(scene: Phaser.Scene) {
+        scene.load.audio('simon-button-sound', 'assets/beep.mp3');
         scene.load.image('simon-tile-lit', 'assets/simon_lit.png');
         scene.load.image('simon-tile-unlit', 'assets/simon_unlit.png');
     }
@@ -15,24 +16,29 @@ export class SimonSaysBoard {
     private interactive: boolean = false;
     private locked: boolean = false;
 
-    private callback: Callback;
+    private callback?: Callback;
 
     private x: number;
     private y: number;
     private size: number;
 
+    private currentClick?: NodeJS.Timeout;
+
+    private soundClick!: Audio;
+
     private btnUp!: Phaser.GameObjects.Image;
     private btnDown!: Phaser.GameObjects.Image;
     private btnLeft!: Phaser.GameObjects.Image;
     private btnRight!: Phaser.GameObjects.Image;
-
-    constructor(private scene: Phaser.Scene, interactive: boolean = false, bounds: Position, callback: Callback) {
+    
+    constructor(private scene: Phaser.Scene, interactive: boolean = false, bounds: Position, callback?: Callback) {
         this.interactive = interactive;
-        console.log("Creating board", bounds)
         this.size = bounds.size;
         this.x = bounds.x;
         this.y = bounds.y;
         this.callback = callback;
+
+        this.soundClick = this.scene.sound.add('simon-button-sound');
 
         this.createBoard();
     }
@@ -53,6 +59,7 @@ export class SimonSaysBoard {
     }
 
     public playButton(btnIndex: number) {
+        this.soundClick.play();
         const btn = [this.btnUp, this.btnDown, this.btnLeft, this.btnRight][btnIndex];
         btn.setTexture('simon-tile-lit');
         setTimeout(() => {
@@ -75,16 +82,19 @@ export class SimonSaysBoard {
             btn.on('pointerdown', () => {
                 if(this.locked) return;
 
+                this.soundClick.play();
+
                 btn.setTexture('simon-tile-lit');
-                this.callback([this.btnUp, this.btnDown, this.btnLeft, this.btnRight].indexOf(btn));
+                this.callback?.([this.btnUp, this.btnDown, this.btnLeft, this.btnRight].indexOf(btn));
                 setTimeout(() => {
                     btn.setTexture('simon-tile-unlit');
                 }, MIN_CLICK_DURATION)
                 
                 this.locked = true;
-                setTimeout(() => {
+                this.currentClick = setTimeout(() => {
                     this.locked = false;
-                }, LOCK_DURATION)
+                    this.currentClick = undefined;
+                }, MIN_CLICK_DURATION + LOCK_DURATION)
             });
         }
         btn.tint = tint;
@@ -93,6 +103,7 @@ export class SimonSaysBoard {
 
     public lock() {
         this.locked = true;
+        clearTimeout(this.currentClick);
     }
 
     public unlock() {

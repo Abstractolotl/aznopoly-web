@@ -11,6 +11,11 @@ export interface MinigameResultPacket extends PlayerPacket {
     }
 }
 
+export interface MinigameReadyPacket extends PlayerPacket {
+    type: PacketType.MINIGAME_READY,
+    data: { }
+}
+
 export default abstract class MinigameScene extends BaseScene {
 
     private previousScene!: string;
@@ -24,9 +29,13 @@ export default abstract class MinigameScene extends BaseScene {
         this.load.image('minigame_ready', 'assets/ready.png');
     }
 
-    init() {
-        super.init();
-        this.addPacketListener(PacketType.MINIGAME_RESULT, this.onResultPacket);
+    init(data: any) {
+        super.init(data);
+        this.addPacketListener(PacketType.MINIGAME_READY, this.onMiniGameReady.bind(this));
+        this.addPacketListener(PacketType.MINIGAME_RESULT, this.onResultPacket.bind(this));
+        
+        console.log("Iniated", data)
+        this.previousScene = data.previousScene;
     }
 
     create() {
@@ -39,11 +48,28 @@ export default abstract class MinigameScene extends BaseScene {
         this.overlay.setTexture('minigame_start');
         setTimeout(() => {
             this.overlay.setVisible(false);
-            this.onMinigameStart();
+            this.startMiniGame();
         }, 500);
     }
 
+    private startMiniGame() {
+        const packet: MinigameReadyPacket = {
+            type: PacketType.MINIGAME_READY,
+            sender: this.aznopoly.client.id,
+            data: {}
+        };
+
+        this.aznopoly.client.sendPacket(packet);
+        setTimeout(() => {
+            this.onMinigameStart();
+        }, 50) // simulate network delay
+    }
+
     abstract onMinigameStart(): void;
+
+    private onMiniGameReady(_: MinigameReadyPacket) {
+        this.overlay.setVisible(false);
+    }
 
     private onResultPacket(packet: MinigameResultPacket) {
         if (packet.data.playerWon.includes(this.aznopoly.client.id)) {
@@ -51,6 +77,7 @@ export default abstract class MinigameScene extends BaseScene {
         } else {
             this.showGameLost();
         }
+        
         setTimeout(() => {
             this.onGameOver();
         }, 1000)
@@ -69,16 +96,17 @@ export default abstract class MinigameScene extends BaseScene {
     private onGameOver() {
         this.scene.stop();
         this.scene.resume(this.previousScene);
+        console.log("Resuming", this.previousScene)
     }
 
-    protected endGame() {
+    protected endGame(playerWon: string[], sorted: boolean) {
         if (!this.aznopoly.isHost) return;
         const packet: MinigameResultPacket = {
             type: PacketType.MINIGAME_RESULT,
             sender: this.aznopoly.client.id,
             data: {
-                playerWon: [],
-                sorted: true,
+                playerWon,
+                sorted,
             }
         };
 

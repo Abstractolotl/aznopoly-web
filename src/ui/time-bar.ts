@@ -31,12 +31,12 @@ export class TimeBar extends Phaser.GameObjects.Graphics {
     }
 
     private drawBar() {
-        this.fillStyle(0x000000, 1);
-        this.fillRect(this.x, this.y, this.width, this.height);
+        this.fillStyle(0x222222, 1);
+        this.fillRect(0, 0, this.width, this.height);
 
         const fillPercentage = this.timeRemaining / this.time;
         this.fillStyle(this.color, 1);
-        this.fillRect(this.x, this.y, this.width * fillPercentage, this.height);
+        this.fillRect(0, 0, this.width * fillPercentage, this.height);
     }
 
     public setColor(color: number) {
