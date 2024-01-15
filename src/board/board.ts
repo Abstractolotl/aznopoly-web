@@ -131,7 +131,6 @@ export default class GameBoard extends Phaser.GameObjects.Container {
 
         Object.entries(positions).forEach(([position, uuids]) => {
             if (uuids.length > 1) {
-                console.log(`Collision at position ${position} between ${uuids.join(", ")}`);
                 let i = 0; 
                 const offset = uuids.length * PLAYER_SIZE * -0.25;
                 uuids.forEach(_ => {
