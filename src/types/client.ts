@@ -52,6 +52,7 @@ export interface RoomNamePacket extends PlayerPacket {
     type: PacketType.ROOM_NAME;
     data: {
         name: string,
+        uuid: string,
     };
 
 }

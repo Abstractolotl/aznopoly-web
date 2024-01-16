@@ -1,22 +1,23 @@
 import AzNopolyClient from "./client";
 import Room from "./room";
 import { Player } from "./types";
-import { PacketType, RoomInitPacket, RoomNamePacket } from "./types/client";
 
 export default class AzNopolyGame {
 
-    private _room: Room;
-    private _client: AzNopolyClient;
-    private _name: string;
+    private _room!: Room;
+    private _client!: AzNopolyClient;
+    private _name!: string;
 
-    constructor(room: string, name: string) {
+    constructor() {
+        (window as any)["aznopoly"] = this;
+    }
+
+    public init(roomId: string) {
         this._client = new AzNopolyClient();
-        this._room = new Room(room, this, this.client)
-        this._name = name;
+        this._room = new Room(roomId, this, this.client);
+        this._name = this.getPlayerName();
 
-        this._client.connect(room);
-        
-        (window as any)["game"] = this;
+        this._client.connect(roomId);
     }
 
     public get player(): Player {
@@ -40,6 +41,15 @@ export default class AzNopolyGame {
 
     public isPlayerHost(uuid: string) {
         return this.room.host == uuid;
+    }
+
+    public updatePlayerName(name: string) {
+        this._name = name;
+    }
+
+    private getPlayerName() {
+        const names = ["Bob", "Bebb", "Steve", "Michael", "John", "Doe", "Wurstbrigand"];
+        return names[Math.floor(Math.random() * names.length)];
     }
 
 }

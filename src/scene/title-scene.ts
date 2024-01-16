@@ -2,18 +2,15 @@ import AzNopolyGame from "../game";
 import { WIDTH } from "../main";
 import { RoomEvent } from "../room";
 import { AzNopolyButton } from "../ui/button";
+import { BaseScene } from "./base-scene";
 
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
-export default class TitleScene extends Phaser.Scene {
-    private background!: Phaser.GameObjects.Image;
-    private btnJoinLobby!: AzNopolyButton;
-    private btnCreateLobby!: AzNopolyButton;
-
-    private btnMusic!: Phaser.GameObjects.Image;
+export default class TitleScene extends BaseScene {
 
     private bgm!: Audio;
     private audioStart!: Audio;
+    private btnMusic!: Phaser.GameObjects.Image;
     
     private domContainer!: Phaser.GameObjects.DOMElement;
     private domNameInput!: HTMLInputElement;
@@ -32,10 +29,10 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     create() {
-        this.background = this.add.image(0, 0, 'abstracto');
-        const targetScale = WIDTH / this.background.width;
-        this.background.setScale(targetScale);
-        this.background.setOrigin(0, 0);
+        const background = this.add.image(0, 0, 'abstracto');
+        const targetScale = WIDTH / background.width;
+        background.setScale(targetScale);
+        background.setOrigin(0, 0);
 
         this.domContainer = this.add.dom(320, 300);
         this.domContainer.createFromCache('input_mask');
@@ -43,24 +40,25 @@ export default class TitleScene extends Phaser.Scene {
         this.domNameInput = this.domContainer.getChildByID('title-name-input') as HTMLInputElement;        
         this.domNameInput.value = 'test';
 
+        console.log(this.add)
         this.bgm = this.game.sound.add('title-bgm', { loop: true });
         this.bgm.play();
         this.bgm.volume = 0.25;
 
         this.audioStart = this.game.sound.add('game-start');
-
         this.initButtons();
+
+        //setTimeout(() => { this.joinRoom("debugg", "Michael" + ("" + Math.random()).substring(2,4)) }, 1000)
     }
 
-    update(time: number, delta: number): void {
-        this.btnJoinLobby.update(time, delta);
-        this.btnCreateLobby.update(time, delta);
+    destroy() {
+        console.log('destroying title scene');
     }
 
     private initButtons() {
         const centerX = WIDTH / 2;
-        this.btnJoinLobby = new AzNopolyButton(this, 'Join Lobby', centerX - 250, 600, this.onJoinRoomClick.bind(this));
-        this.btnCreateLobby = new AzNopolyButton(this, 'Create Lobby', centerX + 250, 600, this.onCreateRoom.bind(this));
+        this.add.existing(new AzNopolyButton(this, 'Join Lobby', centerX - 250, 600, this.onJoinRoomClick.bind(this)));
+        this.add.existing(new AzNopolyButton(this, 'Create Lobby', centerX + 250, 600, this.onCreateRoom.bind(this)));
 
         const graphics = this.add.graphics();
         graphics.lineStyle(2, 0x000000, 1);
@@ -107,12 +105,13 @@ export default class TitleScene extends Phaser.Scene {
         setTimeout(() => {
             this.audioStart.play();
         }, 100)
+
         setTimeout(() => {
-            const aznopoly = new AzNopolyGame(room, name);
-            aznopoly.room.addEventListener(RoomEvent.READY, () => {
-                this.scene.start('lobby', { aznopoly });
+            this.aznopoly.init(room);
+            this.aznopoly.room.addEventListener(RoomEvent.READY, () => {
+                this.scene.start('lobby');
             }, { once: true });
+            this.bgm.stop();
         }, 500)
     }
 }
-

@@ -1,5 +1,4 @@
 import { Scene } from "phaser";
-import GameObjects = Phaser.GameObjects;
 import { COLOR_CONTRAST, COLOR_PRIMARY } from "../style";
 import { easeOutElastic } from "../util";
 
@@ -8,7 +7,7 @@ type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sou
 export const FONT_STYLE_BUTTON: Phaser.Types.GameObjects.Text.TextStyle = { fontFamily: 'Comfortaa', fontSize: 32, color: '#73c8e4', align: 'center' }
 export const FONT_STYLE_BUTTON_DOWN: Phaser.Types.GameObjects.Text.TextStyle = { fontFamily: 'Comfortaa', fontSize: 32, color: '#ffffff', align: 'center' }
 const MAX_HOVER_TIMER = 4;
-export class AzNopolyButton {
+export class AzNopolyButton extends Phaser.GameObjects.Container {
 
     public static preload(scene: Scene) {
         scene.load.audio('button-over', 'assets/button_over.mp3');
@@ -16,11 +15,9 @@ export class AzNopolyButton {
         scene.load.audio('button-down', 'assets/button_down.mp3');
     }
 
-    private x: number;
-    private y: number;
-    private buttonText!: GameObjects.Text;
-    private outlineWidth: number;
-    private outlinePadding: number;
+    private buttonText!: Phaser.GameObjects.Text;
+    private outlineWidth: number = 3;
+    private outlinePadding: number = 10;
     private graphic!: Phaser.GameObjects.Graphics;
 
     private audioOver!: Audio;
@@ -34,15 +31,16 @@ export class AzNopolyButton {
 
     private onClick: () => void;
 
-    constructor(scene: Scene, title: string, x: number, y: number, onClick: () => void, outlineWidth: number = 3, outlinePadding: number = 10) {
-        this.x = x;
-        this.y = y;
-        this.outlineWidth = outlineWidth;
-        this.outlinePadding = outlinePadding;
+    constructor(scene: Scene, title: string, x: number, y: number, onClick: () => void) {
+        super(scene);
         this.onClick = onClick;
 
-        this.graphic = scene.add.graphics();
-        this.buttonText = scene.add.text(x, y, title, FONT_STYLE_BUTTON);
+        this.graphic = new Phaser.GameObjects.Graphics(scene);
+        this.add(this.graphic);
+
+        this.buttonText = new Phaser.GameObjects.Text(scene, x, y, title, FONT_STYLE_BUTTON);
+        this.add(this.buttonText);
+
         this.buttonText.setOrigin(0.5, 0.5);
         this.buttonText.setInteractive();
 
@@ -59,7 +57,7 @@ export class AzNopolyButton {
         this.updateButtonShape(this.outlineWidth, this.outlinePadding);
     }
 
-    public update(time: number, delta: number) {
+    preUpdate(time: number, delta: number) {
         if (this.isHovered) {
             if (this.isDown) {
                 this.hoverTimer += delta / 1000 * 20;

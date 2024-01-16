@@ -1,69 +1,58 @@
 import GameBoard from "../board/board";
 import AzNopolyGame from "../game";
 import { HEIGHT, WIDTH } from "../main";
-import { SceneReadyListener, sendSceneChangePacket, sendSceneReadyPacket } from "../scene-network-util";
+import { SceneSwitcher } from "../scene-switcher";
 import { FONT_STYLE_BODY, FONT_STYLE_HEADLINE } from "../style";
 import { GameTurnRollPacket, GameTurnStartPacket, PacketType } from "../types/client";
 import { AzNopolyButton } from "../ui/button";
 import PlayerList from "../ui/player-list";
+import { BaseScene } from "./base-scene";
 
 
 const SCENE_NAME = "GAME";
-export default class GameScene extends Phaser.Scene {
+export default class GameScene extends BaseScene {
 
     private board!: GameBoard;
-    private aznopoly!: AzNopolyGame;
     private rollButton!: AzNopolyButton;
 
-    private turnNumber: number = 0;
     private currentPlayerIndex: number = 0;
-
-    private currentTurnText!: Phaser.GameObjects.Text;
     private currentTurnValue!: Phaser.GameObjects.Text;
 
     preload() {
         GameBoard.preload(this);
     }
 
-    init(data: any) {
-        this.aznopoly = data.aznopoly;
-    }
+    onAllPlayerReady() {
+        this.aznopoly.room.connectedPlayerIds.forEach(uuid => {
+            this.board.addPlayer(uuid);
+        });
 
-    private networkInit() {
-        if (this.aznopoly.isHost) {
-            new SceneReadyListener(this.aznopoly, SCENE_NAME, () => {
-                this.hostSceneInit();
-            });
-            sendSceneChangePacket(this.aznopoly, SCENE_NAME);
-
-            this.aznopoly.client.addEventListener(PacketType.GAME_TURN_ROLL, this.onTurnRoll.bind(this) as EventListener);
-        }
-
-        this.aznopoly.client.addEventListener(PacketType.GAME_TURN_START, this.onTurnStart.bind(this) as EventListener);
+        this.startTurn();
     }
 
     create() {
         const boardSize = HEIGHT * 0.8;
-        this.board = new GameBoard(this.aznopoly, this, {x: (WIDTH - boardSize) * 0.5 - 200, y: (HEIGHT - boardSize) * 0.5, size: boardSize});
+        this.board = this.add.existing(new GameBoard(this.aznopoly, this, (WIDTH - boardSize) * 0.5 - 200, (HEIGHT - boardSize) * 0.5, boardSize));
 
-        const playerList = new PlayerList(this, false, WIDTH - 300, 0, 250);
+        const playerList = this.add.existing(new PlayerList(this, false, WIDTH - 300, 0, 250));
         playerList.updatePlayerList(this.aznopoly.room.connectedPlayerIds.map(e => ({name: this.aznopoly.room.getPlayerName(e), host: false})))
         playerList.updateTitle("");
 
-        this.rollButton = new AzNopolyButton(this, "Roll Dice", WIDTH - 150, HEIGHT - 100, this.onRollClick.bind(this));
+        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", WIDTH - 150, HEIGHT - 100, this.onRollClick.bind(this)));
         this.rollButton.disable();
 
-        this.currentTurnText = this.add.text(WIDTH - 300, 300, "Current Turn:", FONT_STYLE_BODY);
+        this.add.text(WIDTH - 300, 300, "Current Turn:", FONT_STYLE_BODY);
         this.currentTurnValue = this.add.text(WIDTH - 300, 350, "", FONT_STYLE_BODY);
 
         this.networkInit();
-        if (!this.aznopoly.isHost) {
-            sendSceneReadyPacket(this.aznopoly, SCENE_NAME);
-        }
     }
 
-    update(time: number, delta: number) {
-        this.rollButton.update(time, delta);
+    private networkInit() {
+        if (this.aznopoly.isHost) {
+            this.aznopoly.client.addEventListener(PacketType.GAME_TURN_ROLL, this.onTurnRoll.bind(this) as EventListener);
+        }
+
+        this.aznopoly.client.addEventListener(PacketType.GAME_TURN_START, this.onTurnStart.bind(this) as EventListener);
     }
 
     private onRollClick() {
@@ -100,14 +89,6 @@ export default class GameScene extends Phaser.Scene {
         if (packet.sender == currentPlayer) {
             this.rollDice();
         }
-    }
-
-    private hostSceneInit() {
-        this.aznopoly.room.connectedPlayerIds.forEach(uuid => {
-            this.board.addPlayer(uuid);
-        });
-
-        this.startTurn();
     }
 
     private rollDice() {
