@@ -1,8 +1,10 @@
 import { Scene } from "phaser";
 import GameObject = Phaser.GameObjects.Shape;
 import { PacketType, PlayerPacket } from "../types/client";
+import { TileDirection, TileType } from "./tile-type.ts";
 import AzNopolyGame from "../game";
 import { getColorFromUUID } from "../util";
+import BoardTile from "./board-tile.ts";
 
 interface BoardPlayer {
     gameObject: GameObject,
@@ -18,15 +20,15 @@ export interface BoardPacket extends PlayerPacket {
 }
 
 const PLAYER_SIZE = 16;
-const BOARD_SIDE_LENGTH = 12;
+const BOARD_SIDE_LENGTH = 7;
+
 export default class GameBoard extends Phaser.GameObjects.Container {
 
-    static preload(scene: Scene) {
-        scene.load.image("board_bg", "assets/title_background.png")
+    public static preload(scene: Scene) {
+        BoardTile.preload(scene);
     }
 
     private TILE_SIZE: number;
-
     private aznopoly: AzNopolyGame;
 
     private players: Map<string, BoardPlayer>;
@@ -34,20 +36,57 @@ export default class GameBoard extends Phaser.GameObjects.Container {
 
     constructor(aznopoly: AzNopolyGame, scene: Scene, x: number, y: number, size: number) {
         super(scene, x, y);
+
         this.size = size;
         this.aznopoly = aznopoly;
         this.players = new Map();
+        this.TILE_SIZE = size / (BOARD_SIDE_LENGTH + 2);
 
-        this.TILE_SIZE = size / BOARD_SIDE_LENGTH;
+        this.add(new BoardTile(scene, 0, 0, this.TILE_SIZE * 2, this.TILE_SIZE * 2, TileType.JAIL, TileDirection.CORNER));
+        this.add(new BoardTile(scene, this.TILE_SIZE * BOARD_SIDE_LENGTH, 0, this.TILE_SIZE * 2, this.TILE_SIZE * 2, TileType.FREE, TileDirection.CORNER));
+        this.add(new BoardTile(scene, 0, this.TILE_SIZE * BOARD_SIDE_LENGTH, this.TILE_SIZE * 2, this.TILE_SIZE * 2, TileType.START, TileDirection.CORNER));
+        this.add(new BoardTile(scene, this.TILE_SIZE * BOARD_SIDE_LENGTH, this.TILE_SIZE * BOARD_SIDE_LENGTH, this.TILE_SIZE * 2, this.TILE_SIZE * 2, TileType.TO_JAIL, TileDirection.CORNER));
 
-        const background = new Phaser.GameObjects.Image(scene, 0, 0, "board_bg");
-        this.add(background);
-        
-        const targetScale = size / background.width;
-        background.setScale(targetScale);
-        background.setOrigin(0, 0);
+        let tileSet = this.generateTileSet();
+        for(let i = 0; i < (BOARD_SIDE_LENGTH - 2); i++) {
+            this.add(new BoardTile(scene, this.TILE_SIZE * (i + 2), 0, this.TILE_SIZE, this.TILE_SIZE * 2, tileSet.pop(), TileDirection.UP));
+            this.add(new BoardTile(scene, 0, this.TILE_SIZE * (i + 2), this.TILE_SIZE * 2, this.TILE_SIZE, tileSet.pop(), TileDirection.LEFT));
+            this.add(new BoardTile(scene, this.TILE_SIZE * BOARD_SIDE_LENGTH, this.TILE_SIZE * (i + 2), this.TILE_SIZE * 2, this.TILE_SIZE, tileSet.pop(), TileDirection.RIGHT));
+            this.add(new BoardTile(scene, this.TILE_SIZE * (i + 2), this.TILE_SIZE * BOARD_SIDE_LENGTH, this.TILE_SIZE, this.TILE_SIZE * 2, tileSet.pop(), TileDirection.DOWN));
+        }
+
 
         this.aznopoly.client.addEventListener(PacketType.BOARD, this.onBoardPacket.bind(this) as EventListener);
+    }
+
+    private generateTileSet() {
+        let baseSet = [
+            TileType.BLUE, TileType.BLUE, TileType.BLUE,
+            TileType.GREEN, TileType.GREEN, TileType.GREEN,
+            TileType.RED, TileType.RED, TileType.RED,
+            TileType.YELLOW, TileType.YELLOW, TileType.YELLOW,
+            TileType.PURPLE, TileType.PURPLE,
+            TileType.CHANCE, TileType.CHANCE, TileType.CHANCE,
+            TileType.COMMUNITY, TileType.COMMUNITY, TileType.COMMUNITY
+        ];
+
+        // Generate a seed from the room code
+        let seed = 0;
+        for(let i = 0; i < this.aznopoly.room.id.length; i++) {
+            seed += this.aznopoly.room.id.charCodeAt(i);
+        }
+
+        // Shuffle the set using the seed so that all players have the same board
+        for(let i = 0; i < baseSet.length; i++) {
+            seed = (seed * 9301 + 49297) % 233280;
+            let j = Math.floor(seed / 233280 * baseSet.length);
+            let temp = baseSet[i];
+            baseSet[i] = baseSet[j];
+            baseSet[j] = temp;
+        }
+
+
+        return baseSet;
     }
 
     private onBoardPacket(event: CustomEvent<BoardPacket>) {
