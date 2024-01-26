@@ -1,5 +1,6 @@
 import Phaser, {Scene} from "phaser";
 import { TileDirection, TileType } from "./tile-type.ts";
+import {FONT_STYLE_BODY, FONT_STYLE_HEADLINE} from "../style.ts";
 
 export default class BoardTile extends Phaser.GameObjects.Container {
 
@@ -37,8 +38,19 @@ export default class BoardTile extends Phaser.GameObjects.Container {
                 break;
         }
 
-
         this.add(image);
+
+        if (direction == TileDirection.CORNER) {
+            let text = new Phaser.GameObjects.Text(scene, 0, 0, TileType[type], FONT_STYLE_BODY);
+            text.setOrigin(0.5, 0.5);
+            text.setPosition(width / 2, height / 2);
+
+            if(type === TileType.TO_JAIL) {
+                text.rotation = Math.PI / -4;
+            }
+
+            this.add(text)
+        }
     }
 
     getTexture(direction: TileDirection) : string {

@@ -5,7 +5,6 @@ export enum TileType {
     START,
 
     CHANCE,
-    COMMUNITY,
 
     BLUE,
     GREEN,

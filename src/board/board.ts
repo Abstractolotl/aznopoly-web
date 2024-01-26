@@ -67,7 +67,7 @@ export default class GameBoard extends Phaser.GameObjects.Container {
             TileType.YELLOW, TileType.YELLOW, TileType.YELLOW,
             TileType.PURPLE, TileType.PURPLE,
             TileType.CHANCE, TileType.CHANCE, TileType.CHANCE,
-            TileType.COMMUNITY, TileType.COMMUNITY, TileType.COMMUNITY
+            TileType.CHANCE, TileType.CHANCE, TileType.CHANCE,
         ];
 
         // Generate a seed from the room code
