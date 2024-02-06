@@ -18,10 +18,11 @@ export class BaseScene extends Phaser.Scene {
 
     init(data: any) {
         if(!this.aznopoly.client) return;
+        const launchMethod = (data || {}).launchMethod;
         
         if (this.sync) {
             if (this.aznopoly.isHost) {
-                SceneSwitcher.waitForPlayers(this.aznopoly, this.scene.key, data.launchMethod).then(() => {
+                SceneSwitcher.waitForPlayers(this.aznopoly, this.scene.key, launchMethod).then(() => {
                     this.onAllPlayerReady();
                 });
             }
