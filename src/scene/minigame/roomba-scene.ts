@@ -1,58 +1,47 @@
-import { Scene } from "phaser";
 import MinigameScene from "../minigame-scene";
 import { Roomba } from "../../minigame/roomba";
 import { HEIGHT, WIDTH } from "../../main";
 
-
+const GRAPHICS_SWAP_TIME = 1;
 const PAINT_REFRESH_TIME = 0.5;
-
-const NUM_GRAPHICS = 1;
-const GRAPHICS_SWAP_TIME = 2;
 export class RoombaScene extends MinigameScene {
 
-    private currentPaint!: Phaser.GameObjects.Graphics; 
-    private paintGraphics: Phaser.GameObjects.Graphics[] = [];
     private roombas: Roomba[] = [];
 
     private timeSinceLastPaint = 0;
     private timeSinceGraphicsSwap = 0;
-    private numPaintSwaps = 0;
 
-    private dynTexture!: Phaser.Textures.DynamicTexture;
+    private paint!: Phaser.GameObjects.Graphics; 
+    private paintTexture!: Phaser.Textures.DynamicTexture;
+
+    private debugText!: Phaser.GameObjects.Text;
 
     preload() {
 
     }
 
-    private fpsCounter!: Phaser.GameObjects.Text;
-    private scoreText!: Phaser.GameObjects.Text;
     create() {
-        this.fpsCounter = this.add.text(0, 0, "FPS: 0", { color: "yellow" }).setDepth(100);
-        this.scoreText = this.add.text(0, 20, "", { color: "yellow" }).setDepth(100);
-        this.dynTexture = this.textures.addDynamicTexture("roomba-test", WIDTH, HEIGHT)!;
-        this.add.sprite(0, 0, "roomba-test").setOrigin(0, 0).setDepth(-1);
-        
-        for (let i = 0; i < NUM_GRAPHICS; i++) {
-            const paint = new Phaser.GameObjects.Graphics(this);
-            this.paintGraphics.push(paint);
-            this.add.existing(paint);
-        }
-        this.currentPaint = this.paintGraphics[0];
+        this.physics.world.setBounds(0, 0, 800 * 4, 600 * 4);
 
-        for (let i = 0; i < 20; i++) {
-            const color = ["red", "green", "blue", "yellow"][Math.floor(Math.random() * 4)] as "red" | "green" | "blue" | "yellow";
+        this.paintTexture = this.textures.addDynamicTexture("roomba-paint", WIDTH, HEIGHT)!;
+        this.add.sprite(0, 0, "roomba-paint")
+                .setOrigin(0, 0)
+                .setDepth(-1);
+        
+        this.paint = this.add.graphics();
+
+        for (let i = 0; i < 5; i++) {
             const x = Math.random() * (WIDTH - Roomba.SIZE * 2) + Roomba.SIZE;
             const y = Math.random() * (HEIGHT - Roomba.SIZE * 2) + Roomba.SIZE;
 
-            const roomba = new Roomba(this, x, y, Math.random() * Math.PI * 2, color);
+            const roomba = new Roomba(this, x, y, Math.random() * Math.PI * 2, 0xff0000, 0xee0000, 50);
             this.roombas.push(roomba);
-            roomba.paintPath(this.currentPaint);
         }
         this.roombas.forEach(roomba => this.add.existing(roomba));
+        this.physics.add.collider(this.roombas, this.roombas);
     }
 
     update(time: number, delta: number) {
-        this.fpsCounter.text = "FPS: " + this.game.loop.actualFps;
         this.paintRoombaUpdate(delta);
         this.graphicSwapUpdate(delta);
     }
@@ -66,7 +55,7 @@ export class RoombaScene extends MinigameScene {
         if (this.timeSinceLastPaint > PAINT_REFRESH_TIME) {
             this.timeSinceLastPaint = 0;
             this.roombas.forEach(roomba => {
-                roomba.paintPath(this.currentPaint);
+                //roomba.paintPath(this.currentPaint);
             });
         }
     }
@@ -76,43 +65,33 @@ export class RoombaScene extends MinigameScene {
         this.timeSinceGraphicsSwap += delta / 1000;
         if (this.timeSinceGraphicsSwap > GRAPHICS_SWAP_TIME) {
             this.timeSinceGraphicsSwap = 0;
-
-            // this.currentPaint.generateTexture('roomba-paint-' + this.numPaintSwaps);
-            // this.add.image(0, 0, 'roomba-paint-' + this.numPaintSwaps)
-            //         .setOrigin(0, 0)
-            //         .setDepth(-1);
-            this.dynTexture.draw(this.currentPaint, 0, 0);
-            this.calculatePaintPercentage();
-
-            this.numPaintSwaps++;
-            this.currentPaint.clear();
-            //this.currentPaint = this.paintGraphics[1 - this.paintGraphics.indexOf(this.currentPaint)];
+            
+            this.paintTexture.draw(this.paint, 0, 0);
+            this.paint.clear();
         }
     }
 
     private calculatePaintPercentage() {
-        if (this.dynTexture.renderTarget) {
-            const renderer = this.dynTexture.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
+        if (this.paintTexture.renderTarget) {
+            const renderer = this.paintTexture.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
 
             var total = WIDTH * HEIGHT * 4;
             var pixels = new Uint8ClampedArray(total);
             
             const prevFramebuffer = renderer.currentFramebuffer;
-            renderer.setFramebuffer(this.dynTexture.renderTarget.framebuffer)
+            renderer.setFramebuffer(this.paintTexture.renderTarget.framebuffer)
             renderer.gl.readPixels(0, 0, WIDTH, HEIGHT, renderer.gl.RGBA, renderer.gl.UNSIGNED_BYTE, pixels);
             renderer.setFramebuffer(prevFramebuffer);
 
             const result = this.readPixelArray(pixels);
-            this.scoreText.text = Object.keys(result).map(e => e + ": " + result[e]).join("\n");
         } else {
             var copyCanvas = Phaser.Display.Canvas.CanvasPool.createWebGL(this, WIDTH, HEIGHT)
 
             var ctx = copyCanvas.getContext('2d')!;
-            ctx.drawImage(this.dynTexture.canvas, 0, 0, WIDTH, HEIGHT, 0, 0, WIDTH, HEIGHT);
+            ctx.drawImage(this.paintTexture.canvas, 0, 0, WIDTH, HEIGHT, 0, 0, WIDTH, HEIGHT);
 
             const pixels = ctx.getImageData(0, 0, WIDTH, HEIGHT).data;
             const result = this.readPixelArray(pixels);
-            this.scoreText.text = Object.keys(result).map(e => e + ": " + result[e]).join("\n");
 
             Phaser.Display.Canvas.CanvasPool.remove(copyCanvas);
         }
