@@ -192,8 +192,7 @@ export class SimonSaysScene extends MinigameScene {
     }
 
     // HOST ONLY
-
-    async onMinigameStart() {
+    async onMiniGameStart() {
         this.activePlayer = this.aznopoly.room.connectedPlayerIds.slice();
 
         await this.startRound(this.generateRandomSequence(4));

@@ -4,12 +4,10 @@ import { RoomEvent } from "../room";
 import TilingBackground from "../ui/tiling-background";
 import { AzNopolyButton } from "../ui/button";
 import PlayerList from "../ui/player-list";
-import { SceneChangePacket, PacketType } from "../types/client";
 import { HEIGHT, WIDTH } from "../main";
 import { BaseScene } from "./base-scene";
 
 export default class LobbyScene extends BaseScene {
-
     private playerList!: PlayerList;
 
     preload() {
@@ -28,6 +26,12 @@ export default class LobbyScene extends BaseScene {
 
         this.addRoomEventListener();
     }
+
+
+    protected hostOnAllPlayerReady(): void {
+        throw new Error("Method not implemented.");
+    }
+
 
     private initButton() {
         // this.add.existing(new AzNopolyButton(this, "Exit", WIDTH - 400, HEIGHT - 120, () => {

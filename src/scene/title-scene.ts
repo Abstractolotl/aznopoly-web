@@ -7,6 +7,9 @@ import { BaseScene } from "./base-scene";
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
 export default class TitleScene extends BaseScene {
+    protected hostOnAllPlayerReady(): void {
+        throw new Error("Method not implemented.");
+    }
 
     private bgm!: Audio;
     private audioStart!: Audio;
