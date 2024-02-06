@@ -96,8 +96,7 @@ export default abstract class MinigameScene extends BaseScene {
 
     private onGameOver() {
         this.scene.stop();
-        this.scene.resume(this.previousScene);
-        console.log("Resuming", this.previousScene)
+        this.scene.wake(this.previousScene);
     }
 
     protected endGame(playerWon: string[], sorted: boolean) {

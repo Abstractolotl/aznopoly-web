@@ -14,6 +14,8 @@ export default class GameScene extends BaseScene {
 
     private currentPlayerIndex: number = 0;
     private currentTurnValue!: Phaser.GameObjects.Text;
+    
+    private turnNumber: number = 0;
 
     preload() {
         GameBoard.preload(this);
@@ -28,6 +30,7 @@ export default class GameScene extends BaseScene {
     }
 
     create() {
+        console.log("GameScene created")
         const boardSize = HEIGHT * 0.8;
         this.board = this.add.existing(new GameBoard(this.aznopoly, this, (WIDTH - boardSize) * 0.5 - 200, (HEIGHT - boardSize) * 0.5, boardSize));
 
@@ -98,11 +101,17 @@ export default class GameScene extends BaseScene {
         this.startTurn();
     }
 
+    private startMiniGame(name: string) {
+        this.scene.sleep();
+        this.scene.launch(name, { launchMethod: "launch", previousScene: this.scene.key });
+    }
+
     private startTurn() {
-        if (this.currentPlayerIndex == 0) {
-            this.scene.pause();
-            this.scene.launch("minigame-simon-says", { launchMethod: "launch", previousScene: this.scene.key });
+        this.turnNumber++;
+        if (this.turnNumber > 1 && this.currentPlayerIndex == 0) {
+            this.startMiniGame("minigame-simon-says");
         }
+
 
         const currentPlayer = this.aznopoly.room.connectedPlayerIds[this.currentPlayerIndex];
 
