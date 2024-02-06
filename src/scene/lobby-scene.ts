@@ -62,7 +62,7 @@ export default class LobbyScene extends BaseScene {
 
     private updatePlayerList() {
         const arr = this.aznopoly.room.connectedPlayerIds;
-        const connectedNames = arr.map(uuid => ({ name: this.aznopoly.room.getPlayerName(uuid), host: this.aznopoly.isPlayerHost(uuid) }))
+        const connectedNames = arr.map(uuid => ({ uuid, name: this.aznopoly.room.getPlayerName(uuid), host: this.aznopoly.isPlayerHost(uuid) }))
         this.playerList.updatePlayerList(connectedNames);
     }
 

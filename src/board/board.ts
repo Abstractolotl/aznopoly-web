@@ -81,7 +81,7 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         }
 
         const coords = GameBoard.getCoordForPos(startPos);
-        const color = getColorFromUUID(this.aznopoly.room.getPlayerName(uuid));
+        const color = getColorFromUUID(uuid);
         const player = {
             gameObject: new Phaser.GameObjects.Rectangle(this.scene, coords.x * this.TILE_SIZE, coords.y * this.TILE_SIZE, PLAYER_SIZE, PLAYER_SIZE, color),
             position: startPos,

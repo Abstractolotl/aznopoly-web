@@ -21,7 +21,7 @@ export default class GameScene extends BaseScene {
         GameBoard.preload(this);
     }
 
-    onAllPlayerReady() {
+    hostOnAllPlayerReady() {
         this.aznopoly.room.connectedPlayerIds.forEach(uuid => {
             this.board.addPlayer(uuid);
         });
@@ -35,7 +35,7 @@ export default class GameScene extends BaseScene {
         this.board = this.add.existing(new GameBoard(this.aznopoly, this, (WIDTH - boardSize) * 0.5 - 200, (HEIGHT - boardSize) * 0.5, boardSize));
 
         const playerList = this.add.existing(new PlayerList(this, false, WIDTH - 300, 0, 250));
-        playerList.updatePlayerList(this.aznopoly.room.connectedPlayerIds.map(e => ({name: this.aznopoly.room.getPlayerName(e), host: false})))
+        playerList.updatePlayerList(this.aznopoly.room.connectedPlayerIds.map(e => ({uuid: e, name: this.aznopoly.room.getPlayerName(e), host: false})))
         playerList.updateTitle("");
 
         this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", WIDTH - 150, HEIGHT - 100, this.onRollClick.bind(this)));
@@ -109,7 +109,7 @@ export default class GameScene extends BaseScene {
     private startTurn() {
         this.turnNumber++;
         if (this.turnNumber > 1 && this.currentPlayerIndex == 0) {
-            this.startMiniGame("minigame-simon-says");
+            this.startMiniGame("minigame-roomba");
         }
 
 

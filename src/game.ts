@@ -35,8 +35,25 @@ export default class AzNopolyGame {
         return this._room;
     }
 
+    public get players(): string[] {
+        return this.room.connectedPlayerIds;
+    }
+
     public get isHost(): boolean {
         return this.client.id == this.room.host;
+    }
+
+    public broadcastPacket(packet: {type: string, data: any}) {
+        this.client.sendPacket(packet);
+    }
+
+    public addPacketListener(type: string, listener: EventListener) {
+        this.client.addEventListener(type, listener);
+        return listener;
+    }
+
+    public removePacketListener(type: string, listener: EventListener) {
+        this.client.removeEventListener(type, listener);
     }
 
     public isPlayerHost(uuid: string) {
