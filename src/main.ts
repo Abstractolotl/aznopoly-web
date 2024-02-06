@@ -4,11 +4,13 @@ import GameScene from './scene/game-scene';
 import LobbyScene from './scene/lobby-scene';
 import { SimonSaysScene } from './scene/minigame/simon-says-scene';
 import AzNopolyGame from './game';
+import { mock } from './debug-util';
+import { RoombaScene } from './scene/minigame/roomba-scene';
 
 export const WIDTH = 1280;
 export const HEIGHT = 720;
 
-window.onload = () => {
+window.onload = async () => {
     let game = new Phaser.Game({
         type: Phaser.AUTO,
         width: WIDTH,
@@ -31,7 +33,14 @@ window.onload = () => {
 
     //Minigames
     game.scene.add('minigame-simon-says', new SimonSaysScene(aznopoly))
+    game.scene.add('minigame-roomba', new RoombaScene(aznopoly))
     
-    game.scene.start('title');
+
+    await mock(aznopoly);
+    console.log("mocked");
+
+    game.scene.start('minigame-roomba');
+    //game.scene.start('title');
+    
     Object.assign(window, { game });
 };
