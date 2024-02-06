@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
 import { FONT_STYLE_BUTTON, FONT_STYLE_BUTTON_HOVER } from "./style";
+import convert from 'color-convert';
 
 export function easeOutElastic(x: number): number {
     const c4 = (2 * Math.PI) / 3;
@@ -34,5 +35,6 @@ export function getColorFromUUID(uuid: string) {
         hash = uuid.charCodeAt(i) + ((hash << 5) - hash);
     }
     const color = Math.floor(Math.abs((Math.sin(hash) * 16777215) % 1) * 16777215);
-    return color;
+
+    return Number("0x" + convert.hsl.hex([color % 360, 100, 50]));
 }

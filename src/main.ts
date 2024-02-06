@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import TitleScene from './scene/title-scene';
-import GameScene from './scene/game-scene';
+import BoardScene from './scene/game-scene';
 import LobbyScene from './scene/lobby-scene';
 import { SimonSaysScene } from './scene/minigame/simon-says-scene';
 import AzNopolyGame from './game';
@@ -33,21 +33,19 @@ window.onload = async () => {
     });
 
     const aznopoly = new AzNopolyGame();
+    //await mock(aznopoly);
+    //console.log("mocked");
 
     game.scene.add('title', new TitleScene(aznopoly));
     game.scene.add('lobby', new LobbyScene(aznopoly));
-    game.scene.add('game', new GameScene(aznopoly));
+    game.scene.add('game', new BoardScene(aznopoly));
 
     //Minigames
     game.scene.add('minigame-simon-says', new SimonSaysScene(aznopoly))
     game.scene.add('minigame-roomba', new RoombaScene(aznopoly))
-    
 
-    await mock(aznopoly);
-    console.log("mocked");
-
-    game.scene.start('minigame-roomba');
-    //game.scene.start('title');
+    //game.scene.start('minigame-roomba');
+    game.scene.start('title');
     
     Object.assign(window, { game });
 };

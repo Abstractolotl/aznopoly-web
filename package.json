@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/color-convert": "^2.0.3",
+    "color-convert": "^2.0.1",
     "phaser": "^3.70.0",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2"

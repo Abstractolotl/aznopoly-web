@@ -4,7 +4,7 @@ import { SceneSwitcher } from "../scene-switcher";
 import { PacketType, PlayerPacket, SceneChangePacket } from "../types/client";
 
 
-export class BaseScene extends Phaser.Scene {
+export abstract class BaseScene extends Phaser.Scene {
 
     protected aznopoly: AzNopolyGame;
     private packetListener: [string, EventListener][] = [];
@@ -23,7 +23,7 @@ export class BaseScene extends Phaser.Scene {
         if (this.sync) {
             if (this.aznopoly.isHost) {
                 SceneSwitcher.waitForPlayers(this.aznopoly, this.scene.key, launchMethod).then(() => {
-                    this.onAllPlayerReady();
+                    this.hostOnAllPlayerReady();
                 });
             }
         } 
@@ -37,9 +37,7 @@ export class BaseScene extends Phaser.Scene {
         SceneSwitcher.updateScene(this.aznopoly, this.scene.key);
     }
 
-    protected onAllPlayerReady() {
-
-    }
+    protected abstract hostOnAllPlayerReady(): void;
 
     protected addPacketListener<T extends PlayerPacket>(type: string, callback: (packet: T) => void) {
         const listener: EventListener = (event: Event) => {
@@ -57,10 +55,13 @@ export class BaseScene extends Phaser.Scene {
     }
 
     private onChangeScene(packet: SceneChangePacket) {
-        if (!this.aznopoly.isPlayerHost(packet.sender)) return;
+        if (!this.aznopoly.isPlayerHost(packet.sender)) {
+            console.warn("Received scene change packet from non-host player");
+            return;
+        }
 
-        console.log("launching scene", packet.data.scene, "from", this.scene.key)
         if (packet.data.launchMethod == "launch") {
+            this.scene.sleep();
             this.scene.launch(packet.data.scene, { previousScene: this.scene.key});
         } else {
             this.scene.start(packet.data.scene, { previousScene: this.scene.key});

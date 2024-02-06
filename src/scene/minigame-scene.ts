@@ -33,9 +33,8 @@ export default abstract class MinigameScene extends BaseScene {
         super.init(data);
         this.addPacketListener(PacketType.MINIGAME_READY, this.onMiniGameReady.bind(this));
         this.addPacketListener(PacketType.MINIGAME_RESULT, this.onResultPacket.bind(this));
-        
-        console.log("Iniated", data)
-        this.previousScene = data.previousScene;
+
+        this.previousScene = data?.previousScene;
     }
 
     create() {
@@ -46,11 +45,8 @@ export default abstract class MinigameScene extends BaseScene {
         super.create();
     }
 
-    protected onAllPlayerReady(): void {
-        setTimeout(() => {
-            this.overlay.setVisible(false);
-            this.startMiniGame();
-        }, 1500);
+    protected hostOnAllPlayerReady(): void {
+        this.startMiniGame();
     }
 
     private startMiniGame() {
@@ -62,14 +58,17 @@ export default abstract class MinigameScene extends BaseScene {
 
         this.aznopoly.client.sendPacket(packet);
         setTimeout(() => {
-            this.onMinigameStart();
-        }, 50) // simulate network delay
+            this.onMiniGameReady(packet);
+        }, 10) // simulate network delay
     }
 
-    abstract onMinigameStart(): void;
+    abstract onMiniGameStart() : void;
 
     private onMiniGameReady(_: MinigameReadyPacket) {
-        this.overlay.setVisible(false);
+        setTimeout(() => {
+            this.overlay.setVisible(false);
+            this.onMiniGameStart();
+        }, 1000);
     }
 
     private onResultPacket(packet: MinigameResultPacket) {

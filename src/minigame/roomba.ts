@@ -2,33 +2,57 @@ import { HEIGHT, WIDTH } from "../main";
 
 const SIZE = 85;
 const ARROW_COLOR = 0x00ff00;
+export interface RoombaConfig {
+    id: string;
+    x: number;
+    y: number;
+    angle: number; 
+    color: number; 
+    paintColor: number;
+    speed: number
+}
+
+
 export class Roomba extends Phaser.GameObjects.Container {
     static SIZE = SIZE;
 
     private graphics: Phaser.GameObjects.Graphics;
     private arrow: Phaser.GameObjects.Graphics;
 
+    private lastPaintPosition: Phaser.Math.Vector2;
+
+    private color: number;
+    private paintColor: number;
     private speed: number;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, angle: number, color: number, paintColor: number, speed: number) {
+    public readonly id: string;
+
+    constructor(scene: Phaser.Scene, { id, x, y, angle, color, paintColor, speed} : RoombaConfig) {
         super(scene, x, y);
 
+        this.id = id;
+        this.color = color;
+        this.paintColor = paintColor;
         this.speed = speed;
 
         this.graphics = new Phaser.GameObjects.Graphics(scene);
         this.arrow = new Phaser.GameObjects.Graphics(scene);
+        this.lastPaintPosition = new Phaser.Math.Vector2(x, y);
 
-        this.graphics.fillStyle(color);
+        this.graphics.fillStyle(this.color);
         this.graphics.fillCircle(0, 0, SIZE / 2);
         this.graphics.fillCircle(SIZE/5 * 2, 0, SIZE / 4);
 
         scene.physics.world.enable(this);
         const body = this.body! as Phaser.Physics.Arcade.Body;
+        body.setCollideWorldBounds(true)
         body.setOffset(-SIZE / 2, -SIZE / 2);
         body.setCircle(SIZE/2);
 
         this.add(this.arrow);
         this.add(this.graphics);
+
+        this.updateDirection(new Phaser.Math.Vector2(Math.cos(angle), Math.sin(angle)));
 
         this.initDragEvents();
     }
@@ -46,17 +70,15 @@ export class Roomba extends Phaser.GameObjects.Container {
         });
 
         this.graphics.on('drag', (event: any) => {
-            const dragOffsetX = event.x - this.x;
-            const dragOffsetY = event.y - this.y;
-
-            this.updateDirection(new Phaser.Math.Vector2(dragOffsetX, dragOffsetY));
-            this.drawArrow(new Phaser.Math.Vector2(0, 0), new Phaser.Math.Vector2(dragOffsetX, dragOffsetY));
-            
+            const dragOffset = new Phaser.Math.Vector2(event.x - this.x, event.y - this.y);
+            this.drawArrow(Phaser.Math.Vector2.ZERO, dragOffset);
         });
 
-        this.graphics.on('dragend', () => {
-            this.arrow.visible = false;
+        this.graphics.on('dragend', (event: any) => {
+            const dragOffset = new Phaser.Math.Vector2(event.x - this.x, event.y - this.y);
+            this.scene.events.emit('roomba-dragged', { id: this.id, offset: dragOffset});
             this.drawArrow(new Phaser.Math.Vector2(0, 0), new Phaser.Math.Vector2(0, 0));
+            this.arrow.visible = false;
         });
     }
 
@@ -84,7 +106,7 @@ export class Roomba extends Phaser.GameObjects.Container {
         );
     }
 
-    private updateDirection(direction: Phaser.Math.Vector2) {
+    public updateDirection(direction: Phaser.Math.Vector2) {
         this.graphics.rotation = direction.angle();
 
         const normalized = direction.normalize();
@@ -92,6 +114,13 @@ export class Roomba extends Phaser.GameObjects.Container {
         body.setVelocity(normalized.x * this.speed, normalized.y * this.speed);
     }
 
-    
+
+    public paintPath(graphic: Phaser.GameObjects.Graphics) {
+        graphic.lineStyle(SIZE, this.paintColor);
+        graphic.lineBetween(this.lastPaintPosition.x, this.lastPaintPosition.y, this.x, this.y);
+        graphic.fillStyle(this.paintColor)
+        graphic.fillCircle(this.x, this.y, SIZE/2);
+        this.lastPaintPosition = new Phaser.Math.Vector2(this.x, this.y);
+    }
 
 }

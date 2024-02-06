@@ -4,14 +4,16 @@ import Room from "./room";
 
 export function mock(aznopoly: AzNopolyGame) {
     let game = aznopoly as any;
-    game._client = new AzNopolyClient();
-    game._room = new Room("mockkk", aznopoly, game._client);
+    game._client = {
+        id: "1111-2222-3333-4444",
+        sendPacket: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+    };
+    game._room = {
+        connectedPlayerIds: ["1111-2222-3333-4444"],
+        host: "1111-2222-3333-4444",
+    };
     game._name = "mockius maximus";
 
-    game._client.connect("mockkk");
-    return new Promise<void>((resolve) => {
-        setTimeout(() => {
-            resolve();
-        }, 1000);
-    })
 }
