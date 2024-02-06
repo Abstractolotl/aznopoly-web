@@ -1,123 +1,97 @@
 import { HEIGHT, WIDTH } from "../main";
 
-
-const ARROW_SIZE = 5;
-const SPEED = 25;
+const SIZE = 85;
+const ARROW_COLOR = 0x00ff00;
 export class Roomba extends Phaser.GameObjects.Container {
-    
-    static SIZE = 35;
+    static SIZE = SIZE;
 
     private graphics: Phaser.GameObjects.Graphics;
     private arrow: Phaser.GameObjects.Graphics;
-    
-    private direction: Phaser.Math.Vector2 = new Phaser.Math.Vector2(1, 0);
-    private _color: number;
-    private lastPaintPosition: Phaser.Math.Vector2;
-    private dragging: boolean = false;
-    
-    public get color() : number {
-        return this._color
-    }
-    
 
-    constructor(scene: Phaser.Scene, x: number, y: number, angle: number, color: "red" | "green" | "blue" | "yellow" ) {
+    private speed: number;
+
+    constructor(scene: Phaser.Scene, x: number, y: number, angle: number, color: number, paintColor: number, speed: number) {
         super(scene, x, y);
-        this._color = {
-            red: 0xFF0000,
-            green: 0x00FF00,
-            blue: 0x0000FF,
-            yellow: 0xFFFF00
-        }[color];
-        this.lastPaintPosition = new Phaser.Math.Vector2(x, y);
+
+        this.speed = speed;
 
         this.graphics = new Phaser.GameObjects.Graphics(scene);
-        this.direction = new Phaser.Math.Vector2(1, 0).setAngle(angle);
-        this.graphics.rotation = this.direction.angle();
-
-        this.graphics.fillStyle(this._color, 1);
-        
-        this.graphics.fillCircle(0, 0, Roomba.SIZE);
-        this.graphics.fillCircle(Roomba.SIZE - Roomba.SIZE/4, 0, Roomba.SIZE/2);
-
-        this.graphics.setInteractive({
-            hitArea: new Phaser.Geom.Circle(0, 0, Roomba.SIZE),
-            hitAreaCallback: Phaser.Geom.Circle.Contains,
-            draggable: true
-        }, () => true);
-        
         this.arrow = new Phaser.GameObjects.Graphics(scene);
+
+        this.graphics.fillStyle(color);
+        this.graphics.fillCircle(0, 0, SIZE / 2);
+        this.graphics.fillCircle(SIZE/5 * 2, 0, SIZE / 4);
+
+        scene.physics.world.enable(this);
+        const body = this.body! as Phaser.Physics.Arcade.Body;
+        body.setOffset(-SIZE / 2, -SIZE / 2);
+        body.setCircle(SIZE/2);
+
+        this.add(this.arrow);
+        this.add(this.graphics);
+
+        this.initDragEvents();
+    }
+
+    private initDragEvents() {
+        this.graphics.setInteractive({
+            hitArea: new Phaser.Geom.Circle(0, 0, SIZE / 2),
+            hitAreaCallback: Phaser.Geom.Circle.Contains,
+            useHandCursor: false,
+            draggable: true
+        }, Phaser.Geom.Circle.Contains);
+
         this.graphics.on('dragstart', () => {
-            this.setArrowEnabled(true);
-            this.dragging = true;
+            this.arrow.visible = true;
         });
 
         this.graphics.on('drag', (event: any) => {
-            const x = event.x - this.x;
-            const y = event.y - this.y;
+            const dragOffsetX = event.x - this.x;
+            const dragOffsetY = event.y - this.y;
 
-            this.updateArrow(x, y);
-            this.updateDirection(x, y);
+            this.updateDirection(new Phaser.Math.Vector2(dragOffsetX, dragOffsetY));
+            this.drawArrow(new Phaser.Math.Vector2(0, 0), new Phaser.Math.Vector2(dragOffsetX, dragOffsetY));
+            
         });
 
         this.graphics.on('dragend', () => {
-            this.setArrowEnabled(false);
-            this.dragging = false;
+            this.arrow.visible = false;
+            this.drawArrow(new Phaser.Math.Vector2(0, 0), new Phaser.Math.Vector2(0, 0));
         });
-        
-        this.add(this.arrow);
-        this.add(this.graphics);
     }
 
-    preUpdate(delta: number, time: number) {
-        const newX = this.x + this.direction.x * SPEED * time / 1000;
-        const newY = this.y + this.direction.y * SPEED * time / 1000;
+    private drawArrow(start: Phaser.Math.Vector2, end: Phaser.Math.Vector2) {
+        const arrow = this.arrow;
+        arrow.clear();
 
-        if ( !(newX < Roomba.SIZE || newX > WIDTH - Roomba.SIZE || newY < Roomba.SIZE || newY > HEIGHT - Roomba.SIZE) ) {
-            this.x = newX;
-            this.y = newY;
-        }
-    }
+        arrow.lineStyle(5, ARROW_COLOR);
+        arrow.fillStyle(ARROW_COLOR);
 
-    public paintPath(graphic: Phaser.GameObjects.Graphics) {
-        graphic.lineStyle(Roomba.SIZE * 2, this._color * 0.9 + 0xffffff * 0.1);
-        graphic.lineBetween(this.lastPaintPosition.x, this.lastPaintPosition.y, this.x, this.y);
-        graphic.fillStyle(this._color * 0.9 + 0xffffff * 0.1)
-        graphic.fillCircle(this.x, this.y, Roomba.SIZE);
-        this.lastPaintPosition = new Phaser.Math.Vector2(this.x, this.y);
-    }
+        this.arrow.lineBetween(start.x, start.y, end.x, end.y);
 
-    private updateDirection(x: number, y: number) {
-        this.direction = new Phaser.Math.Vector2(x, y).normalize();
-        this.graphics.rotation = this.direction.angle();
-    }
-
-    private updateArrow(x: number, y: number) {
-        this.arrow.clear();
-        this.arrow.lineStyle(ARROW_SIZE, 0x00ff00, 1);
-        this.arrow.fillStyle(0x00ff00);
-
-        this.arrow.lineBetween(0, 0, x, y);
-        
-        // Draw arrow head
-        const arrowAngle = Math.atan2(y, x);
+        const arrowAngle = Math.atan2(end.y - start.y, end.x - start.x);
         const arrowAngleNormal = arrowAngle + Math.PI/2;
-
         const arrowHeadLength = 10;
         const arrowHeadWidth = 10;
 
         this.arrow.fillTriangle(
-            x + Math.cos(arrowAngleNormal) * arrowHeadWidth,
-            y + Math.sin(arrowAngleNormal) * arrowHeadWidth,
-            x + Math.cos(arrowAngle) * arrowHeadLength,
-            y + Math.sin(arrowAngle) * arrowHeadLength,
-            x - Math.cos(arrowAngleNormal) * arrowHeadWidth,
-            y - Math.sin(arrowAngleNormal) * arrowHeadWidth,
+            end.x + Math.cos(arrowAngleNormal) * arrowHeadWidth,
+            end.y + Math.sin(arrowAngleNormal) * arrowHeadWidth,
+            end.x + Math.cos(arrowAngle) * arrowHeadLength,
+            end.y + Math.sin(arrowAngle) * arrowHeadLength,
+            end.x - Math.cos(arrowAngleNormal) * arrowHeadWidth,
+            end.y - Math.sin(arrowAngleNormal) * arrowHeadWidth,
         );
-
     }
 
-    private setArrowEnabled(enabled: boolean) {
-        this.arrow.visible = enabled;
+    private updateDirection(direction: Phaser.Math.Vector2) {
+        this.graphics.rotation = direction.angle();
+
+        const normalized = direction.normalize();
+        const body = this.body! as Phaser.Physics.Arcade.Body;
+        body.setVelocity(normalized.x * this.speed, normalized.y * this.speed);
     }
+
+    
 
 }
