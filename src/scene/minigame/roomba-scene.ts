@@ -35,6 +35,7 @@ export class RoombaScene extends MinigameScene {
     create() {
         super.create();
         this.physics.world.setBounds(0, 0, WIDTH, HEIGHT);
+        this.physics.world.fixedStep = true;
 
         this.paint = this.add.graphics();
         this.paintTexture = this.textures.addDynamicTexture("roomba-paint", WIDTH, HEIGHT)!;
