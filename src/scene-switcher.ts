@@ -4,15 +4,12 @@ import { PacketType, SceneChangePacket, SceneReadyPacket } from "./types/client"
 
 let switcher: any[] = []
 export const SceneSwitcher = {
-    waitForPlayers: (aznopoly: AzNopolyGame, sceneKey: string, launchMethod: string) => {
-        sendSceneChangePacket(aznopoly, sceneKey, launchMethod);
-        return new Promise<void>((resolve) => {
-            switcher.push(new SceneReadyListener(aznopoly, sceneKey, () => {
-                resolve();
-            }));
-        });
+    waitForPlayers: (aznopoly: AzNopolyGame, sceneKey: string, callback: () => void) => {
+        switcher.push(new SceneReadyListener(aznopoly, sceneKey, callback));
+        sendSceneChangePacket(aznopoly, sceneKey, false);
     },
-    updateScene: sendSceneReadyPacket
+    updateScene: sendSceneReadyPacket,
+    listen: listenForSceneSwitch,
 }
 
 /**
@@ -62,21 +59,41 @@ function sendSceneReadyPacket(aznopoly: AzNopolyGame, sceneName: string) {
         }
     }
 
+    console.log("Sending scene ready packet", packet);
     if (aznopoly.isHost) {
-        switcher.find(l => l.sceneName == sceneName)?.listener({detail: packet})        
+        const ss = switcher.find(l => l.sceneName == sceneName);
+        ss?.listener({detail: packet})        
     } else {
         aznopoly.client.sendPacket(packet);
     }
 }
 
-function sendSceneChangePacket(aznopoly: AzNopolyGame, sceneName: string, launchMethod: string) {
+function sendSceneChangePacket(aznopoly: AzNopolyGame, sceneName: string, returnable: boolean) {
     const packet: SceneChangePacket = {
         type: PacketType.SCENE_CHANGE,
         sender: aznopoly.client.id,
         data: {
             scene: sceneName,
-            launchMethod,
+            launchMethod: returnable ? "launch" : "start",
         }
     }
     aznopoly.client.sendPacket(packet);
+}
+
+function listenForSceneSwitch(scene: Phaser.Scene, aznopoly: AzNopolyGame) {
+    const listener = aznopoly.addPacketListener(PacketType.SCENE_CHANGE, ((event: CustomEvent<SceneChangePacket>) => {
+        const packet = event.detail
+        if (!aznopoly.isPlayerHost(packet.sender)) {
+            console.warn("Received scene change packet from non-host player");
+            return;
+        }
+    
+        if (packet.data.launchMethod == "launch") {
+            scene.scene.sleep();
+            scene.scene.launch(packet.data.scene, { returnScene: scene.scene.key});
+        } else {
+            scene.scene.start(packet.data.scene);
+        }
+    }) as EventListener);
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => aznopoly.removePacketListener(PacketType.SCENE_CHANGE, listener));
 }

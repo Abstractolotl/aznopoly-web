@@ -16,7 +16,7 @@ export interface RoombaConfig {
 export class Roomba extends Phaser.GameObjects.Container {
     static SIZE = SIZE;
 
-    private graphics: Phaser.GameObjects.Graphics;
+    private graphics: Phaser.GameObjects.Image;
     private arrow: Phaser.GameObjects.Graphics;
 
     private lastPaintPosition: Phaser.Math.Vector2;
@@ -25,7 +25,13 @@ export class Roomba extends Phaser.GameObjects.Container {
     private paintColor: number;
     private speed: number;
 
+    private stopped = false;
+
     public readonly id: string;
+
+    static preload(scene: Phaser.Scene) {
+        scene.load.image('roomba', 'assets/roomba.png');
+    }
 
     constructor(scene: Phaser.Scene, { id, x, y, angle, color, paintColor, speed} : RoombaConfig) {
         super(scene, x, y);
@@ -35,13 +41,11 @@ export class Roomba extends Phaser.GameObjects.Container {
         this.paintColor = paintColor;
         this.speed = speed;
 
-        this.graphics = new Phaser.GameObjects.Graphics(scene);
+        this.graphics = new Phaser.GameObjects.Image(scene, 0, 0, 'roomba');
+        this.graphics.setScale(SIZE / this.graphics.width);
+
         this.arrow = new Phaser.GameObjects.Graphics(scene);
         this.lastPaintPosition = new Phaser.Math.Vector2(x, y);
-
-        this.graphics.fillStyle(this.color);
-        this.graphics.fillCircle(0, 0, SIZE / 2);
-        this.graphics.fillCircle(SIZE/5 * 2, 0, SIZE / 4);
 
         scene.physics.world.enable(this);
         const body = this.body! as Phaser.Physics.Arcade.Body;
@@ -57,24 +61,37 @@ export class Roomba extends Phaser.GameObjects.Container {
         this.initDragEvents();
     }
 
+    public stop() {
+        const body = this.body! as Phaser.Physics.Arcade.Body;
+        body.setVelocity(0, 0);
+        this.arrow.clear();
+        this.arrow.setVisible(false);
+    }
+
     private initDragEvents() {
-        this.graphics.setInteractive({
+        this.setInteractive({
             hitArea: new Phaser.Geom.Circle(0, 0, SIZE / 2),
             hitAreaCallback: Phaser.Geom.Circle.Contains,
             useHandCursor: false,
             draggable: true
         }, Phaser.Geom.Circle.Contains);
 
-        this.graphics.on('dragstart', () => {
+        this.on('dragstart', () => {
+            if (this.stopped) return;
+
             this.arrow.visible = true;
         });
 
-        this.graphics.on('drag', (event: any) => {
+        this.on('drag', (event: any) => {
+            if (this.stopped) return;
+
             const dragOffset = new Phaser.Math.Vector2(event.x - this.x, event.y - this.y);
             this.drawArrow(Phaser.Math.Vector2.ZERO, dragOffset);
         });
 
-        this.graphics.on('dragend', (event: any) => {
+        this.on('dragend', (event: any) => {
+            if (this.stopped) return;
+
             const dragOffset = new Phaser.Math.Vector2(event.x - this.x, event.y - this.y);
             this.scene.events.emit('roomba-dragged', { id: this.id, offset: dragOffset});
             this.drawArrow(new Phaser.Math.Vector2(0, 0), new Phaser.Math.Vector2(0, 0));

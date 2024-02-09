@@ -1,13 +1,14 @@
 import { FONT_STYLE_HEADLINE } from "../style";
 
-import { RoomEvent } from "../room";
 import TilingBackground from "../ui/tiling-background";
 import { AzNopolyButton } from "../ui/button";
 import PlayerList from "../ui/player-list";
 import { HEIGHT, WIDTH } from "../main";
-import { BaseScene } from "./base-scene";
+import { BaseScene } from "./base/base-scene";
+import LobbySceneController from "./lobby-scene-controller";
 
-export default class LobbyScene extends BaseScene {
+export default class LobbyScene extends BaseScene<LobbySceneController> {
+
     private playerList!: PlayerList;
 
     preload() {
@@ -16,70 +17,27 @@ export default class LobbyScene extends BaseScene {
         this.load.image('lobby_bg', 'assets/lobby_background.png');
     }
 
+    init() {
+        this.controller = new LobbySceneController(this, this.aznopoly);
+    }
+
     create() {
         this.add.existing(new TilingBackground(this, 'lobby_bg', new Phaser.Math.Vector2(2, 1), 35, 1.75));
         this.add.text(0, 0, `Lobby ( ${this.aznopoly.room.id} )`, FONT_STYLE_HEADLINE);
         this.playerList = this.add.existing(new PlayerList(this, this.aznopoly.isHost, 100, 200, 450));
 
-        this.updatePlayerList();
         this.initButton();
-
-        this.addRoomEventListener();
     }
-
-
-    protected hostOnAllPlayerReady(): void {
-        throw new Error("Method not implemented.");
-    }
-
 
     private initButton() {
-        // this.add.existing(new AzNopolyButton(this, "Exit", WIDTH - 400, HEIGHT - 120, () => {
-        //     this.scene.stop('lobby');
-        // }));
         if (!this.aznopoly.isHost) return;
 
-        this.add.existing(new AzNopolyButton(this, "Start Game", WIDTH - 200, HEIGHT - 120, () => {
-            this.startGameScene();
-        }));
+        const button = new AzNopolyButton(this, "Start Game", WIDTH - 200, HEIGHT - 120, this.controller.onStartClick.bind(this.controller));
+        this.add.existing(button);
     }
 
-    private addRoomEventListener() {
-        const listener: [string, EventListener][] = [
-            [RoomEvent.JOIN, this.onPlayerJoin.bind(this) as EventListener],
-            [RoomEvent.LEAVE, this.onPlayerLeave.bind(this) as EventListener],
-            [RoomEvent.UPDATE, this.onPlayerUpdate.bind(this) as EventListener]
-        ]
-        listener.forEach(([event, listener]) => {
-            this.aznopoly.room.addEventListener(event, listener);
-        });
-        this.events.once('shutdown', () => {
-            listener.forEach(([event, listener]) => {
-                this.aznopoly.room.removeEventListener(event, listener);
-            });
-        });
+    public updatePlayerList(player: { uuid: string, name: string, host: boolean }[]) {
+        this.playerList.updatePlayerList(player);
     }
-
-    private startGameScene() {
-        this.scene.start('game', { aznopoly: this.aznopoly });
-    }
-
-    private updatePlayerList() {
-        const arr = this.aznopoly.room.connectedPlayerIds;
-        const connectedNames = arr.map(uuid => ({ uuid, name: this.aznopoly.room.getPlayerName(uuid), host: this.aznopoly.isPlayerHost(uuid) }))
-        this.playerList.updatePlayerList(connectedNames);
-    }
-
-    private onPlayerJoin(event: CustomEvent<string>) {
-        this.updatePlayerList();
-    }
-
-    private onPlayerLeave(event: CustomEvent<string>) {
-        this.updatePlayerList();
-    }
-
-    private onPlayerUpdate() {
-        this.updatePlayerList();
-    }
-
+    
 }

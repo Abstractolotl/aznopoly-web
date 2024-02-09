@@ -1,4 +1,4 @@
-import MinigameScene, { MinigameReadyPacket } from "../minigame-scene";
+import MinigameScene from "../base/minigame-scene";
 import { Roomba, RoombaConfig } from "../../minigame/roomba";
 import { HEIGHT, WIDTH } from "../../main";
 import RoombaSceneController from "./roomba-scene-controller";
@@ -8,9 +8,7 @@ import convert from 'color-convert';
 
 const GRAPHICS_SWAP_TIME = 1;
 const PAINT_REFRESH_TIME = 0.5;
-export class RoombaScene extends MinigameScene {
-
-    private controller: RoombaSceneController;
+export class RoombaScene extends MinigameScene<RoombaSceneController> {
 
     private roombas: Roomba[] = [];
 
@@ -23,13 +21,16 @@ export class RoombaScene extends MinigameScene {
     private colorProgressBar!: ColorProgressBar;
 
     constructor(aznopoly: AzNopolyGame) {
-        super(aznopoly, true);
-        
-        this.controller = new RoombaSceneController(this, aznopoly);
+        super(aznopoly);
+    }
+
+    init() {
+        this.controller = new RoombaSceneController(this, this.aznopoly);
     }
 
     preload() {
         super.preload();
+        Roomba.preload(this);
     }
 
     create() {
@@ -39,7 +40,6 @@ export class RoombaScene extends MinigameScene {
 
         this.paint = this.add.graphics();
         this.paintTexture = this.textures.addDynamicTexture("roomba-paint", WIDTH, HEIGHT)!;
-
         this.colorProgressBar = new ColorProgressBar(this, WIDTH / 2 - 200, 25, 400, 40);
         
         this.add.sprite(0, 0, "roomba-paint").setOrigin(0, 0).setDepth(-1);
@@ -47,15 +47,9 @@ export class RoombaScene extends MinigameScene {
     }
 
     update(_: number, delta: number) {
+        super.update(_, delta);
         this.paintRoombaUpdate(delta);
         this.graphicSwapUpdate(delta);
-    }
-    
-    onMiniGameStart() {
-        this.controller.onSceneReady();
-        if (this.aznopoly.isHost) {
-            this.controller.hostInit();
-        }
     }
 
     public initRoombas(configs: RoombaConfig[]) {
@@ -65,6 +59,12 @@ export class RoombaScene extends MinigameScene {
             roomba.paintPath(this.paint);
         });
         this.physics.add.collider(this.roombas, this.roombas);
+    }
+
+    public stopRoombas() {
+        this.roombas.forEach(roomba => {
+            roomba.stop();
+        });
     }
 
     public updateRoombaDirection(roombaId: String, direction: Phaser.Math.Vector2) {
@@ -99,6 +99,11 @@ export class RoombaScene extends MinigameScene {
     }
 
     private calculatePaintPercentage() {
+        const result = this.getAAAAA();
+        this.updateProgressBar(result);
+    }
+
+    public getAAAAA() {
         if (this.paintTexture.renderTarget) {
             const renderer = this.paintTexture.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
 
@@ -111,7 +116,7 @@ export class RoombaScene extends MinigameScene {
             renderer.setFramebuffer(prevFramebuffer);
 
             const result = this.readPixelArray(pixels);
-            this.updateProgressBar(result);
+            return result;
         } else {
             var copyCanvas = Phaser.Display.Canvas.CanvasPool.createWebGL(this, WIDTH, HEIGHT)
 
@@ -120,11 +125,11 @@ export class RoombaScene extends MinigameScene {
 
             const pixels = ctx.getImageData(0, 0, WIDTH, HEIGHT).data;
             const result = this.readPixelArray(pixels);
-            this.updateProgressBar(result);
-
             Phaser.Display.Canvas.CanvasPool.remove(copyCanvas);
+            return result;
         }
     }
+    
 
     private updateProgressBar(colors: {[key: string]: number}) {
         const colorMap = new Map<number, number>();

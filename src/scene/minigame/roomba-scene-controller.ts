@@ -2,14 +2,19 @@ import AzNopolyGame from "../../game";
 import { HEIGHT as GAME_HEIGHT, WIDTH as GAME_WIDTH } from "../../main";
 import { Roomba, RoombaConfig } from "../../minigame/roomba";
 import { getColorFromUUID } from "../../util";
-import BaseSceneController from "../base-scene-controller";
+import MinigameSceneController from "../base/minigame-scene-controller";
 import { RoombaScene } from "./roomba-scene";
 import convert from 'color-convert';
 
 
-export default class RoombaSceneController extends BaseSceneController {
+const MAX_GAME_TIME = 3000;
+export default class RoombaSceneController extends MinigameSceneController {
 
-    private scene: RoombaScene;
+    declare protected scene: RoombaScene;
+
+    private locked = false;
+
+    private colorUuuidMap = new Map<number, string>();
 
     constructor(scene: RoombaScene, aznopoly: AzNopolyGame) {
         super(scene, aznopoly);
@@ -17,28 +22,41 @@ export default class RoombaSceneController extends BaseSceneController {
         this.scene = scene;
         this.aznopoly = aznopoly;
 
-        this.registerSyncedMethod(this.initRoombas);
-        this.registerSyncedMethod(this.updateRoombaDirection);
+        this.registerSyncedMethod(this.initRoombas, true);
+        this.registerSyncedMethod(this.lockAllGameplay, true);
+
+        this.registerSyncedMethod(this.updateRoombaDirection, false);
     }
 
-    public hostInit() {
-        const roombaConfigs = [];
-
-        for (let j = 0; j < this.aznopoly.players.length; j++) {
-            for (let i = 0; i < 5; i++) {
-                roombaConfigs.push(this.generateRandomRoombaConfig(this.aznopoly.players[j]));
-            }
-        }
-        
-        this.syncProxy.initRoombas(roombaConfigs);
-    }
-
-    public onSceneReady() {
-        super.onSceneReady();
-        
+    onMiniGameStart(): void {
         this.scene.events.on("roomba-dragged", ({id, offset} : {id: string, offset: Phaser.Math.Vector2}) => {
+            if (this.locked) return;
+
             this.syncProxy.updateRoombaDirection(id, offset);
         });
+
+        if (!this.aznopoly.isHost) {
+            return;
+        }
+        const roombaConfigs = [];
+        for (let j = 0; j < this.aznopoly.connectedUuids.length; j++) {
+            const uuid = this.aznopoly.connectedUuids[j] ;
+            for (let i = 0; i < 5; i++) {
+                roombaConfigs.push(this.generateRandomRoombaConfig(uuid));
+            }
+            this.colorUuuidMap.set(roombaConfigs[roombaConfigs.length-1].color, uuid);
+        }
+        this.syncProxy.initRoombas(roombaConfigs);
+
+        setTimeout(() => {
+            this.syncProxy.lockAllGameplay();
+
+            const array = this.scene.getAAAAA();
+            Object.keys(array).map((key) => {
+                console.log(this.colorUuuidMap.get(array[key]));
+            });
+            this.syncProxy.endGame([], false);
+        }, MAX_GAME_TIME)
     }
 
     private updateRoombaDirection(id: string, direction: Phaser.Math.Vector2) {
@@ -47,6 +65,11 @@ export default class RoombaSceneController extends BaseSceneController {
 
     private initRoombas(configs: RoombaConfig[]) {
         this.scene.initRoombas(configs);
+    }
+
+    private lockAllGameplay() {
+        this.locked = true;
+        this.scene.stopRoombas();
     }
 
     private generateRandomRoombaConfig(playerid: string) {
@@ -64,7 +87,7 @@ export default class RoombaSceneController extends BaseSceneController {
             angle: Math.random() * Math.PI * 2,
             color: color,
             paintColor: paintColorHex, 
-            speed: 50
+            speed: 150
         }
     }
 
