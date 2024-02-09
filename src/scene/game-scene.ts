@@ -5,8 +5,8 @@ import { SceneSwitcher } from "../scene-switcher";
 import { FONT_STYLE_BODY, FONT_STYLE_HEADLINE } from "../style";
 import { GameTurnRollPacket, GameTurnStartPacket, PacketType } from "../types/client";
 import { AzNopolyButton } from "../ui/button";
-import PlayerList from "../ui/player-list";
 import { BaseScene } from "./base-scene";
+import IngamePlayerList from "../ui/ingame-player-list.ts";
 
 
 const SCENE_NAME = "GAME";
@@ -20,6 +20,7 @@ export default class GameScene extends BaseScene {
 
     preload() {
         GameBoard.preload(this);
+        this.load.image('lobby_bg', 'assets/lobby_background.png');
     }
 
     onAllPlayerReady() {
@@ -31,12 +32,12 @@ export default class GameScene extends BaseScene {
     }
 
     create() {
-        const boardSize = HEIGHT * 0.8;
-        this.board = this.add.existing(new GameBoard(this.aznopoly, this, (WIDTH - boardSize) * 0.5 - 200, (HEIGHT - boardSize) * 0.5, boardSize));
+        const boardSize = HEIGHT * 0.75;
+        this.add.rectangle(WIDTH * 0.5, HEIGHT * 0.5, WIDTH, HEIGHT, 0xFFFFFFF, 1);
+        this.board = this.add.existing(new GameBoard(this.aznopoly, this, (WIDTH - boardSize) * 0.4 - 200, (HEIGHT - boardSize) * 0.5, boardSize));
 
-        const playerList = this.add.existing(new PlayerList(this, false, WIDTH - 300, 0, 250));
+        const playerList = this.add.existing(new IngamePlayerList(this, false, WIDTH - 500, 100, 450));
         playerList.updatePlayerList(this.aznopoly.room.connectedPlayerIds.map(e => ({name: this.aznopoly.room.getPlayerName(e), host: false})))
-        playerList.updateTitle("");
 
         this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", WIDTH - 150, HEIGHT - 100, this.onRollClick.bind(this)));
         this.rollButton.disable();

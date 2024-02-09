@@ -1,10 +1,12 @@
 import { Scene } from "phaser";
 import GameObject = Phaser.GameObjects.Shape;
 import { PacketType, PlayerPacket } from "../types/client";
-import { TileDirection, TileType } from "./tile-type.ts";
 import AzNopolyGame from "../game";
 import { getColorFromUUID } from "../util";
 import BoardTile from "./board-tile.ts";
+import BoardGenerator from "./board-generator.ts";
+import {TileDirection, TileType} from "../types/board.ts";
+import TilingBackground from "../ui/tiling-background.ts";
 
 interface BoardPlayer {
     gameObject: GameObject,
@@ -28,11 +30,11 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         BoardTile.preload(scene);
     }
 
-    private TILE_SIZE: number;
     private aznopoly: AzNopolyGame;
 
     private players: Map<string, BoardPlayer>;
     private size: number;
+    private tileMap: BoardTile[];
 
     constructor(aznopoly: AzNopolyGame, scene: Scene, x: number, y: number, size: number) {
         super(scene, x, y);
@@ -40,53 +42,12 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         this.size = size;
         this.aznopoly = aznopoly;
         this.players = new Map();
-        this.TILE_SIZE = size / (BOARD_SIDE_LENGTH + 2);
 
-        this.add(new BoardTile(scene, 0, 0, this.TILE_SIZE * 2, this.TILE_SIZE * 2, TileType.JAIL, TileDirection.CORNER));
-        this.add(new BoardTile(scene, this.TILE_SIZE * BOARD_SIDE_LENGTH, 0, this.TILE_SIZE * 2, this.TILE_SIZE * 2, TileType.FREE, TileDirection.CORNER));
-        this.add(new BoardTile(scene, 0, this.TILE_SIZE * BOARD_SIDE_LENGTH, this.TILE_SIZE * 2, this.TILE_SIZE * 2, TileType.START, TileDirection.CORNER));
-        this.add(new BoardTile(scene, this.TILE_SIZE * BOARD_SIDE_LENGTH, this.TILE_SIZE * BOARD_SIDE_LENGTH, this.TILE_SIZE * 2, this.TILE_SIZE * 2, TileType.TO_JAIL, TileDirection.CORNER));
-
-        let tileSet = this.generateTileSet();
-        for(let i = 0; i < (BOARD_SIDE_LENGTH - 2); i++) {
-            this.add(new BoardTile(scene, this.TILE_SIZE * (i + 2), 0, this.TILE_SIZE, this.TILE_SIZE * 2, tileSet.pop(), TileDirection.UP));
-            this.add(new BoardTile(scene, 0, this.TILE_SIZE * (i + 2), this.TILE_SIZE * 2, this.TILE_SIZE, tileSet.pop(), TileDirection.LEFT));
-            this.add(new BoardTile(scene, this.TILE_SIZE * BOARD_SIDE_LENGTH, this.TILE_SIZE * (i + 2), this.TILE_SIZE * 2, this.TILE_SIZE, tileSet.pop(), TileDirection.RIGHT));
-            this.add(new BoardTile(scene, this.TILE_SIZE * (i + 2), this.TILE_SIZE * BOARD_SIDE_LENGTH, this.TILE_SIZE, this.TILE_SIZE * 2, tileSet.pop(), TileDirection.DOWN));
-        }
-
+        let generator = new BoardGenerator(aznopoly.room.id, size, BOARD_SIDE_LENGTH);
+        generator.generate(this, scene);
+        this.tileMap = generator.getTileMap();
 
         this.aznopoly.client.addEventListener(PacketType.BOARD, this.onBoardPacket.bind(this) as EventListener);
-    }
-
-    private generateTileSet() {
-        let baseSet = [
-            TileType.BLUE, TileType.BLUE, TileType.BLUE,
-            TileType.GREEN, TileType.GREEN, TileType.GREEN,
-            TileType.RED, TileType.RED, TileType.RED,
-            TileType.YELLOW, TileType.YELLOW, TileType.YELLOW,
-            TileType.PURPLE, TileType.PURPLE,
-            TileType.CHANCE, TileType.CHANCE, TileType.CHANCE,
-            TileType.CHANCE, TileType.CHANCE, TileType.CHANCE,
-        ];
-
-        // Generate a seed from the room code
-        let seed = 0;
-        for(let i = 0; i < this.aznopoly.room.id.length; i++) {
-            seed += this.aznopoly.room.id.charCodeAt(i);
-        }
-
-        // Shuffle the set using the seed so that all players have the same board
-        for(let i = 0; i < baseSet.length; i++) {
-            seed = (seed * 9301 + 49297) % 233280;
-            let j = Math.floor(seed / 233280 * baseSet.length);
-            let temp = baseSet[i];
-            baseSet[i] = baseSet[j];
-            baseSet[j] = temp;
-        }
-
-
-        return baseSet;
     }
 
     private onBoardPacket(event: CustomEvent<BoardPacket>) {
@@ -119,19 +80,22 @@ export default class GameBoard extends Phaser.GameObjects.Container {
             throw new Error(`Player with UUID ${uuid} already exists!`);
         }
 
-        const coords = GameBoard.getCoordForPos(startPos);
-        const color = getColorFromUUID(this.aznopoly.room.getPlayerName(uuid));
+        const coords = this.tileMap[startPos % this.tileMap.length].getPlayerCenter();
+        console.log(coords);
+
+        const color = getColorFromUUID(uuid);
         const player = {
-            gameObject: new Phaser.GameObjects.Rectangle(this.scene, coords.x * this.TILE_SIZE, coords.y * this.TILE_SIZE, PLAYER_SIZE, PLAYER_SIZE, color),
+            gameObject: new Phaser.GameObjects.Rectangle(this.scene, coords.x, coords.y, PLAYER_SIZE, PLAYER_SIZE, color),
             position: startPos,
         };
         this.add(player.gameObject);
         this.players.set(uuid, player)
         this.movePlayer(uuid, 0);
+
         return player;
     }
 
-    movePlayer(uuid: string, distance: number) {
+    movePlayer(uuid: string, distance: number) : BoardTile {
         if (this.aznopoly.isHost) {
             this.aznopoly.client.sendPacket({
                 type: PacketType.BOARD,
@@ -152,19 +116,21 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         }
 
         player.position += distance;
-        const coords = GameBoard.getCoordForPos(player.position);
+        const coords = this.tileMap[player.position % this.tileMap.length].getPlayerCenter();
 
-        player.gameObject.setPosition(coords.x * this.TILE_SIZE, coords.y * this.TILE_SIZE)
+        player.gameObject.setPosition(coords.x, coords.y)
         this.checkPlayerColisions();
+
+        return this.tileMap[player.position % this.tileMap.length];
     }
 
     private checkPlayerColisions() {
         const positions: { [key: number]: string[] } = {};
         this.players.forEach((player, uuid) => {
-            if (positions[player.position]) {
-                positions[player.position].push(uuid);
+            if (positions[player.position % this.tileMap.length]) {
+                positions[player.position % this.tileMap.length].push(uuid);
             } else {
-                positions[player.position] = [uuid];
+                positions[player.position % this.tileMap.length] = [uuid];
             }
         });
 
@@ -182,37 +148,8 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         })
     }
 
-    static getCoordForPos(position: number) {
-        position = transformNumber(position);
-        position = position % (BOARD_SIDE_LENGTH * 4);
-        const sideLength = BOARD_SIDE_LENGTH;
-        const sideIndex = Math.floor(position / sideLength);
-        let sidePosition = position % sideLength;
-        let offset_x = 0;
-        let offset_y = 0;
-
-        const inawrds_offset = 0.5;
-
-        switch (sideIndex) {
-            case 0: // Bottom side
-                offset_x = sideLength - sidePosition - (sidePosition == 0 ? inawrds_offset : 0);
-                offset_y = sideLength - inawrds_offset;
-                break;
-            case 1: // Left side
-                offset_x = inawrds_offset;
-                offset_y = sideLength - sidePosition - (sidePosition == 0 ? inawrds_offset : 0);
-                break;
-            case 2: // Top side
-                offset_x = sidePosition + (sidePosition == 0 ? inawrds_offset : 0);
-                offset_y = inawrds_offset;
-                break;
-            case 3: // Right side
-                offset_x = sideLength - inawrds_offset;
-                offset_y = sidePosition + (sidePosition == 0 ? inawrds_offset : 0);
-                break;
-        }
-
-        return { x: offset_x, y: offset_y };
+    private getAllOfType(type: TileType) {
+        return this.tileMap.filter(tile => tile.getTileType() === type);
     }
 
 }

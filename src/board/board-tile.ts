@@ -1,6 +1,6 @@
 import Phaser, {Scene} from "phaser";
-import { TileDirection, TileType } from "./tile-type.ts";
-import {FONT_STYLE_BODY, FONT_STYLE_HEADLINE} from "../style.ts";
+import { TileDirection, TileType } from "../types/board.ts";
+import { FONT_STYLE_BODY } from "../style.ts";
 
 export default class BoardTile extends Phaser.GameObjects.Container {
 
@@ -12,33 +12,50 @@ export default class BoardTile extends Phaser.GameObjects.Container {
         scene.load.image('tile-right', 'assets/board/tile-right.png')
     }
 
+    private tileType: TileType;
+    private tileDirection: TileDirection;
+
+    private readonly tileWidth: number;
+    private readonly tileHeight: number;
+
+    private image: Phaser.GameObjects.Image;
+
+    private sold: boolean = false;
+    private owner: string = "";
+
     constructor(scene: Scene, x: number, y: number, width: number, height: number,
                 type: TileType = TileType.START, direction: TileDirection = TileDirection.CORNER) {
         super(scene, x, y);
 
-        let image = new Phaser.GameObjects.Image(scene, 0, 0, this.getTexture(direction))
-        image.setOrigin(0, 0);
-        image.setScale(width / image.width, height / image.height);
+        this.tileType = type;
+        this.tileDirection = direction;
+
+        this.tileWidth = width;
+        this.tileHeight = height;
+
+        this.image = new Phaser.GameObjects.Image(scene, 0, 0, this.getTexture(direction))
+        this.image.setOrigin(0, 0);
+        this.image.setScale(width / this.image.width, height / this.image.height);
 
         switch (type) {
             case TileType.BLUE:
-                image.setTint(0x0000ff);
+                this.image.setTint(0x0000ff);
                 break;
             case TileType.GREEN:
-                image.setTint(0x00ff00);
+                this.image.setTint(0x00ff00);
                 break;
             case TileType.RED:
-                image.setTint(0xff0000);
+                this.image.setTint(0xff0000);
                 break;
             case TileType.YELLOW:
-                image.setTint(0xffff00);
+                this.image.setTint(0xffff00);
                 break;
             case TileType.PURPLE:
-                image.setTint(0xff00ff);
+                this.image.setTint(0xff00ff);
                 break;
         }
 
-        this.add(image);
+        this.add(this.image);
 
         if (direction == TileDirection.CORNER) {
             let text = new Phaser.GameObjects.Text(scene, 0, 0, TileType[type], FONT_STYLE_BODY);
@@ -66,6 +83,26 @@ export default class BoardTile extends Phaser.GameObjects.Container {
             default:
                 return "tile-empty"
         }
+    }
+
+    getTileType() : TileType {
+        return this.tileType;
+    }
+
+    getTileDirection() : TileDirection {
+        return this.tileDirection;
+    }
+
+    getPlayerCenter() {
+        return { x: this.x + this.tileWidth / 2, y: this.y + this.tileHeight / 2 }
+    }
+
+    buy(player: string) {
+        if (this.sold) {
+            throw new Error("Tile already sold")
+        }
+        this.sold = true;
+        this.owner = player;
     }
 
 }
