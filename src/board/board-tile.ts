@@ -20,9 +20,6 @@ export default class BoardTile extends Phaser.GameObjects.Container {
 
     private image: Phaser.GameObjects.Image;
 
-    private sold: boolean = false;
-    private owner: string = "";
-
     constructor(scene: Scene, x: number, y: number, width: number, height: number,
                 type: TileType = TileType.START, direction: TileDirection = TileDirection.CORNER) {
         super(scene, x, y);
@@ -95,14 +92,6 @@ export default class BoardTile extends Phaser.GameObjects.Container {
 
     getPlayerCenter() {
         return { x: this.x + this.tileWidth / 2, y: this.y + this.tileHeight / 2 }
-    }
-
-    buy(player: string) {
-        if (this.sold) {
-            throw new Error("Tile already sold")
-        }
-        this.sold = true;
-        this.owner = player;
     }
 
 }
