@@ -81,7 +81,6 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         }
 
         const coords = this.tileMap[startPos % this.tileMap.length].getPlayerCenter();
-        console.log(coords);
 
         const color = getColorFromUUID(uuid);
         const player = {
@@ -119,12 +118,16 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         const coords = this.tileMap[player.position % this.tileMap.length].getPlayerCenter();
 
         player.gameObject.setPosition(coords.x, coords.y)
-        this.checkPlayerColisions();
+        this.checkPlayerCollisions();
 
         return this.tileMap[player.position % this.tileMap.length];
     }
 
-    private checkPlayerColisions() {
+    getAllTilesOfType(type: TileType) {
+        return this.tileMap.filter(tile => tile.getTileType() === type);
+    }
+
+    private checkPlayerCollisions() {
         const positions: { [key: number]: string[] } = {};
         this.players.forEach((player, uuid) => {
             if (positions[player.position % this.tileMap.length]) {
@@ -146,10 +149,6 @@ export default class GameBoard extends Phaser.GameObjects.Container {
                 })
             }
         })
-    }
-
-    private getAllOfType(type: TileType) {
-        return this.tileMap.filter(tile => tile.getTileType() === type);
     }
 
 }
