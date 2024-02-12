@@ -1,15 +1,12 @@
 import GameBoard from "../board/board";
-import AzNopolyGame from "../game";
 import { HEIGHT, WIDTH } from "../main";
-import { SceneSwitcher } from "../scene-switcher";
-import { FONT_STYLE_BODY, FONT_STYLE_HEADLINE } from "../style";
+import { FONT_STYLE_BODY } from "../style";
 import { GameTurnRollPacket, GameTurnStartPacket, PacketType } from "../types/client";
 import { AzNopolyButton } from "../ui/button";
 import PlayerList from "../ui/player-list";
 import { BaseScene } from "./base-scene";
 
 
-const SCENE_NAME = "GAME";
 export default class GameScene extends BaseScene {
 
     private board!: GameBoard;
@@ -45,6 +42,7 @@ export default class GameScene extends BaseScene {
         this.currentTurnValue = this.add.text(WIDTH - 300, 350, "", FONT_STYLE_BODY);
 
         this.networkInit();
+        super.create();
     }
 
     private networkInit() {
@@ -81,7 +79,6 @@ export default class GameScene extends BaseScene {
     }
 
     private onTurnRoll(event: CustomEvent<GameTurnRollPacket>) {
-        console.log("onTurnRoll", event.detail);
         if (!this.aznopoly.isHost) return;
 
         const packet = event.detail;

@@ -1,14 +1,15 @@
-import AzNopolyClient from "./client";
 import AzNopolyGame from "./game";
 import { PacketType, SceneChangePacket, SceneReadyPacket } from "./types/client";
 
+
+let switcher: any[] = []
 export const SceneSwitcher = {
-    waitForPlayers: (aznopoly: AzNopolyGame, sceneKey: string) => {
-        sendSceneChangePacket(aznopoly, sceneKey);
+    waitForPlayers: (aznopoly: AzNopolyGame, sceneKey: string, launchMethod: string) => {
+        sendSceneChangePacket(aznopoly, sceneKey, launchMethod);
         return new Promise<void>((resolve) => {
-            new SceneReadyListener(aznopoly, sceneKey, () => {
+            switcher.push(new SceneReadyListener(aznopoly, sceneKey, () => {
                 resolve();
-            });
+            }));
         });
     },
     updateScene: sendSceneReadyPacket
@@ -23,6 +24,8 @@ class SceneReadyListener {
 
     private sceneName: string;
     private callback: () => void;
+    private listener?: EventListener;
+    private readyList: Set<string> = new Set();
 
     constructor(aznopoly: AzNopolyGame, sceneName: string, callback: () => void) {
         this.aznopoly = aznopoly;
@@ -32,21 +35,20 @@ class SceneReadyListener {
         this.startListening();
     }
 
-    private startListening() {
-        const readyList = new Set([this.aznopoly.client.id]);
-
-        const sceneReadyListener = ((packet: CustomEvent<SceneReadyPacket>) => {
-            if (packet.detail.data.scene == this.sceneName) {
-                readyList.add(packet.detail.sender);
-                if (readyList.size == this.aznopoly.room.connectedPlayerIds.length) {
-                    this.callback();
-                    this.aznopoly.client.removeEventListener(PacketType.SCEEN_READY, sceneReadyListener);
-                }
+    private sceneReadyListener(packet: CustomEvent<SceneReadyPacket>) {
+        if (packet.detail.data.scene == this.sceneName) {
+            this.readyList.add(packet.detail.sender);
+            if (this.readyList.size == this.aznopoly.room.connectedPlayerIds.length) {
+                this.callback();
+                this.aznopoly.client.removeEventListener(PacketType.SCEEN_READY, this.listener!);
+                switcher = switcher.filter((listener) => listener != this);
             }
-        }) as EventListener;
+        }
+    }
 
-        // Register the event listener
-        this.aznopoly.client.addEventListener(PacketType.SCEEN_READY, sceneReadyListener);
+    private startListening() {
+        this.listener = this.sceneReadyListener.bind(this) as EventListener;
+        this.aznopoly.client.addEventListener(PacketType.SCEEN_READY, this.listener);
     }
 
 }
@@ -59,15 +61,21 @@ function sendSceneReadyPacket(aznopoly: AzNopolyGame, sceneName: string) {
             scene: sceneName,
         }
     }
-    aznopoly.client.sendPacket(packet);
+
+    if (aznopoly.isHost) {
+        switcher.find(l => l.sceneName == sceneName)?.listener({detail: packet})        
+    } else {
+        aznopoly.client.sendPacket(packet);
+    }
 }
 
-function sendSceneChangePacket(aznopoly: AzNopolyGame, sceneName: string) {
+function sendSceneChangePacket(aznopoly: AzNopolyGame, sceneName: string, launchMethod: string) {
     const packet: SceneChangePacket = {
         type: PacketType.SCENE_CHANGE,
         sender: aznopoly.client.id,
         data: {
             scene: sceneName,
+            launchMethod,
         }
     }
     aznopoly.client.sendPacket(packet);

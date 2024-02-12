@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import TitleScene from './scene/title-scene';
 import GameScene from './scene/game-scene';
 import LobbyScene from './scene/lobby-scene';
+import { SimonSaysScene } from './scene/minigame/simon-says-scene';
 import AzNopolyGame from './game';
 
 export const WIDTH = 1280;
@@ -28,6 +29,9 @@ window.onload = () => {
     game.scene.add('lobby', new LobbyScene(aznopoly));
     game.scene.add('game', new GameScene(aznopoly));
 
+    //Minigames
+    game.scene.add('minigame-simon-says', new SimonSaysScene(aznopoly))
+    
     game.scene.start('title');
     Object.assign(window, { game });
 };

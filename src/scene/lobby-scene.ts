@@ -35,7 +35,6 @@ export default class LobbyScene extends BaseScene {
         // }));
         if (!this.aznopoly.isHost) return;
 
-        console.log("I AM HOST!")
         this.add.existing(new AzNopolyButton(this, "Start Game", WIDTH - 200, HEIGHT - 120, () => {
             this.startGameScene();
         }));

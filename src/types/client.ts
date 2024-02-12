@@ -23,6 +23,12 @@ export enum PacketType {
     GAME_TURN_START = "CLIENT_GAME_TURN_START",
     GAME_TURN_ROLL = "CLIENT_GAME_TURN_ROLL",
 
+    MINIGAME_RESULT = "CLIENT_MINIGAME_RESULT",
+    MINIGAME_READY = "CLIENT_MINIGAME_READY",
+
+    MINIGAME_SIMON_SAYS = "CLIENT_MINIGAME_SIMON_SAYS",
+    MINIGAME_SIMON_SAYS_ACTION = "CLIENT_MINIGAME_SIMON_SAYS_ACTION",
+    
     // Unused
     EXAMPLE = "CLIENT_EXAMPLE",
 }
@@ -81,6 +87,7 @@ export interface SceneChangePacket extends PlayerPacket {
     type: PacketType.SCENE_CHANGE;
     data: {
         scene: string,
+        launchMethod: string,
     };
 }
 

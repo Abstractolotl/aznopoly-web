@@ -40,7 +40,6 @@ export default class TitleScene extends BaseScene {
         this.domNameInput = this.domContainer.getChildByID('title-name-input') as HTMLInputElement;        
         this.domNameInput.value = 'test';
 
-        console.log(this.add)
         this.bgm = this.game.sound.add('title-bgm', { loop: true });
         this.bgm.play();
         this.bgm.volume = 0.25;
@@ -49,10 +48,6 @@ export default class TitleScene extends BaseScene {
         this.initButtons();
 
         //setTimeout(() => { this.joinRoom("debugg", "Michael" + ("" + Math.random()).substring(2,4)) }, 1000)
-    }
-
-    destroy() {
-        console.log('destroying title scene');
     }
 
     private initButtons() {
