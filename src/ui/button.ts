@@ -4,9 +4,9 @@ import { easeOutElastic } from "../util";
 
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
-export const FONT_STYLE_BUTTON: Phaser.Types.GameObjects.Text.TextStyle = { fontFamily: 'Comfortaa', fontSize: 32, color: '#73c8e4', align: 'center' }
-export const FONT_STYLE_BUTTON_DOWN: Phaser.Types.GameObjects.Text.TextStyle = { fontFamily: 'Comfortaa', fontSize: 32, color: '#ffffff', align: 'center' }
-const MAX_HOVER_TIMER = 4;
+export const FONT_STYLE_BUTTON: Phaser.Types.GameObjects.Text.TextStyle = { font: '600 32px Comfortaa', color: '#ffffff', align: 'center' }
+export const FONT_STYLE_BUTTON_DOWN: Phaser.Types.GameObjects.Text.TextStyle = { font: '600 32px Comfortaa', color: '#ffffff', align: 'center' }
+const MAX_HOVER_TIMER = 1;
 export class AzNopolyButton extends Phaser.GameObjects.Container {
 
     public static preload(scene: Scene) {
@@ -29,9 +29,12 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
     private hoverTimer: number = 0;
     private enabled: boolean = true;
 
+    private widthOffset: number;
+    private heightOffset: number;
+
     private onClick: () => void;
 
-    constructor(scene: Scene, title: string, x: number, y: number, onClick: () => void) {
+    constructor(scene: Scene, title: string, x: number, y: number, widthOffset: number, heightOffset: number, onClick: () => void) {
         super(scene);
         this.onClick = onClick;
 
@@ -54,7 +57,9 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         this.audioOut.volume = 0.5;
         this.audioDown = scene.sound.add('button-down');
 
-        this.updateButtonShape(this.outlineWidth, this.outlinePadding);
+        this.widthOffset = widthOffset;
+
+        this.updateButtonShape(this.outlineWidth, this.outlinePadding, widthOffset);
     }
 
     preUpdate(time: number, delta: number) {
@@ -67,14 +72,14 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
             this.hoverTimer = Math.min(this.hoverTimer, MAX_HOVER_TIMER);
 
             const t = Math.min(Math.max(this.hoverTimer / MAX_HOVER_TIMER, 0), 1);
-            const padding = Phaser.Math.Linear(this.outlinePadding, this.outlinePadding + 15, t)
-            this.updateButtonShape(this.outlineWidth, padding);
+            const padding = Phaser.Math.Linear(this.outlinePadding, this.outlinePadding + 5, t)
+            this.updateButtonShape(this.outlineWidth, padding, this.widthOffset);
         } else if (this.hoverTimer > 0) {
             this.hoverTimer -= delta / 1000 * 5;
             this.hoverTimer = Math.max(this.hoverTimer, 0);
             const t = Math.min(Math.max(this.hoverTimer / MAX_HOVER_TIMER, 0), 1);
             const padding = Phaser.Math.Linear(this.outlinePadding + 15, this.outlinePadding, easeOutElastic(1-t))
-            this.updateButtonShape(this.outlineWidth, padding);
+            this.updateButtonShape(this.outlineWidth, padding, this.widthOffset);
         }
     }
 
@@ -135,12 +140,12 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         //this.audioOut.seek = 0.25; // cheat
     }
 
-    private updateButtonShape(outlineWidth: number, outlinePadding: number) {
+    private updateButtonShape(outlineWidth: number, outlinePadding: number, widthOffset: number) {
         const outlineColor = COLOR_PRIMARY;
         const fillColor = COLOR_CONTRAST;
 
         const outlineRadius = (this.buttonText.height + 2 * outlinePadding) * 0.5;
-        const paddingH = outlinePadding + outlineRadius * 0.5;
+        const paddingH = (outlinePadding + outlineRadius * 0.5) + (widthOffset ?? 0);
         const paddingV = outlinePadding;
 
         const outlineX = this.buttonText.x - this.buttonText.originX * this.buttonText.width - paddingH;
@@ -152,12 +157,12 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
             this.graphic.fillStyle(outlineColor, 1);
         } else {
             this.buttonText.setStyle(FONT_STYLE_BUTTON);
-            this.graphic.fillStyle(fillColor, 0);
+            this.graphic.fillStyle(fillColor, 1);
         }
-        this.graphic.fillRoundedRect(outlineX, outlineY, this.buttonText.width + paddingH * 2, this.buttonText.height + paddingV * 2, outlineRadius);
+        this.graphic.fillRect(outlineX, outlineY, this.buttonText.width + paddingH * 2, this.buttonText.height + paddingV * 2);
         
-        this.graphic.lineStyle(outlineWidth, outlineColor, 1);
-        this.graphic.strokeRoundedRect(outlineX, outlineY, this.buttonText.width + paddingH * 2, this.buttonText.height + paddingV * 2, outlineRadius);
+        this.graphic.lineStyle(outlineWidth, fillColor, 1);
+        this.graphic.strokeRect(outlineX, outlineY, this.buttonText.width + paddingH * 2, this.buttonText.height + paddingV * 2);
     }
 
 }

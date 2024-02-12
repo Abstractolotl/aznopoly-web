@@ -31,7 +31,7 @@ input {
     padding: 0.5rem;
     border-radius: 0.25rem;
     border: 0px;
-    border-bottom: 2px solid #73c8e4;
+    /*border-bottom: 2px solid #73c8e4;*/
     box-shadow: none;
     outline: none;
     margin: 0.5rem;
