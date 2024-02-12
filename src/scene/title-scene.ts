@@ -1,11 +1,11 @@
 import AzNopolyGame from "../game";
 import { HEIGHT, WIDTH } from "../main";
-import { RoomEvent } from "../room";
 import { AzNopolyButton } from "../ui/button";
 import {FONT_STYLE_COPYRIGHT_FLAVOUR_TEXT, FONT_STYLE_TITLE_TEXT} from "../style.ts";
 import Rectangle = Phaser.GameObjects.Rectangle;
 import TitleSceneController from "./title-scene-controller";
-import { BaseScene } from "./base/base-scene.ts";
+import { BaseScene } from "@/scene/base/base-scene.ts";
+import * as pjson from "@/../package.json"
 
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
@@ -42,7 +42,7 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
 
     create() {
         const titleText = " AzNopoly "
-        const copyrightText = "© 2024 AzNopoly - v.0.0.dev-preAlpha";
+        const copyrightText = "© 2024 AzNopoly - (build " + ((pjson || {}) as any).buildNumber + ")";
         const background = this.add.image(0, 0, 'abstracto');
         const targetScale = WIDTH / background.width;
         background.setScale(targetScale);
