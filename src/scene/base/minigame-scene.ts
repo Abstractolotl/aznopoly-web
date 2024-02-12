@@ -7,7 +7,7 @@ const START_TIME = 500;
 export default abstract class MinigameScene<T extends MinigameSceneController> extends BaseScene<T> {
 
     private overlay!: Phaser.GameObjects.Image;
-    private waitingForPlayersText!: Phaser.GameObjects.Text;
+    private centerText!: Phaser.GameObjects.Text;
 
     private startTimer = 0;
 
@@ -24,9 +24,9 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
         this.overlay.setDepth(1000);
         this.overlay.setVisible(false);
 
-        this.waitingForPlayersText = this.add.text(WIDTH/2, HEIGHT/2, 'Waiting for players...', FONT_STYLE_HEADLINE);
-        this.waitingForPlayersText.setOrigin(0.5, 0.5);
-        this.waitingForPlayersText.setDepth(1000);
+        this.centerText = this.add.text(WIDTH/2, HEIGHT/2, 'Waiting for players...', FONT_STYLE_HEADLINE);
+        this.centerText.setOrigin(0.5, 0.5);
+        this.centerText.setDepth(1000);
     }
 
     update(time: number, delta: number) {
@@ -45,7 +45,7 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
     public showReadyOverlay() {
         this.overlay.setTexture('minigame_ready');
         this.overlay.setVisible(true);
-        this.waitingForPlayersText.setVisible(false);
+        this.centerText.setVisible(false);
     }
 
     public showStartOverlay() {
@@ -61,15 +61,15 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
 
     public showResultOverlay(playerWon: string[]) {
         const won = playerWon.includes(this.aznopoly.uuid);
-        console.log("showResultOverlay", won);  
         this.overlay.setVisible(false);
         this.overlay.alpha = 1;
         this.overlay.scale = 1;
+        this.overlay.y -= 100;
 
-        const names = playerWon.map(uuid => this.aznopoly.room.getPlayerName(uuid) + "won");
-        this.waitingForPlayersText.setText(names.join("\n"))
-        this.waitingForPlayersText.setVisible(true);
-        
+        const names = playerWon.map(uuid => this.aznopoly.room.getPlayerName(uuid) + " won");
+        this.centerText.setText(names.join("\n"))
+        this.centerText.setVisible(true);
+
         if (won) {
             this.showGameWon();
         } else {

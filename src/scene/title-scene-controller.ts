@@ -18,8 +18,10 @@ export default class TitleSceneController  {
     public onMusicButtonClicked() {
         if (this.musicOn) {
             this.scene.stopMusic();
+            this.musicOn = false;
         } else {
             this.scene.startMusic();
+            this.musicOn = true;
         }
     }
 
@@ -40,6 +42,7 @@ export default class TitleSceneController  {
     private joinRoom(room: string) {
         this.scene.playStartSound();
         setTimeout(() => {
+            this.scene.stopMusic();
             this.aznopoly.init(room);
             this.aznopoly.room.addEventListener(RoomEvent.READY, () => {
                 this.scene.scene.start('lobby');

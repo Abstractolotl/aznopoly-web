@@ -1,8 +1,7 @@
 import { COLOR_PRIMARY, COLOR_PRIMARY_2, FONT_STYLE_BODY } from "../style";
 
-
-const SPIN_TIME = 3000;
-const NUM_CHOICE_CHANGES = 40;
+const SPIN_TIME = 2000;
+const NUM_CHOICE_CHANGES = 50;
 const FADE_IN_TIME = 100;
 const PADDING = 10;
 export default class RandomSelectionWheel extends Phaser.GameObjects.Container {

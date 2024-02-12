@@ -1,15 +1,16 @@
 import AzNopolyGame from "../../game";
+import { SceneSwitcher } from "../../scene-switcher";
 import MinigameScene from "./minigame-scene";
 import SyncedSceneController from "./synced-scene-controller";
 
-
+const RESULT_DISPLAY_TIME = 2000;
 export default abstract class MinigameSceneController extends SyncedSceneController {
     
     declare protected scene: MinigameScene<MinigameSceneController>;
     private previousScene: string;
 
     constructor(scene: Phaser.Scene, aznopoly: AzNopolyGame, /*previousScene: string */) {
-        super(scene, aznopoly);
+        super(scene, aznopoly, "launch");
         this.previousScene = "game";
 
         this.registerSyncedMethod(this.showReady, true);
@@ -37,14 +38,15 @@ export default abstract class MinigameSceneController extends SyncedSceneControl
 
     protected endGame(playerWon: string[], sorted: boolean) {
         this.scene.showResultOverlay(playerWon);
-        setTimeout(() => {
-            this.onGameOver();
-        }, 3000);
+        setTimeout(() => this.onGameOver(), RESULT_DISPLAY_TIME);
     }
 
     abstract onMiniGameStart() : void;
 
     private onGameOver() {
+        if (!this.aznopoly.isHost) {
+            return;
+        }
         this.scene.scene.stop();
         this.scene.scene.wake(this.previousScene);
     }

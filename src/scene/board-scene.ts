@@ -1,7 +1,6 @@
 import GameBoard from "../board/board";
 import { HEIGHT, WIDTH } from "../main";
 import { FONT_STYLE_BODY } from "../style";
-import { GameTurnRollPacket, GameTurnStartPacket, PacketType } from "../types/client";
 import { AzNopolyButton } from "../ui/button";
 import PlayerList from "../ui/player-list";
 import RandomSelectionWheel from "../ui/random-selection-wheel";

@@ -25,7 +25,11 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
     }
 
     init() {
+        console.log("RoombaScene init", this.roombas);
         this.controller = new RoombaSceneController(this, this.aznopoly);
+        this.roombas = []
+        this.timeSinceLastPaint = 0;
+        this.timeSinceGraphicsSwap = 0;
     }
 
     preload() {
@@ -40,6 +44,11 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
 
         this.paint = this.add.graphics();
         this.paintTexture = this.textures.addDynamicTexture("roomba-paint", WIDTH, HEIGHT)!;
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            this.paint.destroy();
+            this.paintTexture.destroy();
+        });
+
         this.colorProgressBar = new ColorProgressBar(this, WIDTH / 2 - 200, 25, 400, 40);
         
         this.add.sprite(0, 0, "roomba-paint").setOrigin(0, 0).setDepth(-1);
@@ -80,6 +89,8 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
         this.timeSinceLastPaint += delta / 1000;
         if (this.timeSinceLastPaint > PAINT_REFRESH_TIME) {
             this.timeSinceLastPaint = 0;
+
+            console.log("Painting", this.roombas.length);
             this.roombas.forEach(roomba => {
                 roomba.paintPath(this.paint);
             });
@@ -99,11 +110,11 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
     }
 
     private calculatePaintPercentage() {
-        const result = this.getAAAAA();
+        const result = this.getPaintMap();
         this.updateProgressBar(result);
     }
 
-    public getAAAAA() {
+    public getPaintMap() {
         if (this.paintTexture.renderTarget) {
             const renderer = this.paintTexture.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
 

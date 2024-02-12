@@ -1,4 +1,5 @@
 import AzNopolyGame from "../game";
+import { SceneSwitcher } from "../scene-switcher";
 import SyncedSceneController from "./base/synced-scene-controller";
 import BoardScene from "./board-scene";
 
@@ -17,7 +18,7 @@ export default class BoardSceneController extends SyncedSceneController {
     private players!: Player[];
 
     constructor(scene: BoardScene, aznopoly: AzNopolyGame) {
-        super(scene, aznopoly);
+        super(scene, aznopoly, "start");
 
         this.registerSyncedMethod(this.addPlayersToBoard, true);
         this.registerSyncedMethod(this.updatePlayerPosition, true);
@@ -38,7 +39,6 @@ export default class BoardSceneController extends SyncedSceneController {
             this.syncProxy.addPlayersToBoard(players);
             this.syncProxy.startTurn(players[0].uuid);
         }
-
     }
 
     private addPlayersToBoard(players: Player[]) {
@@ -87,15 +87,11 @@ export default class BoardSceneController extends SyncedSceneController {
         const nextIndex = (currentIndex + 1) % this.players.length;
         const nextPlayer = this.players[nextIndex];
 
+        this.syncProxy.startTurn(nextPlayer.uuid);
+
         if (nextIndex == 0) {
             this.syncProxy.startMinigame();
-        } else {
-            this.syncProxy.startTurn(nextPlayer.uuid);
         }
-    }
-
-    private onMinigameResult() {
-
     }
 
     private startMinigame() {

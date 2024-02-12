@@ -14,7 +14,7 @@ export default class RoombaSceneController extends MinigameSceneController {
 
     private locked = false;
 
-    private colorUuuidMap = new Map<number, string>();
+    private colorUuuidMap = new Map<string, string>();
 
     constructor(scene: RoombaScene, aznopoly: AzNopolyGame) {
         super(scene, aznopoly);
@@ -29,34 +29,37 @@ export default class RoombaSceneController extends MinigameSceneController {
     }
 
     onMiniGameStart(): void {
-        this.scene.events.on("roomba-dragged", ({id, offset} : {id: string, offset: Phaser.Math.Vector2}) => {
-            if (this.locked) return;
-
-            this.syncProxy.updateRoombaDirection(id, offset);
-        });
+        this.scene.events.on("roomba-dragged", this.onRoombaDragged.bind(this));
 
         if (!this.aznopoly.isHost) {
             return;
         }
-        const roombaConfigs = [];
-        for (let j = 0; j < this.aznopoly.connectedUuids.length; j++) {
-            const uuid = this.aznopoly.connectedUuids[j] ;
-            for (let i = 0; i < 5; i++) {
-                roombaConfigs.push(this.generateRandomRoombaConfig(uuid));
-            }
-            this.colorUuuidMap.set(roombaConfigs[roombaConfigs.length-1].color, uuid);
-        }
+
+        const roombaConfigs = this.generateRoombaConfigs();
         this.syncProxy.initRoombas(roombaConfigs);
 
         setTimeout(() => {
             this.syncProxy.lockAllGameplay();
 
-            const array = this.scene.getAAAAA();
-            Object.keys(array).map((key) => {
-                console.log(this.colorUuuidMap.get(array[key]));
-            });
-            this.syncProxy.endGame([], false);
+            const won = this.getPlayersWon();
+            this.syncProxy.endGame(won, false);
         }, MAX_GAME_TIME)
+    }
+
+    private getPlayersWon() {
+        const paintMap = this.scene.getPaintMap();
+        const paintedColors = Object.keys(paintMap).filter(e => e != "000000");
+
+        const won = paintedColors.sort()
+            .map((key) => this.colorUuuidMap.get(key)!)
+            .slice(0, 1);
+
+            return won;
+    }
+
+    private onRoombaDragged({ id, offset}: {id: string, offset: Phaser.Math.Vector2}) {
+        if (this.locked) return;
+        this.syncProxy.updateRoombaDirection(id, offset);
     }
 
     private updateRoombaDirection(id: string, direction: Phaser.Math.Vector2) {
@@ -70,6 +73,18 @@ export default class RoombaSceneController extends MinigameSceneController {
     private lockAllGameplay() {
         this.locked = true;
         this.scene.stopRoombas();
+    }
+
+    private generateRoombaConfigs() {
+        const roombaConfigs = [];
+        for (let j = 0; j < this.aznopoly.connectedUuids.length; j++) {
+            const uuid = this.aznopoly.connectedUuids[j] ;
+            for (let i = 0; i < 5; i++) {
+                roombaConfigs.push(this.generateRandomRoombaConfig(uuid));
+            }
+            this.colorUuuidMap.set(roombaConfigs[roombaConfigs.length-1].paintColor.toString(16).toUpperCase(), uuid);
+        }
+        return roombaConfigs;
     }
 
     private generateRandomRoombaConfig(playerid: string) {

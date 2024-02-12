@@ -29,7 +29,7 @@ export default abstract class NetworkSceneController {
     constructor(scene: Phaser.Scene, aznopoly: AzNopolyGame) {
         this.scene = scene;
         this.aznopoly = aznopoly;
-        this.packetType = "CLIENT_MINIGAME_" + this.constructor.name.toUpperCase();
+        this.packetType = "CLIENT_" + this.constructor.name.toUpperCase();
         
         scene.events.once(Phaser.Scenes.Events.CREATE, () => {
             this.registerPacketListener();
