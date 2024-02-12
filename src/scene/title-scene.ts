@@ -1,15 +1,15 @@
 import AzNopolyGame from "../game";
-import {HEIGHT, WIDTH} from "../main";
+import { HEIGHT, WIDTH } from "../main";
 import { RoomEvent } from "../room";
 import { AzNopolyButton } from "../ui/button";
-import { BaseScene } from "./base-scene";
 import {FONT_STYLE_COPYRIGHT_FLAVOUR_TEXT, FONT_STYLE_TITLE_TEXT} from "../style.ts";
-import {AzNopolyInput} from "../ui/input.ts";
 import Rectangle = Phaser.GameObjects.Rectangle;
+import TitleSceneController from "./title-scene-controller";
+import { BaseScene } from "./base/base-scene.ts";
 
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
-export default class TitleScene extends BaseScene {
+export default class TitleScene extends BaseScene<TitleSceneController> {
 
     private bgm!: Audio;
     private audioStart!: Audio;
@@ -18,6 +18,10 @@ export default class TitleScene extends BaseScene {
     private domContainer!: Phaser.GameObjects.DOMElement;
     private domNameInput!: HTMLInputElement;
     private domLobbyCodeInput!: HTMLInputElement;
+
+    constructor(aznopoly: AzNopolyGame) {
+        super(aznopoly);
+    }
     
     preload() {
         this.load.image('abstracto', 'assets/background_clouds.png');
@@ -29,6 +33,11 @@ export default class TitleScene extends BaseScene {
         this.load.audio('game-start', 'assets/game_start.mp3');
 
         AzNopolyButton.preload(this);
+    }
+
+    init() {
+        console.log("TitleScene init", this.aznopoly)
+        this.controller = new TitleSceneController(this, this.aznopoly);
     }
 
     create() {
@@ -47,8 +56,6 @@ export default class TitleScene extends BaseScene {
         //this.domNameInput = this.domContainer.getChildByID('title-name-input') as HTMLInputElement;
         //this.domNameInput.value = 'test';
 
-        console.log(this.add)
-
         this.bgm = this.game.sound.add('title-bgm', { loop: true });
         this.bgm.play();
         this.bgm.volume = 0.25;
@@ -57,77 +64,39 @@ export default class TitleScene extends BaseScene {
         this.initButtons();
         this.add.text(WIDTH/2,HEIGHT - 20, copyrightText, FONT_STYLE_COPYRIGHT_FLAVOUR_TEXT).setOrigin(0.5, 0.5)
         this.add.text(WIDTH/2, HEIGHT/4, titleText, FONT_STYLE_TITLE_TEXT).setOrigin(0.5, 0.5)
-
-        //this.add.text(WIDTH/2 /*- this.copyrightText.length/2*/, 50, "this.copyrightText");
-
-        //setTimeout(() => { this.joinRoom("debugg", "Michael" + ("" + Math.random()).substring(2,4)) }, 1000)
-    }
-
-    destroy() {
-        console.log('destroying title scene');
     }
 
     private initButtons() {
         const centerX = WIDTH / 2;
         const centerY = HEIGHT / 2;
 
-        this.add.existing(new AzNopolyButton(this, 'Join',
-            centerX + 125, centerY + 41, 0, 0, this.onJoinRoomClick.bind(this)));
-        this.add.existing(new AzNopolyButton(this, 'Create Lobby',
-            centerX, centerY + 125, 50, 0, this.onCreateRoom.bind(this)));
+        this.add.existing(new AzNopolyButton(this, 'Join',centerX + 125, centerY + 41, 0, 0, this.controller.onJoinRoomClick.bind(this.controller)));
+        this.add.existing(new AzNopolyButton(this, 'Create Lobby',centerX, centerY + 125, 50, 0, this.controller.onCreateRoom.bind(this.controller)));
 
         const graphics = this.add.graphics();
         graphics.lineStyle(2, 0x000000, 1);
         graphics.strokeCircle(WIDTH - 50, 50, 20);
         this.btnMusic = this.add.image(WIDTH - 50, 50, 'music-on');
         this.btnMusic.setInteractive();
-        this.btnMusic.on('pointerdown', this.onMusicClick.bind(this));
+        this.btnMusic.on('pointerdown', this.controller.onMusicButtonClicked.bind(this.controller));
+    }
+    
+    public stopMusic() {
+        this.bgm.pause();
+        this.btnMusic.setTexture('music-off');
     }
 
-    private generateRoomName(length: number = 6) : string {
-        let roomName = "";
-        let characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-
-        for (let i = 0; i < length; i++) {
-            roomName += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-
-        return roomName;
+    public startMusic() {
+        this.bgm.resume();
+        this.btnMusic.setTexture('music-on');
     }
 
-    private onMusicClick() {
-        const texture = this.bgm.isPlaying ? 'music-off' : 'music-on';
-        this.btnMusic.setTexture(texture);
-        if (this.bgm.isPlaying) {
-            this.bgm.pause();
-        } else {
-            this.bgm.resume();
-        }
+    public playStartSound() {
+        this.audioStart.play();
     }
 
-    private onJoinRoomClick() {
-        const name = "";//this.domNameInput.value;
-        const room = this.domLobbyCodeInput.value;
-        this.joinRoom(room, name);
+    public getInputtedLobbyCode(): string {
+        return this.domLobbyCodeInput.value;
     }
 
-    private onCreateRoom() {
-        const name = "";//this.domNameInput.value;
-        const room = this.generateRoomName();
-        this.joinRoom(room, name);
-    }
-
-    private joinRoom(room: string, name: string) {
-        setTimeout(() => {
-            this.audioStart.play();
-        }, 100)
-
-        setTimeout(() => {
-            this.aznopoly.init(room);
-            this.aznopoly.room.addEventListener(RoomEvent.READY, () => {
-                this.scene.start('lobby');
-            }, { once: true });
-            this.bgm.stop();
-        }, 500)
-    }
 }

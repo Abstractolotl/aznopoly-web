@@ -1,4 +1,3 @@
-import { Scene } from "phaser";
 import { COLOR_CONTRAST, COLOR_PRIMARY } from "../style";
 import { easeOutElastic } from "../util";
 
@@ -9,7 +8,7 @@ export const FONT_STYLE_BUTTON_DOWN: Phaser.Types.GameObjects.Text.TextStyle = {
 const MAX_HOVER_TIMER = 1;
 export class AzNopolyButton extends Phaser.GameObjects.Container {
 
-    public static preload(scene: Scene) {
+    public static preload(scene: Phaser.Scene) {
         scene.load.audio('button-over', 'assets/button_over.mp3');
         scene.load.audio('button-out', 'assets/button_out.mp3');
         scene.load.audio('button-down', 'assets/button_down.mp3');
@@ -58,6 +57,7 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         this.audioDown = scene.sound.add('button-down');
 
         this.widthOffset = widthOffset;
+        this.heightOffset = heightOffset;
 
         this.updateButtonShape(this.outlineWidth, this.outlinePadding, widthOffset);
     }

@@ -11,7 +11,7 @@ interface Entry {
 const LINE_HEIGHT = FONT_STYLE_BODY.fontSize as number;
 const LINE_GAP = 10;
 const PADDING = 10;
-export default class PlayerList extends Phaser.GameObjects.Container {
+export default class IngamePlayerList extends Phaser.GameObjects.Container {
 
     static preload(scene: Phaser.Scene) {
         scene.load.image("host-crown", "assets/crown.png");
@@ -36,25 +36,18 @@ export default class PlayerList extends Phaser.GameObjects.Container {
 
         this.graphics = new Phaser.GameObjects.Graphics(scene);
         this.add(this.graphics);
-        this.graphics.fillStyle(0x000000, 0.5);        
-        this.graphics.fillRoundedRect(-PADDING, -PADDING, this.entryWidth + (2 * PADDING),  (2 * PADDING) + (LINE_HEIGHT * 5) + (LINE_GAP * 4), 5);
-        
-        this.title = new Phaser.GameObjects.Text(scene, 0, 0, "", FONT_STYLE_BODY);
-        this.add(this.title);
+        this.graphics.fillStyle(0xCAC9C9, 1);
+        this.graphics.fillRect(-PADDING, -PADDING, this.entryWidth + (2 * PADDING),  (2 * PADDING) + (LINE_HEIGHT * 5) + (LINE_GAP * 4));
     }
 
-    public updateTitle(title: string = `Connected Players (${this.playerEntries.length} / 4)`) {
-        this.title.setText(title);
-    }
-
-    private createPlayerEntry(name: string, host: boolean, uuid: string): Entry {
+    private createPlayerEntry(name: string, host: boolean): Entry {
         const headKey = host ? "host-crown" : "player-icon";
         const head = new Phaser.GameObjects.Image(this.scene, 0, 0, headKey);
         this.add(head);
         const headScale = LINE_HEIGHT / head.height;
         head.setScale(headScale, headScale);
         head.setOrigin(0, 0.5);
-        head.tint = getColorFromUUID(uuid);
+        head.tint = getColorFromUUID(name);
 
         const text = new Phaser.GameObjects.Text(this.scene, 50, 0, name, FONT_STYLE_BODY);
         this.add(text);
@@ -69,7 +62,7 @@ export default class PlayerList extends Phaser.GameObjects.Container {
         return { head, text, tail };
     }
 
-    public updatePlayerList(players: {uuid: string, name: string, host: boolean}[]) {
+    public updatePlayerList(players: {name: string, host: boolean}[]) {
         const newEntries: Entry[] = [];
 
         const oldEntries = this.playerEntries;;
@@ -82,13 +75,12 @@ export default class PlayerList extends Phaser.GameObjects.Container {
         });
 
         players.forEach(player => {
-            const entry = this.createPlayerEntry(player.name, player.host, player.uuid);
+            const entry = this.createPlayerEntry(player.name, player.host);
             newEntries.push(entry);
         });
 
         this.playerEntries = newEntries;
         this.updatePlayerPositions();
-        this.updateTitle();
     }
     
     private updatePlayerPositions() {
