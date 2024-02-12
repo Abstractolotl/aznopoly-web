@@ -26,7 +26,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
     create() {
         const boardSize = HEIGHT * 0.8;
-        this.board = this.add.existing(new GameBoard(this.aznopoly, this, (WIDTH - boardSize) * 0.5 - 200, (HEIGHT - boardSize) * 0.5, boardSize));
+        this.board = this.add.existing(new GameBoard(this.aznopoly.room.host, this, (WIDTH - boardSize) * 0.5 - 200, (HEIGHT - boardSize) * 0.5, boardSize));
 
         const playerList = this.add.existing(new PlayerList(this, false, WIDTH - 300, 0, 250));
         playerList.updatePlayerList(this.aznopoly.room.connectedPlayerIds.map(e => ({uuid: e, name: this.aznopoly.room.getPlayerName(e), host: false})))

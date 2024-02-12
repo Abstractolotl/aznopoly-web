@@ -1,8 +1,10 @@
-import { Scene } from "phaser";
 import GameObject = Phaser.GameObjects.Shape;
-import { PacketType, PlayerPacket } from "../types/client";
+import { PacketType } from "../types/client";
 import AzNopolyGame from "../game";
 import { getColorFromUUID } from "../util";
+import BoardTile from "./board-tile.ts";
+import BoardGenerator from "./board-generator.ts";
+import { TileOrientation, TileType } from "../types/board.ts";
 
 interface BoardPlayer {
     gameObject: GameObject,
@@ -10,31 +12,60 @@ interface BoardPlayer {
 }
 
 const PLAYER_SIZE = 16;
-const BOARD_SIDE_LENGTH = 12;
+const BOARD_SIDE_LENGTH = 5; // Without corners
 export default class GameBoard extends Phaser.GameObjects.Container {
 
-    static preload(scene: Scene) {
-        scene.load.image("board_bg", "assets/title_background.png")
+    public static preload(scene: Phaser.Scene) {
+        BoardTile.preload(scene);
     }
 
-    private TILE_SIZE: number;
-
     private players: Map<string, BoardPlayer>;
-    private size: number;
+    private boardTiles: BoardTile[];
+    private tiles: TileType[];
 
-    constructor(aznopoly: AzNopolyGame, scene: Scene, x: number, y: number, size: number) {
+    constructor(seed: string, scene: Phaser.Scene, x: number, y: number, size: number) {
         super(scene, x, y);
-        this.size = size;
         this.players = new Map();
+        this.width = size;
+        this.height = size;
 
-        this.TILE_SIZE = size / BOARD_SIDE_LENGTH;
+        this.tiles = BoardGenerator.generateFields(seed, BOARD_SIDE_LENGTH);
+        this.boardTiles = GameBoard.generateBoardTiles(scene, this.tiles, size / (BOARD_SIDE_LENGTH + 4));
+        this.boardTiles.forEach(e => this.add(e));
+    }
 
-        const background = new Phaser.GameObjects.Image(scene, 0, 0, "board_bg");
-        this.add(background);
-        
-        const targetScale = size / background.width;
-        background.setScale(targetScale);
-        background.setOrigin(0, 0);
+    private static generateBoardTiles(scene: Phaser.Scene, tiles: TileType[], tileWidth: number) {
+        const size = tileWidth;
+        const length = BOARD_SIDE_LENGTH + 2;
+
+        const boardTiles: BoardTile[] = [];
+        tiles.length = BOARD_SIDE_LENGTH * 4 + 4;
+        let index;
+        console.log("Tiles: ", tiles.map(e => TileType[e]));
+        for (let i = 0; i < BOARD_SIDE_LENGTH; i++) {
+            index = 1 + (1 + BOARD_SIDE_LENGTH) * 0 + i;
+            console.log(index);
+            boardTiles[index] = new BoardTile(scene, size * (i + 2)     , size * length, size      , size * 2  , tiles[index], TileOrientation.UP);
+            index = 1 + (1 + BOARD_SIDE_LENGTH) * 1 + i;
+            console.log(index);
+            boardTiles[index] = new BoardTile(scene, 0                  , size * (i + 2)    , size * 2  , size      , tiles[index], TileOrientation.RIGHT);
+            index = 1 + (1 + BOARD_SIDE_LENGTH) * 2 + i;
+            console.log(index);
+            boardTiles[index] = new BoardTile(scene, size * (i + 2)     , 0                 , size      , size * 2  , tiles[index], TileOrientation.DOWN);
+            index = 1 + (1 + BOARD_SIDE_LENGTH) * 3 + i;
+            console.log(index);
+            boardTiles[index] = new BoardTile(scene, size * length , size * (i + 2)    , size * 2  , size      , tiles[index], TileOrientation.LEFT);
+        }
+
+        index = (BOARD_SIDE_LENGTH + 1) * 0;
+        boardTiles[index] = new BoardTile(scene, size * length, size * length, size * 2, size * 2, tiles[index], TileOrientation.CORNER);
+        index = (BOARD_SIDE_LENGTH + 1) * 1;
+        boardTiles[index] = new BoardTile(scene, 0, size * length, size * 2, size * 2, tiles[index], TileOrientation.CORNER);
+        index = (BOARD_SIDE_LENGTH + 1) * 2;
+        boardTiles[index] = new BoardTile(scene, 0, 0, size * 2, size * 2, tiles[index], TileOrientation.CORNER);
+        index = (BOARD_SIDE_LENGTH + 1) * 3;
+        boardTiles[index] = new BoardTile(scene, size * length, 0, size * 2, size * 2, tiles[index], TileOrientation.CORNER);
+        return boardTiles;
     }
 
     addPlayer(uuid: string, startPos: number = 0) {
@@ -42,21 +73,23 @@ export default class GameBoard extends Phaser.GameObjects.Container {
             throw new Error(`Player with UUID ${uuid} already exists!`);
         }
 
-        const coords = GameBoard.getCoordForPos(startPos);
+        const coords = this.boardTiles[startPos % this.boardTiles.length].getPlayerCenter();
+
         const color = getColorFromUUID(uuid);
         const player = {
-            gameObject: new Phaser.GameObjects.Rectangle(this.scene, coords.x * this.TILE_SIZE, coords.y * this.TILE_SIZE, PLAYER_SIZE, PLAYER_SIZE, color),
+            gameObject: new Phaser.GameObjects.Rectangle(this.scene, coords.x, coords.y, PLAYER_SIZE, PLAYER_SIZE, color),
             position: startPos,
         };
         this.add(player.gameObject);
         this.players.set(uuid, player)
         this.movePlayerToPosition(uuid, 0);
+
         return player;
     }
 
-    movePlayerToPosition(uuid: string, position: number) {
-        if (!Number.isInteger(position)) {
-            throw new Error(`Illegal parameter position: Not an integer (${position})`);
+    movePlayerToPosition(uuid: string, pos: number) : BoardTile {
+        if (!Number.isInteger(pos)) {
+            throw new Error(`Illegal parameter distance: Not an integer (${pos})`);
         }
 
         let player = this.players.get(uuid);
@@ -64,41 +97,26 @@ export default class GameBoard extends Phaser.GameObjects.Container {
             throw new Error(`Player with UUID ${uuid} does not exist!`);
         }
 
-        player.position = position;
-        const coords = GameBoard.getCoordForPos(player.position);
+        player.position = pos;
+        const coords = this.boardTiles[player.position % this.boardTiles.length].getPlayerCenter();
 
-        player.gameObject.setPosition(coords.x * this.TILE_SIZE, coords.y * this.TILE_SIZE)
-        this.checkPlayerColisions();
+        player.gameObject.setPosition(coords.x, coords.y)
+        this.checkPlayerCollisions();
+
+        return this.boardTiles[player.position % this.boardTiles.length];
     }
 
-    // movePlayerForward(uuid: string, distance: number) {
-    //     if (!Number.isInteger(distance)) {
-    //         throw new Error(`Illegal parameter distance: Not an integer (${distance})`);
-    //     }
-
-    //     let player = this.players.get(uuid);
-    //     if (!player) {
-    //         throw new Error(`Player with UUID ${uuid} does not exist!`);
-    //     }
-
-    //     player.position += distance;
-    //     const coords = GameBoard.getCoordForPos(player.position);
-
-    //     player.gameObject.setPosition(coords.x * this.TILE_SIZE, coords.y * this.TILE_SIZE)
-    //     this.checkPlayerColisions();
-    // }
-
-    private checkPlayerColisions() {
+    private checkPlayerCollisions() {
         const positions: { [key: number]: string[] } = {};
         this.players.forEach((player, uuid) => {
-            if (positions[player.position]) {
-                positions[player.position].push(uuid);
+            if (positions[player.position % this.boardTiles.length]) {
+                positions[player.position % this.boardTiles.length].push(uuid);
             } else {
-                positions[player.position] = [uuid];
+                positions[player.position % this.boardTiles.length] = [uuid];
             }
         });
 
-        Object.entries(positions).forEach(([position, uuids]) => {
+        Object.values(positions).forEach((uuids) => {
             if (uuids.length > 1) {
                 let i = 0; 
                 const offset = uuids.length * PLAYER_SIZE * -0.25;
@@ -111,45 +129,4 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         })
     }
 
-    static getCoordForPos(position: number) {
-        position = transformNumber(position);
-        position = position % (BOARD_SIDE_LENGTH * 4);
-        const sideLength = BOARD_SIDE_LENGTH;
-        const sideIndex = Math.floor(position / sideLength);
-        let sidePosition = position % sideLength;
-        let offset_x = 0;
-        let offset_y = 0;
-
-        const inawrds_offset = 0.5;
-
-        switch (sideIndex) {
-            case 0: // Bottom side
-                offset_x = sideLength - sidePosition - (sidePosition == 0 ? inawrds_offset : 0);
-                offset_y = sideLength - inawrds_offset;
-                break;
-            case 1: // Left side
-                offset_x = inawrds_offset;
-                offset_y = sideLength - sidePosition - (sidePosition == 0 ? inawrds_offset : 0);
-                break;
-            case 2: // Top side
-                offset_x = sidePosition + (sidePosition == 0 ? inawrds_offset : 0);
-                offset_y = inawrds_offset;
-                break;
-            case 3: // Right side
-                offset_x = sideLength - inawrds_offset;
-                offset_y = sidePosition + (sidePosition == 0 ? inawrds_offset : 0);
-                break;
-        }
-
-        return { x: offset_x, y: offset_y };
-    }
-
-}
-
-function transformNumber(e: number) {
-    for(let i = 0; i <= e; i++) {
-        if (i % 12 == 1) e++;
-        if (i % 12 == 11) e++;
-    }
-    return e;
 }
