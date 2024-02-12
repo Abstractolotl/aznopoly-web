@@ -1,5 +1,5 @@
 import Phaser, {Scene} from "phaser";
-import { TileDirection, TileType } from "../types/board.ts";
+import { TileOrientation, TileType } from "../types/board.ts";
 import { FONT_STYLE_BODY } from "../style.ts";
 
 export default class BoardTile extends Phaser.GameObjects.Container {
@@ -13,16 +13,16 @@ export default class BoardTile extends Phaser.GameObjects.Container {
     }
 
     private tileType: TileType;
-    private tileDirection: TileDirection;
+    private tileDirection: TileOrientation;
 
     private readonly tileWidth: number;
     private readonly tileHeight: number;
 
     private image: Phaser.GameObjects.Image;
 
-    constructor(scene: Scene, x: number, y: number, width: number, height: number,
-                type: TileType = TileType.START, direction: TileDirection = TileDirection.CORNER) {
+    constructor(scene: Scene, x: number, y: number, width: number, height: number, type: TileType, direction: TileOrientation) {
         super(scene, x, y);
+        console.log("TileType: ", TileType[type])
 
         this.tileType = type;
         this.tileDirection = direction;
@@ -30,31 +30,25 @@ export default class BoardTile extends Phaser.GameObjects.Container {
         this.tileWidth = width;
         this.tileHeight = height;
 
+        this.width = width;
+        this.height = height;
+
         this.image = new Phaser.GameObjects.Image(scene, 0, 0, this.getTexture(direction))
         this.image.setOrigin(0, 0);
         this.image.setScale(width / this.image.width, height / this.image.height);
 
-        switch (type) {
-            case TileType.BLUE:
-                this.image.setTint(0x0000ff);
-                break;
-            case TileType.GREEN:
-                this.image.setTint(0x00ff00);
-                break;
-            case TileType.RED:
-                this.image.setTint(0xff0000);
-                break;
-            case TileType.YELLOW:
-                this.image.setTint(0xffff00);
-                break;
-            case TileType.PURPLE:
-                this.image.setTint(0xff00ff);
-                break;
-        }
+        this.image.setInteractive();
+        this.image.on(Phaser.Input.Events.POINTER_OVER, () => {
+            this.image.setTint(0xaaaaaa);
+        });
+        this.image.on(Phaser.Input.Events.POINTER_OUT, () => {
+            this.updateTint();
+        });
+        this.updateTint();
 
         this.add(this.image);
 
-        if (direction == TileDirection.CORNER) {
+        if (direction == TileOrientation.CORNER) {
             let text = new Phaser.GameObjects.Text(scene, 0, 0, TileType[type], FONT_STYLE_BODY);
             text.setOrigin(0.5, 0.5);
             text.setPosition(width / 2, height / 2);
@@ -67,15 +61,39 @@ export default class BoardTile extends Phaser.GameObjects.Container {
         }
     }
 
-    getTexture(direction: TileDirection) : string {
+    private updateTint() {
+        this.image.clearTint();
+        
+        if (this.tileType == TileType.PROPERTY_BLUE) {
+            this.image.setTint(0x0000ff);
+        }
+
+        if (this.tileType == TileType.PROPERTY_GREEN) {
+            this.image.setTint(0x00ff00);
+        }
+
+        if (this.tileType == TileType.PROPERTY_RED) {
+            this.image.setTint(0xff0000);
+        }
+
+        if (this.tileType == TileType.PROPERTY_YELLOW) {
+            this.image.setTint(0xffff00);
+        }
+
+        if (this.tileType == TileType.PROPERTY_PURPLE) {
+            this.image.setTint(0x800080);
+        }
+    }
+
+    getTexture(direction: TileOrientation) : string {
         switch (direction) {
-            case TileDirection.UP:
+            case TileOrientation.UP:
                 return "tile-up"
-            case TileDirection.DOWN:
+            case TileOrientation.DOWN:
                 return "tile-down"
-            case TileDirection.LEFT:
+            case TileOrientation.LEFT:
                 return "tile-left"
-            case TileDirection.RIGHT:
+            case TileOrientation.RIGHT:
                 return "tile-right"
             default:
                 return "tile-empty"
@@ -86,7 +104,7 @@ export default class BoardTile extends Phaser.GameObjects.Container {
         return this.tileType;
     }
 
-    getTileDirection() : TileDirection {
+    getTileDirection() : TileOrientation {
         return this.tileDirection;
     }
 

@@ -4,16 +4,22 @@ export enum TileType {
     FREE,
     START,
 
-    CHANCE,
+    ACTION,
 
-    BLUE,
-    GREEN,
-    RED,
-    YELLOW,
-    PURPLE
+    PROPERTY_BLUE,
+    PROPERTY_GREEN,
+    PROPERTY_RED,
+    PROPERTY_YELLOW,
+    PROPERTY_PURPLE
 }
 
-export enum TileDirection {
+export namespace TileType {
+    export function isCorner(type: TileType) {
+        return type === TileType.START || type === TileType.FREE || type === TileType.JAIL || type === TileType.TO_JAIL;
+    }
+}
+
+export enum TileOrientation {
     UP,
     DOWN,
     LEFT,
