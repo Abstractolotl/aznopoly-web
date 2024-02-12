@@ -47,14 +47,14 @@ export default class PlayerList extends Phaser.GameObjects.Container {
         this.title.setText(title);
     }
 
-    private createPlayerEntry(name: string, host: boolean): Entry {
+    private createPlayerEntry(name: string, host: boolean, uuid: string): Entry {
         const headKey = host ? "host-crown" : "player-icon";
         const head = new Phaser.GameObjects.Image(this.scene, 0, 0, headKey);
         this.add(head);
         const headScale = LINE_HEIGHT / head.height;
         head.setScale(headScale, headScale);
         head.setOrigin(0, 0.5);
-        head.tint = getColorFromUUID(name);
+        head.tint = getColorFromUUID(uuid);
 
         const text = new Phaser.GameObjects.Text(this.scene, 50, 0, name, FONT_STYLE_BODY);
         this.add(text);
@@ -69,7 +69,7 @@ export default class PlayerList extends Phaser.GameObjects.Container {
         return { head, text, tail };
     }
 
-    public updatePlayerList(players: {name: string, host: boolean}[]) {
+    public updatePlayerList(players: {uuid: string, name: string, host: boolean}[]) {
         const newEntries: Entry[] = [];
 
         const oldEntries = this.playerEntries;;
@@ -82,7 +82,7 @@ export default class PlayerList extends Phaser.GameObjects.Container {
         });
 
         players.forEach(player => {
-            const entry = this.createPlayerEntry(player.name, player.host);
+            const entry = this.createPlayerEntry(player.name, player.host, player.uuid);
             newEntries.push(entry);
         });
 

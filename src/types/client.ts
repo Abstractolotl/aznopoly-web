@@ -23,6 +23,15 @@ export enum PacketType {
     GAME_TURN_START = "CLIENT_GAME_TURN_START",
     GAME_TURN_ROLL = "CLIENT_GAME_TURN_ROLL",
 
+    MINIGAME_RESULT = "CLIENT_MINIGAME_RESULT",
+    MINIGAME_READY = "CLIENT_MINIGAME_READY",
+    MINIGAME_START = "CLIENT_MINIGAME_START",
+
+    MINIGAME_SIMON_SAYS = "CLIENT_MINIGAME_SIMON_SAYS",
+    MINIGAME_SIMON_SAYS_ACTION = "CLIENT_MINIGAME_SIMON_SAYS_ACTION",
+
+    MINIGAME_ROOMBA = "CLIENT_MINIGAME_ROOMBA",
+    
     // Unused
     EXAMPLE = "CLIENT_EXAMPLE",
 }
@@ -34,7 +43,11 @@ export interface BasePacket {
 
 export interface PlayerPacket extends BasePacket {
     sender: string;
-    target?: string;
+    data: any;
+}
+
+export interface DynamicPacket<T> extends PlayerPacket {
+    data: T;
 }
 
 export interface RoomInitPacket extends BasePacket {
@@ -81,6 +94,7 @@ export interface SceneChangePacket extends PlayerPacket {
     type: PacketType.SCENE_CHANGE;
     data: {
         scene: string,
+        launchMethod: "start" | "launch" | "wake",
     };
 }
 
