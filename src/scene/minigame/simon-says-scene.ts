@@ -1,8 +1,9 @@
+/*
 import { HEIGHT, WIDTH } from "../../main";
 import { SimonSaysBoard } from "../../minigame/simon-says-board";
 import { PacketType, PlayerPacket } from "../../types/client";
 import { TimeBar } from "../../ui/time-bar";
-import MinigameScene from "../minigame-scene";
+import MinigameScene from "../base/minigame-scene";
 import { Audio } from "../../types";
 
 interface SimonSaysPacket extends PlayerPacket {
@@ -192,8 +193,7 @@ export class SimonSaysScene extends MinigameScene {
     }
 
     // HOST ONLY
-
-    async onMinigameStart() {
+    async onMiniGameStart() {
         this.activePlayer = this.aznopoly.room.connectedPlayerIds.slice();
 
         await this.startRound(this.generateRandomSequence(4));
@@ -253,3 +253,4 @@ export class SimonSaysScene extends MinigameScene {
     }
 
 }
+*/

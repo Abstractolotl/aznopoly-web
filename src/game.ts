@@ -26,6 +26,10 @@ export default class AzNopolyGame {
             name: this._name,
         }
     }
+
+    public get uuid(): string {
+        return this.client.id;
+    }
     
     public get client(): AzNopolyClient {
         return this._client;
@@ -35,7 +39,7 @@ export default class AzNopolyGame {
         return this._room;
     }
 
-    public get players(): string[] {
+    public get connectedUuids(): string[] {
         return this.room.connectedPlayerIds;
     }
 

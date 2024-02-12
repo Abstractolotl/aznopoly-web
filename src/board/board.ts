@@ -9,14 +9,6 @@ interface BoardPlayer {
     position: number,
 }
 
-export interface BoardPacket extends PlayerPacket {
-    type: PacketType.BOARD,
-    data: {
-        function: string,
-        args: any[],
-    }
-}
-
 const PLAYER_SIZE = 16;
 const BOARD_SIDE_LENGTH = 12;
 export default class GameBoard extends Phaser.GameObjects.Container {
@@ -27,15 +19,12 @@ export default class GameBoard extends Phaser.GameObjects.Container {
 
     private TILE_SIZE: number;
 
-    private aznopoly: AzNopolyGame;
-
     private players: Map<string, BoardPlayer>;
     private size: number;
 
     constructor(aznopoly: AzNopolyGame, scene: Scene, x: number, y: number, size: number) {
         super(scene, x, y);
         this.size = size;
-        this.aznopoly = aznopoly;
         this.players = new Map();
 
         this.TILE_SIZE = size / BOARD_SIDE_LENGTH;
@@ -46,36 +35,9 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         const targetScale = size / background.width;
         background.setScale(targetScale);
         background.setOrigin(0, 0);
-
-        this.aznopoly.client.addEventListener(PacketType.BOARD, this.onBoardPacket.bind(this) as EventListener);
-    }
-
-    private onBoardPacket(event: CustomEvent<BoardPacket>) {
-        const packet = event.detail;
-        if (this.aznopoly.isHost) return;
-        if (packet.target && packet.target !== this.aznopoly.client.id) return;
-
-        switch (packet.data.function) {
-            case "addPlayer":
-                this.addPlayer(packet.data.args[0], packet.data.args[1]);
-                break;
-            case "movePlayer":
-                this.movePlayer(packet.data.args[0], packet.data.args[1]);
-                break;
-        }
     }
 
     addPlayer(uuid: string, startPos: number = 0) {
-        if (this.aznopoly.isHost) {
-            this.aznopoly.client.sendPacket({
-                type: PacketType.BOARD,
-                data: {
-                    function: "addPlayer",
-                    args: [uuid, startPos],
-                },
-            })
-        }
-
         if (this.players.has(uuid)) {
             throw new Error(`Player with UUID ${uuid} already exists!`);
         }
@@ -88,23 +50,13 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         };
         this.add(player.gameObject);
         this.players.set(uuid, player)
-        this.movePlayer(uuid, 0);
+        this.movePlayerToPosition(uuid, 0);
         return player;
     }
 
-    movePlayer(uuid: string, distance: number) {
-        if (this.aznopoly.isHost) {
-            this.aznopoly.client.sendPacket({
-                type: PacketType.BOARD,
-                data: {
-                    function: "movePlayer",
-                    args: [uuid, distance],
-                },
-            })
-        }
-
-        if (!Number.isInteger(distance)) {
-            throw new Error(`Illegal parameter distance: Not an integer (${distance})`);
+    movePlayerToPosition(uuid: string, position: number) {
+        if (!Number.isInteger(position)) {
+            throw new Error(`Illegal parameter position: Not an integer (${position})`);
         }
 
         let player = this.players.get(uuid);
@@ -112,12 +64,29 @@ export default class GameBoard extends Phaser.GameObjects.Container {
             throw new Error(`Player with UUID ${uuid} does not exist!`);
         }
 
-        player.position += distance;
+        player.position = position;
         const coords = GameBoard.getCoordForPos(player.position);
 
         player.gameObject.setPosition(coords.x * this.TILE_SIZE, coords.y * this.TILE_SIZE)
         this.checkPlayerColisions();
     }
+
+    // movePlayerForward(uuid: string, distance: number) {
+    //     if (!Number.isInteger(distance)) {
+    //         throw new Error(`Illegal parameter distance: Not an integer (${distance})`);
+    //     }
+
+    //     let player = this.players.get(uuid);
+    //     if (!player) {
+    //         throw new Error(`Player with UUID ${uuid} does not exist!`);
+    //     }
+
+    //     player.position += distance;
+    //     const coords = GameBoard.getCoordForPos(player.position);
+
+    //     player.gameObject.setPosition(coords.x * this.TILE_SIZE, coords.y * this.TILE_SIZE)
+    //     this.checkPlayerColisions();
+    // }
 
     private checkPlayerColisions() {
         const positions: { [key: number]: string[] } = {};

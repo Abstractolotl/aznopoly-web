@@ -13,6 +13,7 @@ export function mock(aznopoly: AzNopolyGame) {
     game._room = {
         connectedPlayerIds: ["1111-2222-3333-4444"],
         host: "1111-2222-3333-4444",
+        getPlayerName: () => "mockius maximus",
     };
     game._name = "mockius maximus";
 

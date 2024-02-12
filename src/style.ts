@@ -1,4 +1,5 @@
-export const COLOR_PRIMARY = 0x73c8e4;
+export const COLOR_PRIMARY = 0x494949;
+export const COLOR_PRIMARY_2 = 0x9f9f9f;
 export const COLOR_CONTRAST = 0xffffff;
 
 type TextStyle = Phaser.Types.GameObjects.Text.TextStyle;

@@ -1,5 +1,3 @@
-import { Scene } from "phaser";
-import { FONT_STYLE_BUTTON, FONT_STYLE_BUTTON_HOVER } from "./style";
 import convert from 'color-convert';
 
 export function easeOutElastic(x: number): number {
@@ -11,23 +9,6 @@ export function easeOutElastic(x: number): number {
       ? 1
       : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
 }
-
-/* DEPRECATED */
-export function makeButton(scene: Scene, text: string, x: number, y: number, onClick: () => void) : Phaser.GameObjects.Text {
-    const btn = scene.add.text(x, y, text, FONT_STYLE_BUTTON);
-    btn.setInteractive();
-    btn.on('pointerover', () => {
-        btn.setX(110);
-        btn.setStyle(FONT_STYLE_BUTTON_HOVER);
-    });
-    btn.on('pointerout', () => {
-        btn.setX(100);
-        btn.setStyle(FONT_STYLE_BUTTON);
-    });
-    btn.on('pointerdown', onClick);
-    return btn;
-}
-
 
 export function getColorFromUUID(uuid: string) {
     let hash = 0;

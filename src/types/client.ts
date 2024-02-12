@@ -43,7 +43,11 @@ export interface BasePacket {
 
 export interface PlayerPacket extends BasePacket {
     sender: string;
-    target?: string;
+    data: any;
+}
+
+export interface DynamicPacket<T> extends PlayerPacket {
+    data: T;
 }
 
 export interface RoomInitPacket extends BasePacket {
@@ -90,7 +94,7 @@ export interface SceneChangePacket extends PlayerPacket {
     type: PacketType.SCENE_CHANGE;
     data: {
         scene: string,
-        launchMethod: string,
+        launchMethod: "start" | "launch" | "wake",
     };
 }
 
