@@ -37,7 +37,8 @@ export const FONT_STYLE_COPYRIGHT_FLAVOUR_TEXT: TextStyle = {
 
 export const FONT_STYLE_TITLE_TEXT: TextStyle = {
     font: '600 150px Comfortaa',
-    color: 'black',
+    color: '#000000',
     fontSize: '200px',
-    //fontWeight: 'blod'
+    stroke: '#ffffff',
+    strokeThickness: 10,
 }

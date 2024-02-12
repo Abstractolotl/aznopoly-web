@@ -5,6 +5,7 @@ import { AzNopolyButton } from "../ui/button";
 import { BaseScene } from "./base-scene";
 import {FONT_STYLE_COPYRIGHT_FLAVOUR_TEXT, FONT_STYLE_TITLE_TEXT} from "../style.ts";
 import {AzNopolyInput} from "../ui/input.ts";
+import Rectangle = Phaser.GameObjects.Rectangle;
 
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
@@ -42,6 +43,7 @@ export default class TitleScene extends BaseScene {
         this.domContainer.createFromCache('input_mask');
         this.domLobbyCodeInput = this.domContainer.getChildByID('title-lobby-code-input') as HTMLInputElement;
         this.domLobbyCodeInput.style.width = "240px";
+        this.add.rectangle(WIDTH / 2 - 65, HEIGHT / 2 + 41, 250, 66, 0xffffff, 1).setOrigin(0.5, 0.5)
         //this.domNameInput = this.domContainer.getChildByID('title-name-input') as HTMLInputElement;
         //this.domNameInput.value = 'test';
 
