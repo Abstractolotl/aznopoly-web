@@ -32,7 +32,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         playerList.updatePlayerList(this.aznopoly.room.connectedPlayerIds.map(e => ({uuid: e, name: this.aznopoly.room.getPlayerName(e), host: false})))
         playerList.updateTitle("");
 
-        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", WIDTH - 150, HEIGHT - 100, this.controller.onRollClick.bind(this.controller)));
+        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", WIDTH - 150, HEIGHT - 100, 0, 0, this.controller.onRollClick.bind(this.controller)));
         this.rollButton.disable();
 
         this.choiceWheel = this.add.existing(new RandomSelectionWheel(this, WIDTH /2, HEIGHT / 2, {width: 300, height: 40}));

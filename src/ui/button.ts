@@ -33,7 +33,7 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
 
     private onClick: () => void;
 
-    constructor(scene: Scene, title: string, x: number, y: number, widthOffset: number, heightOffset: number, onClick: () => void) {
+    constructor(scene: Phaser.Scene, title: string, x: number, y: number, widthOffset: number, heightOffset: number, onClick: () => void) {
         super(scene);
         this.onClick = onClick;
 

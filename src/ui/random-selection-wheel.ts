@@ -84,7 +84,7 @@ export default class RandomSelectionWheel extends Phaser.GameObjects.Container {
         this.choiceTexts.forEach((text, i) => {
             text.setStyle(FONT_STYLE_BODY);
             if(i === index) {
-                text.setStyle({color: '#ffffff'});
+                text.setStyle({color: '#dddddd'});
             }
         });
     }
