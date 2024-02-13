@@ -17,6 +17,8 @@ export default class AzNopolyInput extends Phaser.GameObjects.Container {
         this.graphics = new Phaser.GameObjects.Graphics(scene);
         this.graphics.fillStyle(0xffffff, 1);
         this.graphics.fillRect(0, 0, width, height);
+        this.graphics.lineStyle(5, 0xffffff, 1)
+        this.graphics.strokeRect(0, 0, width, height)
 
         this.dom = scene.add.dom(0, 0).createFromCache('input_mask');
         this.dom.node.id = "input-field-" + Math.random().toString(36).substring(7);
