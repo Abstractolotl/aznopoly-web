@@ -106,6 +106,21 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         return this.boardTiles[player.position % this.boardTiles.length];
     }
 
+    teleportPlayerToPosition(uuid: string, pos: number) {
+        const player = this.players.get(uuid);
+        if (!player) {
+            throw new Error(`Player with UUID ${uuid} does not exist!`);
+        }
+
+        player.position = pos;
+        const coords = this.boardTiles[player.position % this.boardTiles.length].getPlayerCenter();
+
+        player.gameObject.setPosition(coords.x, coords.y)
+        this.checkPlayerCollisions();
+
+        return this.boardTiles[player.position % this.boardTiles.length];
+    }
+
     private checkPlayerCollisions() {
         const positions: { [key: number]: string[] } = {};
         this.players.forEach((player, uuid) => {

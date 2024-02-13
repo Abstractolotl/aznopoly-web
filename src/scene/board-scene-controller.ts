@@ -1,12 +1,13 @@
 import AzNopolyGame from "../game";
-import { SceneSwitcher } from "../scene-switcher";
 import SyncedSceneController from "./base/synced-scene-controller";
 import BoardScene from "./board-scene";
+import {TileType} from "@/types/board.ts";
 
 interface Player {
     uuid: string;
     name: string;
     money: number;
+    tiles: number[];
     position: number;
 }
 
@@ -24,8 +25,11 @@ export default class BoardSceneController extends SyncedSceneController {
         this.registerSyncedMethod(this.updatePlayerPosition, true);
         this.registerSyncedMethod(this.startTurn, true);
         this.registerSyncedMethod(this.startMinigame, true);
+        this.registerSyncedMethod(this.updatePlayers, true);
 
         this.registerSyncedMethod(this.doDiceRoll, false);
+        this.registerSyncedMethod(this.finishTurn, false);
+        this.registerSyncedMethod(this.buyTiles, false);
     }
     
     onAllPlayersReady(): void {
@@ -34,6 +38,7 @@ export default class BoardSceneController extends SyncedSceneController {
                 uuid,
                 name: this.aznopoly.room.getPlayerName(uuid),
                 money: 1500,
+                tiles: [],
                 position: 0,
             }));
             this.syncProxy.addPlayersToBoard(players);
@@ -44,6 +49,10 @@ export default class BoardSceneController extends SyncedSceneController {
     private addPlayersToBoard(players: Player[]) {
         this.players = players;
         this.scene.addPlayers(players.map(p => p.uuid));
+    }
+
+    private updatePlayers(players: Player[]) {
+        this.players = players;
     }
 
     private startTurn(uuid: string) {
@@ -79,7 +88,30 @@ export default class BoardSceneController extends SyncedSceneController {
 
         player.position += roll;
         this.syncProxy.updatePlayerPosition(sender, player.position);
-        this.startNextTurn();
+    }
+
+    private buyTiles(uuid: string, tiles: number[]) {
+        if (!this.aznopoly.isHost) {
+            return;
+        }
+
+        let sender = this.players.find(value => value.uuid === uuid);
+        if (sender === undefined) {
+            return;
+        }
+
+        // Check if any tile is already owned by someone else
+        for (let tile of tiles) {
+            let owner = this.players.find(p => p.tiles.includes(tile));
+            if (owner !== undefined && owner.uuid !== uuid) {
+                return;
+            }
+        }
+
+        sender.tiles.push(...tiles);
+
+        this.syncProxy.updatePlayers(this.players);
+        this.syncProxy.finishTurn();
     }
 
     private startNextTurn() {
@@ -107,8 +139,41 @@ export default class BoardSceneController extends SyncedSceneController {
         });
     }
 
+    private finishTurn() {
+        if (this.aznopoly.isHost) {
+            this.startNextTurn();
+        }
+
+        this.scene.hideBuyTilePopUp();
+    }
+
     private updatePlayerPosition(uuid: string, position: number) {
-        this.scene.updatePlayerPosition(uuid, position);
+        let tile = this.scene.updatePlayerPosition(uuid, position);
+        if (tile.getTileType() == TileType.TO_JAIL) {
+            this.syncProxy.updatePlayerPosition(uuid, 10)
+        }
+
+        if(uuid == this.aznopoly.uuid) {
+            if(TileType.isCorner(tile.getTileType()) || tile.getTileType() == TileType.ACTION) {
+                this.syncProxy.finishTurn();
+                return;
+            }
+
+            if (this.players.some(p => p.tiles.includes(position))) {
+                this.syncProxy.finishTurn();
+                return;
+            }
+
+            let player = this.players.find(p => p.uuid == uuid);
+            if (player === undefined) {
+                this.finishTurn();
+                return;
+            }
+
+            let level = player.tiles.filter(t => t == position).length;
+
+            this.scene.showBuyTilePopUp(tile, level);
+        }
     }
 
 }

@@ -1,16 +1,20 @@
 import GameBoard from "../board/board";
-import { HEIGHT, WIDTH } from "../main";
-import { FONT_STYLE_BODY } from "../style";
-import { AzNopolyButton } from "../ui/button";
+import {HEIGHT, WIDTH} from "../main";
+import {FONT_STYLE_BODY} from "../style";
+import {AzNopolyButton} from "../ui/button";
 import PlayerList from "../ui/player-list";
 import RandomSelectionWheel from "../ui/random-selection-wheel";
-import { BaseScene } from "./base/base-scene";
+import {BaseScene} from "./base/base-scene";
 import BoardSceneController from "./board-scene-controller";
+import {TileType} from "@/types/board.ts";
+import BoardTile from "@/board/board-tile.ts";
+import BoardTilePopUp from "@/board/board_tile_popup.ts";
 
 
 export default class BoardScene extends BaseScene<BoardSceneController> {
 
     private board!: GameBoard;
+    private tilePopUp!: BoardTilePopUp;
     private rollButton!: AzNopolyButton;
     private choiceWheel!: RandomSelectionWheel;
 
@@ -20,7 +24,6 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     }
     
     init() {
-        console.log("GameScene init");
         this.controller = new BoardSceneController(this, this.aznopoly);
     }
 
@@ -38,6 +41,9 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.choiceWheel = this.add.existing(new RandomSelectionWheel(this, WIDTH /2, HEIGHT / 2, {width: 300, height: 40}));
         this.choiceWheel.setVisible(false);
 
+        this.tilePopUp = this.add.existing(new BoardTilePopUp(this, WIDTH / 2, HEIGHT / 2));
+        this.tilePopUp.hide();
+
         this.add.text(WIDTH - 300, 300, "Current Turn:", FONT_STYLE_BODY);
     }
 
@@ -45,8 +51,11 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         players.forEach(player => this.board.addPlayer(player));
     }
 
-    public updatePlayerPosition(uuid: string, position: number) {
-        this.board.movePlayerToPosition(uuid, position);
+    public updatePlayerPosition(uuid: string, position: number, teleport: boolean = false) {
+        if(teleport) {
+            return this.board.teleportPlayerToPosition(uuid, position);
+        }
+        return this.board.movePlayerToPosition(uuid, position);
     }
 
     public enableRollButton() {
@@ -55,6 +64,14 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
     public disableRollButton() {
         this.rollButton.disable();
+    }
+
+    public showBuyTilePopUp(tile: BoardTile, level: number) {
+        this.tilePopUp.show(tile, 0);
+    }
+
+    public hideBuyTilePopUp() {
+        this.tilePopUp.hide();
     }
 
     public showMinigameSelect(name: string) : Promise<void> {
