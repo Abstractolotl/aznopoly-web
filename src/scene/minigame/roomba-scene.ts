@@ -25,7 +25,6 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
     }
 
     init() {
-        console.log("RoombaScene init", this.roombas);
         this.controller = new RoombaSceneController(this, this.aznopoly);
         this.roombas = []
         this.timeSinceLastPaint = 0;
@@ -90,7 +89,6 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
         if (this.timeSinceLastPaint > PAINT_REFRESH_TIME) {
             this.timeSinceLastPaint = 0;
 
-            console.log("Painting", this.roombas.length);
             this.roombas.forEach(roomba => {
                 roomba.paintPath(this.paint);
             });

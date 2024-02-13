@@ -22,7 +22,6 @@ export default class BoardTile extends Phaser.GameObjects.Container {
 
     constructor(scene: Scene, x: number, y: number, width: number, height: number, type: TileType, direction: TileOrientation) {
         super(scene, x, y);
-        console.log("TileType: ", TileType[type])
 
         this.tileType = type;
         this.tileDirection = direction;

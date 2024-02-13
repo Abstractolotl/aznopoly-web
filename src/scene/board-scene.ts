@@ -20,7 +20,6 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     }
     
     init() {
-        console.log("GameScene init");
         this.controller = new BoardSceneController(this, this.aznopoly);
     }
 

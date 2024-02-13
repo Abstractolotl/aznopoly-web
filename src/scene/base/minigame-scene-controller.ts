@@ -19,7 +19,6 @@ export default abstract class MinigameSceneController extends SyncedSceneControl
     }
     
     onAllPlayersReady(): void {
-        console.log("onAllPlayersReady")
         if (!this.aznopoly.isHost) {
             return;
         }

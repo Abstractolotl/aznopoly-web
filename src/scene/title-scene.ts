@@ -36,7 +36,6 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
     }
 
     init() {
-        console.log("TitleScene init", this.aznopoly)
         this.controller = new TitleSceneController(this, this.aznopoly);
     }
 
