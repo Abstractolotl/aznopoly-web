@@ -1,10 +1,26 @@
+import AzNopolyBar from "@/ui/bar";
 import { HEIGHT, WIDTH } from "../../main";
-import { FONT_STYLE_HEADLINE } from "../../style";
+import { FONT_STYLE_HEADLINE, FRAME_PADDING } from "../../style";
 import { BaseScene } from "./base-scene";
 import MinigameSceneController from "./minigame-scene-controller";
+import AzNopolyPanel from "@/ui/panel";
 
 const START_TIME = 500;
 export default abstract class MinigameScene<T extends MinigameSceneController> extends BaseScene<T> {
+
+    static getGameBounds() {
+        const panelHeight = HEIGHT - FRAME_PADDING * 3 - AzNopolyBar.HEIGHT;
+        const panelWidth = WIDTH - 400;
+        return new Phaser.Geom.Rectangle(FRAME_PADDING, AzNopolyBar.HEIGHT + FRAME_PADDING * 2, panelWidth, panelHeight);
+    }
+
+    static getRightBounds() {
+        const left = this.getGameBounds();
+
+        const panelHeight = HEIGHT - FRAME_PADDING * 3 - AzNopolyBar.HEIGHT;
+        const panelWidth = WIDTH - (left.x + left.width + FRAME_PADDING * 2);
+        return new Phaser.Geom.Rectangle(left.x + left.width + FRAME_PADDING, AzNopolyBar.HEIGHT + FRAME_PADDING * 2, panelWidth, panelHeight);
+    }
 
     private overlay!: Phaser.GameObjects.Image;
     private centerText!: Phaser.GameObjects.Text;
@@ -27,6 +43,16 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
         this.centerText = this.add.text(WIDTH/2, HEIGHT/2, 'Waiting for players...', FONT_STYLE_HEADLINE);
         this.centerText.setOrigin(0.5, 0.5);
         this.centerText.setDepth(1000);
+
+        this.add.existing(new AzNopolyBar(this, "Roomba Outrage"))
+
+        const gameBounds = MinigameScene.getGameBounds();
+        const gamePanel = new AzNopolyPanel(this, gameBounds.x, gameBounds.y, gameBounds.width, gameBounds.height);
+        this.add.existing(gamePanel);
+
+        const rightBounds = MinigameScene.getRightBounds();
+        const rightPanel = new AzNopolyPanel(this, rightBounds.x, rightBounds.y, rightBounds.width, rightBounds.height);
+        this.add.existing(rightPanel);
     }
 
     update(time: number, delta: number) {

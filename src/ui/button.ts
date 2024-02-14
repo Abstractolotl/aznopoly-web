@@ -1,4 +1,4 @@
-import { COLOR_CONTRAST, COLOR_PRIMARY } from "../style";
+    import { COLOR_CONTRAST, COLOR_PRIMARY } from "../style";
 import { easeOutElastic } from "../util";
 
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
@@ -7,7 +7,8 @@ export const FONT_STYLE_BUTTON: Phaser.Types.GameObjects.Text.TextStyle = { font
 export const FONT_STYLE_BUTTON_DOWN: Phaser.Types.GameObjects.Text.TextStyle = { font: '600 32px Comfortaa', color: '#ffffff', align: 'center' }
 
 const MAX_HOVER_TIMER = 0.05;
-const HOVER_SCALE = 1.25
+const HOVER_SCALE = 1.15
+const HOVER_SCALE_PIXEL = 5
 export class AzNopolyButton extends Phaser.GameObjects.Container {
 
     public static preload(scene: Phaser.Scene) {
@@ -57,7 +58,8 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         }
 
         const t = Math.min(1, this.hoverTimer / MAX_HOVER_TIMER);
-        this.graphic.scale = t * (HOVER_SCALE - 1) + 1;
+        const targetScale = HOVER_SCALE + (2 * HOVER_SCALE_PIXEL / this.width);
+        this.graphic.scale = t * (targetScale - 1) + 1;
     }
 
     public enable() {

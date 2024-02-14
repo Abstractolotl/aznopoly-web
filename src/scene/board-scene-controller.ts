@@ -1,3 +1,4 @@
+import { Avatars } from "@/ui/avatar";
 import AzNopolyGame from "../game";
 import { SceneSwitcher } from "../scene-switcher";
 import SyncedSceneController from "./base/synced-scene-controller";
@@ -43,7 +44,14 @@ export default class BoardSceneController extends SyncedSceneController {
 
     private addPlayersToBoard(players: Player[]) {
         this.players = players;
-        this.scene.addPlayers(players.map(p => p.uuid));
+        this.scene.addPlayers(players.map((p, i) => ({
+            uuid: p.uuid,
+            name: p.name,
+            money: p.money,
+            colorIndex: i,
+            host: p.uuid == this.aznopoly.uuid,
+            avatar: Avatars.AXOLOTL
+        })));
     }
 
     private startTurn(uuid: string) {

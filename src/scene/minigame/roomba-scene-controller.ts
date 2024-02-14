@@ -2,12 +2,13 @@ import AzNopolyGame from "../../game";
 import { HEIGHT as GAME_HEIGHT, WIDTH as GAME_WIDTH } from "../../main";
 import { Roomba, RoombaConfig } from "../../minigame/roomba";
 import { getColorFromUUID } from "../../util";
+import MinigameScene from "../base/minigame-scene";
 import MinigameSceneController from "../base/minigame-scene-controller";
 import { RoombaScene } from "./roomba-scene";
 import convert from 'color-convert';
 
 
-const MAX_GAME_TIME = 3000;
+const MAX_GAME_TIME = 30000;
 export default class RoombaSceneController extends MinigameSceneController {
 
     declare protected scene: RoombaScene;
@@ -88,8 +89,9 @@ export default class RoombaSceneController extends MinigameSceneController {
     }
 
     private generateRandomRoombaConfig(playerid: string) {
-        const x = Math.random() * (GAME_WIDTH - Roomba.SIZE * 2) + Roomba.SIZE;
-        const y = Math.random() * (GAME_HEIGHT - Roomba.SIZE * 2) + Roomba.SIZE;
+        const bounds = MinigameScene.getGameBounds();
+        const x = Math.random() * (bounds.width - Roomba.SIZE * 2) + Roomba.SIZE + bounds.x;
+        const y = Math.random() * (bounds.height - Roomba.SIZE * 2) + Roomba.SIZE + bounds.y;
 
         const color = getColorFromUUID(playerid);
         const paintColor = convert.hex.hsl("0x" + color.toString(16));
