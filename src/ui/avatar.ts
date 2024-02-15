@@ -17,20 +17,34 @@ export default class AzNopolyAvatar extends Phaser.GameObjects.Container {
         scene.load.image(Avatars.BANANA, 'assets/avatars/avatar_banana.png');
     }
 
+    private image: Phaser.GameObjects.Image;
+    private graphics: Phaser.GameObjects.Graphics;
+
     constructor(scene: Phaser.Scene, x: number, y: number, size: number, avatar: Avatars, colorIndex: number) {
         super(scene, x, y);
         this.scene = scene;
 
-        const image = new Phaser.GameObjects.Image(scene, 0, 0, avatar);
-        image.setScale(size / image.width);
-        image.setOrigin(0, 0);
+        this.image = new Phaser.GameObjects.Image(scene, 0, 0, avatar);
+        this.image.setScale(size / this.image.width);
+        this.image.setOrigin(0, 0);
 
-        const graphics = new Phaser.GameObjects.Graphics(scene);
-        graphics.lineStyle(FRAME_BORDER_WIDTH, PLAYER_COLORS[colorIndex]);
-        graphics.strokeCircle(size / 2, size / 2, size / 2);
+        this.graphics = new Phaser.GameObjects.Graphics(scene);
+        this.setBorderColor(colorIndex);
 
-        this.add(image);
-        this.add(graphics);
+        this.add(this.image);
+        this.add(this.graphics);
     }
+
+    public setAvatar(avatar: Avatars) {
+        this.image.setTexture(avatar);
+    }
+
+    public setBorderColor(color: number) {
+        this.graphics.clear();
+        this.graphics.lineStyle(FRAME_BORDER_WIDTH, PLAYER_COLORS[color]);
+        const radius = this.image.displayWidth / 2;
+        this.graphics.strokeCircle(radius, radius, radius);
+    }
+
     
 }
