@@ -63,13 +63,13 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
     }
 
     public enable() {
-        this.buttonText.setInteractive();
+        this.setInteractive();
         this.buttonText.setAlpha(1);
         this.enabled = true;
     }
 
     public disable() {
-        this.buttonText.disableInteractive();
+        this.disableInteractive();
         this.buttonText.setAlpha(0);
 
         this.enabled = false;
