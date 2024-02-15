@@ -2,7 +2,7 @@ import AzNopolyBar from "@/ui/bar";
 import { HEIGHT, WIDTH } from "../../main";
 import { FONT_STYLE_HEADLINE, FRAME_PADDING } from "../../style";
 import { BaseScene } from "./base-scene";
-import MinigameSceneController from "./minigame-scene-controller";
+import MinigameSceneController, { ResultData } from "./minigame-scene-controller";
 import AzNopolyPanel from "@/ui/panel";
 
 const START_TIME = 500;
@@ -85,7 +85,7 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
         this.overlay.setVisible(false);
     }
 
-    public showResultOverlay(playerWon: string[]) {
+    public showResultOverlay({playerWon}: ResultData) {
         const won = playerWon.includes(this.aznopoly.uuid);
         this.overlay.setVisible(false);
         this.overlay.alpha = 1;

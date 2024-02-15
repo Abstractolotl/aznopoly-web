@@ -15,9 +15,9 @@ export default class GameBoard extends Phaser.GameObjects.Container {
     }
 
     private players: Map<string, BoardPlayer>;
-    private boardTiles: BoardTile[];
-    private tiles: TileType[];
+    private boardTiles!: BoardTile[];
     private boardLength: number;
+    private tiles!: TileType[];
 
     constructor(scene: Phaser.Scene, x: number, y: number, size: number, boardLength: number) {
         super(scene, x, y);
@@ -25,9 +25,11 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         this.width = size;
         this.height = size;
         this.boardLength = boardLength;
+    }
 
-        this.tiles = BoardGenerator.generateFields(seed, BOARD_SIDE_LENGTH);
-        this.boardTiles = GameBoard.generateBoardTiles(scene, this.tiles, size / (BOARD_SIDE_LENGTH + 4));
+    public init(tiles: TileType[]) {
+        this.tiles = tiles;
+        this.boardTiles = this.generateBoardTiles(this.scene, this.tiles, this.width / (this.boardLength + 4));
         this.boardTiles.forEach(e => this.add(e));
     }
 

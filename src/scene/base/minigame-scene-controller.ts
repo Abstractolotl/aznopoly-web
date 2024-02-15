@@ -1,7 +1,11 @@
 import AzNopolyGame from "../../game";
-import { SceneSwitcher } from "../../scene-switcher";
 import MinigameScene from "./minigame-scene";
 import SyncedSceneController from "./synced-scene-controller";
+
+export interface ResultData {
+    playerWon: string[];
+    sorted: boolean;
+}
 
 const RESULT_DISPLAY_TIME = 2000;
 export default abstract class MinigameSceneController extends SyncedSceneController {
@@ -35,19 +39,19 @@ export default abstract class MinigameSceneController extends SyncedSceneControl
         this.scene.showStartOverlay();
     }
 
-    protected endGame(playerWon: string[], sorted: boolean) {
-        this.scene.showResultOverlay(playerWon);
-        setTimeout(() => this.onGameOver(), RESULT_DISPLAY_TIME);
+    protected endGame(result: ResultData) {
+        this.scene.showResultOverlay(result);
+        setTimeout(() => this.onGameOver(result), RESULT_DISPLAY_TIME);
     }
 
     abstract onMiniGameStart() : void;
 
-    private onGameOver() {
+    private onGameOver(result: ResultData) {
         if (!this.aznopoly.isHost) {
             return;
         }
         this.scene.scene.stop();
-        this.scene.scene.wake(this.previousScene);
+        this.scene.scene.wake(this.previousScene, result);
     }
 
 }
