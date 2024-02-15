@@ -7,7 +7,7 @@ export const COLOR_TEXT_INVERTED = 0x4690A9;
 export const COLOR_BACKGROUND_LIGHT = 0xe6f9ff;
 
 export const FRAME_PADDING = 15;
-export const FRAME_BORDER_RADIUS = 0;
+export const FRAME_BORDER_RADIUS = 5;
 export const FRAME_BORDER_WIDTH = 5;
 
 export const COLOR_PRIMARY_2 = 0x73c8e4;

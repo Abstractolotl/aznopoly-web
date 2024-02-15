@@ -1,6 +1,7 @@
 import AzNopolyPanel from "@/ui/panel";
 import GameBoard from "../board/board";
 import { HEIGHT, WIDTH } from "../main";
+import { BOARD_SIDE_LENGTH, HEIGHT, WIDTH } from "../main";
 import { FRAME_PADDING } from "../style";
 import { AzNopolyButton } from "../ui/button";
 import PlayerList from "../ui/player-list";
@@ -41,6 +42,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
         const boardSize = leftPanel.height * 0.8;
         this.board = this.add.existing(new GameBoard(this.aznopoly.room.host, this, leftPanel.x + leftPanel.width * 0.5 - boardSize * 0.5, leftPanel.y + leftPanel.height * 0.5 - boardSize * 0.5, boardSize));
+        this.board = this.add.existing(new GameBoard(this, leftPanel.x + leftPanel.width * 0.5 - boardSize * 0.5, leftPanel.y + leftPanel.height * 0.5 - boardSize * 0.5, boardSize, BOARD_SIDE_LENGTH));
 
         this.playerList = this.add.existing(new AzNopolyList(this, rightPanel.x + FRAME_PADDING, rightPanel.y + FRAME_PADDING));
 
