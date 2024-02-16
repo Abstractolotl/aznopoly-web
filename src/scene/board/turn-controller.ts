@@ -41,13 +41,11 @@ export default class Turn {
         if( !field ) return false;
 
         let tile = this.controller.getTile(field);
-        console.log(TileType[tile.getTileType()])
         if(!TileType.isProperty(tile.getTileType())) {
             this.controller.onTurnEnd(this.player);
             return true;
         }
 
-        console.log("Player entered Property Tile")
         this.state = TurnState.PROPERTY;
         if(this.propertyManager.hasToPayRent(this.player, field)) {
             this.controller.onHasToPayRent(this.player);

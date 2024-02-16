@@ -19,7 +19,7 @@ export namespace TileType {
     }
 
     export function isProperty(type: TileType) {
-        return !(type === TileType.ACTION || isCorner(type));
+        return !(type == TileType.ACTION || isCorner(type));
     }
 }
 
