@@ -42,6 +42,7 @@ export default class BoardSceneController extends SyncedSceneController {
 
         this.registerSyncedMethod(this.rollDice, false);
         this.registerSyncedMethod(this.buyProperty, false)
+        this.registerSyncedMethod(this.cancelBuyProperty, false);
     }
     
     onAllPlayersReady(): void {
@@ -107,12 +108,27 @@ export default class BoardSceneController extends SyncedSceneController {
     }
 
     public buyProperty(uuid: string) {
+        console.log("Buying property");
+        if (!this.aznopoly.isHost) return;
+
         const player = this.players.find(p => p.uuid == uuid);
         if (!player) {
             return;
         }
 
-        this.propertyHelper.buyProperty(uuid, player.position);
+        this.currentTurn?.doBuyProperty();
+    }
+
+    public cancelBuyProperty(uuid: string) {
+        console.log("Canceling buy procedure");
+        if (!this.aznopoly.isHost) return;
+
+        const player = this.players.find(p => p.uuid == uuid);
+        if (!player) {
+            return;
+        }
+
+        this.currentTurn?.cancelBuyProperty();
     }
 
     public onRollClick() {
@@ -131,20 +147,19 @@ export default class BoardSceneController extends SyncedSceneController {
         }
     }
 
-    public onPopUpClick(submit: boolean) {
-        if (!this.currentTurn) return;
-
-        if(this.aznopoly.uuid == this.currentTurn?.getPlayer()) {
-            this.scene.hideBuyTilePopUp();
-            if (submit) {
-                this.currentTurn.doBuyProperty();
-            } else {
-                this.currentTurn.cancelBuyProperty();
-            }
-        }
+    public onClickSubmitProperty() {
+        console.log("Buying property");
+        this.scene.hideBuyTilePopUp();
+        this.syncProxy.buyProperty(this.aznopoly.uuid);
     }
 
-    public onPropertyBuy(uuid: string) {
+    public onClickCancelProperty() {
+        console.log("Canceling buy procedure");
+        this.scene.hideBuyTilePopUp();
+        this.syncProxy.cancelBuyProperty(this.aznopoly.uuid);
+    }
+
+    public onCanBuyProperty(uuid: string) {
         const player = this.players.find(p => p.uuid == uuid);
         if (!player) {
             console.error("Player not found");
@@ -154,7 +169,7 @@ export default class BoardSceneController extends SyncedSceneController {
         this.syncProxy.startBuyProperty(uuid);
     }
 
-    public onPropertyRent(uuid: string) {
+    public onHasToPayRent(uuid: string) {
         const player = this.players.find(p => p.uuid == uuid);
         if (!player) {
             console.error("Player not found");
@@ -258,6 +273,7 @@ export default class BoardSceneController extends SyncedSceneController {
         setTimeout(() => {
             // If player is still the same hide popup and cancel buy property
             if (this.currentTurn?.getPlayer() == uuid) {
+                console.log("Player took too long to buy property")
                 this.scene.hideBuyTilePopUp();
                 this.currentTurn.cancelBuyProperty();
             }

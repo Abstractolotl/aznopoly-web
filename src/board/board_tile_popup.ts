@@ -41,6 +41,7 @@ export default class BoardTilePopUp extends Phaser.GameObjects.Container {
     }
 
     show(upgrade: boolean, price: number) {
+        console.log("showing popup: " + price + " " + upgrade);
         this.setVisible(true);
         this.redrawUi()
 

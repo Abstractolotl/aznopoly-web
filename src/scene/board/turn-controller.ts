@@ -41,7 +41,6 @@ export default class Turn {
 
         this.controller.executeRoll(this.player);
         const field = this.controller.getPlayerPosition(this.player);
-
         if( !field ) return false;
 
         let tile = this.controller.getTile(field);
@@ -50,10 +49,11 @@ export default class Turn {
             return true;
         }
 
+        this.state = TurnState.PROPERTY;
         if(this.propertyManager.hasToPayRent(this.player, field)) {
-            this.controller.onPropertyRent(this.player);
+            this.controller.onHasToPayRent(this.player);
         } else if(this.propertyManager.canBuyProperty(this.player, field)) {
-            this.controller.onPropertyBuy(this.player);
+            this.controller.onCanBuyProperty(this.player);
         } else {
             this.controller.onTurnEnd(this.player);
         }
