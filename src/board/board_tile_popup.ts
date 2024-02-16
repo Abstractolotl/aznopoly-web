@@ -40,17 +40,17 @@ export default class BoardTilePopUp extends Phaser.GameObjects.Container {
         this.add(this.cancelButton);
     }
 
-    show(color: BoardTile, level: number) {
+    show(upgrade: boolean, price: number) {
         this.setVisible(true);
         this.redrawUi()
 
-        if(level === 0) {
+        if (!upgrade) {
             this.titleText.setText("Buy Property");
-        } else if(level > 1) {
+        } else {
             this.titleText.setText("Upgrade Property");
         }
 
-        this.priceText.setText("Price: " + (DEFAULT_PRICE * (level + 1)));
+        this.priceText.setText("Price: " + price);
     }
 
     hide() {

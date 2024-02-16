@@ -20,7 +20,7 @@ export default class PropertyManager {
         this.controller = controller;
     }
 
-    private getPropertyLevel(field: number) {
+    public getPropertyLevel(field: number) {
         if (!this.controller.isFieldOwned(field)) {
             return 0;
         }
@@ -37,7 +37,7 @@ export default class PropertyManager {
         return this.controller.getPlayers().find(player => player.tiles.includes(field));
     }
 
-    private calculatePropertyPrice(level: number) {
+    public calculatePropertyPrice(level: number) {
         return DEFAULT_PROPERTY_PRICE * ((PROPERTY_PRICE_MULTIPLIER * level) + 1);
     }
 

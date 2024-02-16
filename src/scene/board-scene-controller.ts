@@ -248,7 +248,14 @@ export default class BoardSceneController extends SyncedSceneController {
             return;
         }
 
-        this.scene.showBuyTilePopUp(this.scene.getTile(this.players.find(p => p.uuid == uuid)!.position), 1);
+        let player = this.getPlayer(uuid);
+        if (!player) {
+            return;
+        }
+
+        let propertyLevel = this.propertyHelper.getPropertyLevel(player.position);
+        this.scene.showBuyTilePopUp((propertyLevel > 0), this.propertyHelper.calculatePropertyPrice(propertyLevel));
+
         setTimeout(() => {
             // If player is still the same hide popup and end turn
             if (this.currentTurn?.getPlayer() == uuid) {
@@ -269,10 +276,6 @@ export default class BoardSceneController extends SyncedSceneController {
             return null;
         }
         return player;
-    }
-
-    public getCurrentTurn() {
-        return this.currentTurn;
     }
 
     public getTile(pos: number) {

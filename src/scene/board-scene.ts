@@ -91,8 +91,8 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.rollButton.disable();
     }
 
-    public showBuyTilePopUp(tile: BoardTile, level: number) {
-        this.tilePopUp.show(tile, level);
+    public showBuyTilePopUp(upgrade: boolean, level: number) {
+        this.tilePopUp.show(upgrade, level);
     }
 
     public hideBuyTilePopUp() {
