@@ -1,11 +1,7 @@
-import {TileType} from "@/types/board.ts";
-import {COLOR_PRIMARY, COLOR_PRIMARY_2, FONT_STYLE_BODY} from "@/style.ts";
-import BoardTile from "@/board/board-tile.ts";
+import {COLOR_PRIMARY, COLOR_PRIMARY_2, FONT_STYLE_BODY, FONT_STYLE_BUTTON, FONT_STYLE_TITLE_TEXT} from "@/style.ts";
 import {AzNopolyButton} from "@/ui/button.ts";
 
 const PADDING = 10;
-const TIMEOUT = 3000;
-const DEFAULT_PRICE = 100;
 
 export default class BoardTilePopUp extends Phaser.GameObjects.Container {
 
@@ -24,14 +20,14 @@ export default class BoardTilePopUp extends Phaser.GameObjects.Container {
 
         this.graphics = new Phaser.GameObjects.Graphics(scene);
 
-        this.titleText = new Phaser.GameObjects.Text(scene, this.width*0.5, -PADDING - 45, "PLACEHOLDER", FONT_STYLE_BODY);
+        this.titleText = new Phaser.GameObjects.Text(scene, this.width*0.5, -PADDING - 45, "PLACEHOLDER", FONT_STYLE_BUTTON);
         this.titleText.setOrigin(0.5, 0);
 
-        this.priceText = new Phaser.GameObjects.Text(scene, this.width*0.5, this.height*0.5, "Price: " + DEFAULT_PRICE, FONT_STYLE_BODY);
+        this.priceText = new Phaser.GameObjects.Text(scene, this.width*0.5, this.height - 150, "Price: ???", FONT_STYLE_BODY);
         this.priceText.setOrigin(0.5, 0.5);
 
-        this.submitButton = new AzNopolyButton(scene, "Accept", this.width - 100, this.height - 50, 0, 0, onSubmit);
-        this.cancelButton = new AzNopolyButton(scene, "Cancel", 50, this.height - 50, 0, 0, onCancel);
+        this.cancelButton = new AzNopolyButton(scene, "Cancel", 0, this.height - 50, this.width, 50, onCancel);
+        this.submitButton = new AzNopolyButton(scene, "Accept", 0, this.height - 100, this.width, 50, onSubmit);
 
         this.add(this.graphics);
         this.add(this.priceText)
@@ -41,7 +37,6 @@ export default class BoardTilePopUp extends Phaser.GameObjects.Container {
     }
 
     show(upgrade: boolean, price: number) {
-        console.log("showing popup: " + price + " " + upgrade);
         this.setVisible(true);
         this.redrawUi()
 

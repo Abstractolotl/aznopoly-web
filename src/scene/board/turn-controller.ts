@@ -6,6 +6,7 @@ import PropertyManager from "@/scene/board/property-controller.ts";
 enum TurnState {
     PRE_ROLL,
     PROPERTY,
+    ITEM,
     OVER
 }
 
@@ -31,10 +32,6 @@ export default class Turn {
         this.player = player;
     }
 
-    getPlayer() {
-        return this.player;
-    }
-
     public doRoll(sender: string) : boolean {
         if (this.state != TurnState.PRE_ROLL) return false;
         if (sender != this.player) return false;
@@ -42,6 +39,8 @@ export default class Turn {
         this.controller.executeRoll(this.player);
         const field = this.controller.getPlayerPosition(this.player);
         if( !field ) return false;
+
+        console.log("Player " + this.player + " moved to " + field);
 
         let tile = this.controller.getTile(field);
         if(!TileType.isProperty(tile.getTileType())) {
@@ -82,6 +81,7 @@ export default class Turn {
     public cancelBuyProperty(): boolean {
         if (this.state != TurnState.PROPERTY) return false;
 
+        this.state = TurnState.OVER;
         this.controller.onTurnEnd(this.player);
 
         return false;
