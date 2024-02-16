@@ -46,7 +46,11 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.choiceWheel = this.add.existing(new RandomSelectionWheel(this, WIDTH /2, HEIGHT / 2, {width: 300, height: 40}));
         this.choiceWheel.setVisible(false);
 
-        this.tilePopUp = this.add.existing(new BoardTilePopUp(this, WIDTH / 2, HEIGHT / 2, {width: 300, height: 200}, () => {}, this.controller.onPopupSubmit.bind(this.controller)));
+        this.tilePopUp = this.add.existing(new BoardTilePopUp(this, WIDTH / 2, HEIGHT / 2, {width: 300, height: 200}, () => {
+            this.controller.onPopUpClick(false);
+        }, () => {
+            this.controller.onPopUpClick(true);
+        }));
         this.tilePopUp.setVisible(false);
 
         this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", 50, 200, 150, 55, this.controller.onRollClick.bind(this.controller)));

@@ -105,7 +105,12 @@ export default class BoardSceneController extends SyncedSceneController {
     }
 
     public buyProperty(uuid: string) {
+        const player = this.players.find(p => p.uuid == uuid);
+        if (!player) {
+            return;
+        }
 
+        this.propertyHelper.buyProperty(uuid, player.position);
     }
 
     public onRollClick() {
@@ -124,12 +129,14 @@ export default class BoardSceneController extends SyncedSceneController {
         }
     }
 
-    public onPopupSubmit() {
+    public onPopUpClick(submit: boolean) {
         if (!this.currentTurn) return;
 
         if(this.aznopoly.uuid == this.currentTurn?.getPlayer()) {
             this.scene.hideBuyTilePopUp();
-            this.currentTurn.doBuyProperty()
+            if (submit) {
+                this.currentTurn.doBuyProperty()
+            }
         }
     }
 
@@ -161,7 +168,7 @@ export default class BoardSceneController extends SyncedSceneController {
     }
 
     private doTurn(uuid: string) {
-        this.currentTurn = new Turn(this, uuid);
+        this.currentTurn = new Turn(this, this.propertyHelper, uuid);
         this.syncProxy.startTurn(uuid);
     }
 
@@ -261,6 +268,10 @@ export default class BoardSceneController extends SyncedSceneController {
             return null;
         }
         return player;
+    }
+
+    public getCurrentTurn() {
+        return this.currentTurn;
     }
 
     public getTile(pos: number) {

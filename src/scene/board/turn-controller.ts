@@ -1,5 +1,6 @@
 import BoardSceneController from "../board-scene-controller";
 import {TileType} from "@/types/board.ts";
+import PropertyHelper from "@/scene/board/property-controller.ts";
 
 
 enum TurnState {
@@ -17,14 +18,16 @@ export default class Turn {
 
     private state: TurnState = TurnState.PRE_ROLL;
     private controller: BoardSceneController;
+    private propertyHelper: PropertyHelper;
 
     /**
      * The player that is currently taking their turn
      */
     private player: string;
 
-    constructor(controller: BoardSceneController, player: string) {
+    constructor(controller: BoardSceneController, propertyHelper: PropertyHelper, player: string) {
         this.controller = controller;
+        this.propertyHelper = propertyHelper;
         this.player = player;
     }
 
@@ -60,9 +63,21 @@ export default class Turn {
     }
 
     public doBuyProperty(): boolean {
+        if (this.state != TurnState.PROPERTY) return false;
 
+        const field = this.controller.getPlayerPosition(this.player);
+        if( !field ) return false;
 
-        return false;
+        let tile = this.controller.getTile(field);
+        if(!TileType.isProperty(tile.getTileType())) {
+            this.controller.onTurnEnd(this.player);
+            return true;
+        }
+
+        this.propertyHelper.buyProperty(this.player, field!);
+        this.controller.onTurnEnd(this.player);
+
+        return true;
     }
 
     public doUseItem() : boolean{
