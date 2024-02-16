@@ -80,7 +80,7 @@ export default class BoardSceneController extends SyncedSceneController {
         });
     }
 
-    public removeMoney(uuid: string, amount: number) {
+    private removeMoney(uuid: string, amount: number) {
         const player = this.getPlayer(uuid);
         if (!player) {
             console.error("Player not found");
@@ -91,7 +91,7 @@ export default class BoardSceneController extends SyncedSceneController {
         this.scene.updatePlayerInfo(uuid, player);
     }
 
-    public addTiles(uuid: string, tiles: number[]) {
+    private addTiles(uuid: string, tiles: number[]) {
         const player = this.getPlayer(uuid);
         if (!player) {
             console.error("Player not found");
