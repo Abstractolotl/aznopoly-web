@@ -17,6 +17,10 @@ export namespace TileType {
     export function isCorner(type: TileType) {
         return type === TileType.START || type === TileType.FREE || type === TileType.JAIL || type === TileType.TO_JAIL;
     }
+
+    export function isProperty(type: TileType) {
+        return type !== TileType.ACTION && !isCorner(type);
+    }
 }
 
 export enum TileOrientation {

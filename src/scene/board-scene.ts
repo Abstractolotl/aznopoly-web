@@ -11,6 +11,7 @@ import AzNopolyPlayerInfo, { PlayerInfo } from "@/ui/player-info";
 import AzNopolyList from "@/ui/element-list";
 import BoardTilePopUp from "@/board/board_tile_popup.ts";
 import { TileType } from "@/types/board";
+import BoardTile from "@/board/board-tile.ts";
 
 
 export default class BoardScene extends BaseScene<BoardSceneController> {
@@ -45,10 +46,12 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.choiceWheel = this.add.existing(new RandomSelectionWheel(this, WIDTH /2, HEIGHT / 2, {width: 300, height: 40}));
         this.choiceWheel.setVisible(false);
 
+        this.tilePopUp = this.add.existing(new BoardTilePopUp(this, WIDTH / 2, HEIGHT / 2, {width: 300, height: 200}, () => {}, this.controller.onPopupSubmit.bind(this.controller)));
+        this.tilePopUp.setVisible(false);
+
         this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", 50, 200, 150, 55, this.controller.onRollClick.bind(this.controller)));
         this.rollButton.disable();
         this.rollButton.setDepth(100);
-
     }
 
     public initBoard(tiles: TileType[], players: (PlayerInfo & {uuid: string})[]) {
