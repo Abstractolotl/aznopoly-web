@@ -1,6 +1,6 @@
 import BoardSceneController from "../board-scene-controller";
 import {TileType} from "@/types/board.ts";
-import PropertyHelper from "@/scene/board/property-controller.ts";
+import PropertyManager from "@/scene/board/property-controller.ts";
 
 
 enum TurnState {
@@ -18,14 +18,14 @@ export default class Turn {
 
     private state: TurnState = TurnState.PRE_ROLL;
     private controller: BoardSceneController;
-    private propertyHelper: PropertyHelper;
+    private propertyHelper: PropertyManager;
 
     /**
      * The player that is currently taking their turn
      */
     private player: string;
 
-    constructor(controller: BoardSceneController, propertyHelper: PropertyHelper, player: string) {
+    constructor(controller: BoardSceneController, propertyHelper: PropertyManager, player: string) {
         this.controller = controller;
         this.propertyHelper = propertyHelper;
         this.player = player;

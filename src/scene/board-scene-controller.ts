@@ -8,6 +8,7 @@ import { TileType } from "@/types/board";
 import BoardGenerator from "@/board/board-generator";
 import { BOARD_SIDE_LENGTH } from "@/main";
 import PropertyHelper from "@/scene/board/property-controller.ts";
+import PropertyManager from "@/scene/board/property-controller.ts";
 
 interface Player {
     uuid: string;
@@ -26,7 +27,7 @@ export default class BoardSceneController extends SyncedSceneController {
     private players!: Player[];
     private minigameInprogress: boolean = false;
     private currentTurn?: Turn;
-    private propertyHelper: PropertyHelper = new PropertyHelper(this);
+    private propertyHelper: PropertyManager = new PropertyManager(this);
 
     constructor(scene: BoardScene, aznopoly: AzNopolyGame) {
         super(scene, aznopoly, "start");
@@ -147,7 +148,7 @@ export default class BoardSceneController extends SyncedSceneController {
             return;
         }
 
-        if(this.propertyHelper.canByProperty(uuid, player.position)) {
+        if(this.propertyHelper.canBuyProperty(uuid, player.position)) {
             this.syncProxy.startBuyProperty(uuid);
         } else {
             this.onTurnEnd(uuid);

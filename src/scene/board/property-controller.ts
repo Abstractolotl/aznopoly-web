@@ -12,7 +12,7 @@ const PROPERTY_RENT_MULTIPLIER = 1.5;
  * HOST only class
  * PropertyController is responsible for managing property related actions
  */
-export default class PropertyHelper {
+export default class PropertyManager {
 
     private controller: BoardSceneController;
 
@@ -45,7 +45,7 @@ export default class PropertyHelper {
         return DEFAULT_PROPERTY_RENT * ((PROPERTY_RENT_MULTIPLIER * level) + 1);
     }
 
-    public canByProperty(uuid: string, field: number) {
+    public canBuyProperty(uuid: string, field: number) {
         let player = this.controller.getPlayer(uuid);
         if (!player) {
             return false;
