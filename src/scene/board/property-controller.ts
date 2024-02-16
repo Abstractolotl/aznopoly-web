@@ -92,7 +92,9 @@ export default class PropertyManager {
         let level = this.getPropertyLevel(field);
         let tile = this.controller.getTile(field);
 
+        // @ts-ignore
         this.controller.syncProxy.removeMoney(uuid, this.calculatePropertyPrice(level))
+        // @ts-ignore
         this.controller.syncProxy.addTiles(uuid, this.controller.getTiles(tile.getTileType()))
 
         return true;
@@ -110,6 +112,7 @@ export default class PropertyManager {
         }
 
         let level = this.getPropertyLevel(field);
+        // @ts-ignore
         this.controller.syncProxy.removeMoney(uuid, this.calculatePropertyRent(level))
 
         return true;
