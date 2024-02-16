@@ -125,12 +125,12 @@ export default class GameBoard extends Phaser.GameObjects.Container {
     }
 
     getTilesOfType(type: TileType) {
-        let tiles = [];
-        for (let i = 0; i < this.boardTiles.length; i++) {
-            if (this.boardTiles[i].getTileType() === type) {
-                tiles[i] = this.boardTiles[i];
+        let tiles: number[] = [];
+        this.boardTiles.forEach((tile, i) => {
+            if (tile.getTileType() === type) {
+                tiles.push(i);
             }
-        }
+        });
         return tiles;
     }
 
