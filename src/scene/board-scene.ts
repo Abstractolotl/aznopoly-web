@@ -41,7 +41,8 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.choiceWheel = this.add.existing(new RandomSelectionWheel(this, WIDTH /2, HEIGHT / 2, {width: 300, height: 40}));
         this.choiceWheel.setVisible(false);
 
-        this.tilePopUp = this.add.existing(new BoardTilePopUp(this, WIDTH / 2, HEIGHT / 2));
+        this.tilePopUp = this.add.existing(new BoardTilePopUp(this, WIDTH / 2, HEIGHT / 2, {width: 300, height: 200},
+            this.controller.onTileBuyCancel.bind(this.controller), this.controller.onTileBuySubmit.bind(this.controller)));
         this.tilePopUp.hide();
 
         this.add.text(WIDTH - 300, 300, "Current Turn:", FONT_STYLE_BODY);
@@ -67,7 +68,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     }
 
     public showBuyTilePopUp(tile: BoardTile, level: number) {
-        this.tilePopUp.show(tile, 0);
+        this.tilePopUp.show(tile, level);
     }
 
     public hideBuyTilePopUp() {
@@ -81,6 +82,14 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
     public hideMinigameSelect() {
         this.choiceWheel.setVisible(false);
+    }
+
+    public getTile(position: number) {
+        return this.board.getTile(position);
+    }
+
+    public getTilesOfType(type: TileType) {
+        return this.board.getTilesOfType(type);
     }
 
 }

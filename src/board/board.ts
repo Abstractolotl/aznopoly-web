@@ -40,18 +40,18 @@ export default class GameBoard extends Phaser.GameObjects.Container {
 
         const boardTiles: BoardTile[] = [];
         tiles.length = BOARD_SIDE_LENGTH * 4 + 4;
+
         let index;
-        console.log("Tiles: ", tiles.map(e => TileType[e]));
         for (let i = 0; i < BOARD_SIDE_LENGTH; i++) {
-            index = 1 + (1 + BOARD_SIDE_LENGTH) * 0 + i;
-            console.log(index);
+            index = (BOARD_SIDE_LENGTH - i)
             boardTiles[index] = new BoardTile(scene, size * (i + 2)     , size * length, size      , size * 2  , tiles[index], TileOrientation.UP);
-            index = 1 + (1 + BOARD_SIDE_LENGTH) * 1 + i;
-            console.log(index);
+
+            index = 1 + (BOARD_SIDE_LENGTH * 2) - i;
             boardTiles[index] = new BoardTile(scene, 0                  , size * (i + 2)    , size * 2  , size      , tiles[index], TileOrientation.RIGHT);
+
             index = 1 + (1 + BOARD_SIDE_LENGTH) * 2 + i;
-            console.log(index);
             boardTiles[index] = new BoardTile(scene, size * (i + 2)     , 0                 , size      , size * 2  , tiles[index], TileOrientation.DOWN);
+
             index = 1 + (1 + BOARD_SIDE_LENGTH) * 3 + i;
             console.log(index);
             boardTiles[index] = new BoardTile(scene, size * length , size * (i + 2)    , size * 2  , size      , tiles[index], TileOrientation.LEFT);
@@ -119,6 +119,20 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         this.checkPlayerCollisions();
 
         return this.boardTiles[player.position % this.boardTiles.length];
+    }
+
+    getTile(pos: number) {
+        return this.boardTiles[pos % this.boardTiles.length];
+    }
+
+    getTilesOfType(type: TileType) {
+        let tiles: number[] = [];
+        this.boardTiles.forEach((tile, i) => {
+            if (tile.getTileType() === type) {
+                tiles.push(i);
+            }
+        });
+        return tiles;
     }
 
     private checkPlayerCollisions() {
