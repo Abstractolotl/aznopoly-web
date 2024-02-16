@@ -38,6 +38,7 @@ export default class BoardSceneController extends SyncedSceneController {
         this.registerSyncedMethod(this.startMinigame, true);
         this.registerSyncedMethod(this.startBuyProperty, true);
         this.registerSyncedMethod(this.removeMoney, true);
+        this.registerSyncedMethod(this.addTiles, true);
 
         this.registerSyncedMethod(this.rollDice, false);
         this.registerSyncedMethod(this.buyProperty, false)
