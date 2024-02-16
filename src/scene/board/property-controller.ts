@@ -64,6 +64,16 @@ export default class PropertyManager {
         return player.money >= this.calculatePropertyPrice(level);
     }
 
+    public hasToPayRent(uuid: string, field: number) {
+        let player = this.controller.getPlayer(uuid);
+        if (!player) {
+            return false;
+        }
+
+        let owner = this.getPropertyOwner(field);
+        return !(owner && owner.uuid == uuid);
+    }
+
     public buyProperty(uuid: string, field: number) {
         let player = this.controller.getPlayer(uuid);
         if (!player) {

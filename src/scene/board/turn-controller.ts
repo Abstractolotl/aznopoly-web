@@ -18,16 +18,16 @@ export default class Turn {
 
     private state: TurnState = TurnState.PRE_ROLL;
     private controller: BoardSceneController;
-    private propertyHelper: PropertyManager;
+    private propertyManager: PropertyManager;
 
     /**
      * The player that is currently taking their turn
      */
     private player: string;
 
-    constructor(controller: BoardSceneController, propertyHelper: PropertyManager, player: string) {
+    constructor(controller: BoardSceneController, propertyManager: PropertyManager, player: string) {
         this.controller = controller;
-        this.propertyHelper = propertyHelper;
+        this.propertyManager = propertyManager;
         this.player = player;
     }
 
@@ -50,11 +50,10 @@ export default class Turn {
             return true;
         }
 
-        // Check if field is not owned or owned by the player
-        if (!this.controller.isFieldOwned(field!) || this.controller.isFieldOwnedByPlayer(field!, this.player)) {
-            this.controller.onPropertyBuy(this.player);
-        } else if(!this.controller.isFieldOwnedByPlayer(field!, this.player)) {
+        if(this.propertyManager.hasToPayRent(this.player, field)) {
             this.controller.onPropertyRent(this.player);
+        } else if(this.propertyManager.canBuyProperty(this.player, field)) {
+            this.controller.onPropertyBuy(this.player);
         } else {
             this.controller.onTurnEnd(this.player);
         }
@@ -74,7 +73,7 @@ export default class Turn {
             return true;
         }
 
-        this.propertyHelper.buyProperty(this.player, field!);
+        this.propertyManager.buyProperty(this.player, field!);
         this.controller.onTurnEnd(this.player);
 
         return true;
