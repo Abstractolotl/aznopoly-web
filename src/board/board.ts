@@ -120,6 +120,20 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         return this.boardTiles[player.position % this.boardTiles.length];
     }
 
+    getTile(pos: number) {
+        return this.boardTiles[pos % this.boardTiles.length];
+    }
+
+    getTilesOfType(type: TileType) {
+        let tiles = [];
+        for (let i = 0; i < this.boardTiles.length; i++) {
+            if (this.boardTiles[i].getTileType() === type) {
+                tiles[i] = this.boardTiles[i];
+            }
+        }
+        return tiles;
+    }
+
     private checkPlayerCollisions() {
         const positions: { [key: number]: string[] } = {};
         this.players.forEach((player, uuid) => {
