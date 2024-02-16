@@ -136,7 +136,9 @@ export default class BoardSceneController extends SyncedSceneController {
         if(this.aznopoly.uuid == this.currentTurn?.getPlayer()) {
             this.scene.hideBuyTilePopUp();
             if (submit) {
-                this.currentTurn.doBuyProperty()
+                this.currentTurn.doBuyProperty();
+            } else {
+                this.currentTurn.cancelBuyProperty();
             }
         }
     }
@@ -148,11 +150,7 @@ export default class BoardSceneController extends SyncedSceneController {
             return;
         }
 
-        if(this.propertyHelper.canBuyProperty(uuid, player.position)) {
-            this.syncProxy.startBuyProperty(uuid);
-        } else {
-            this.onTurnEnd(uuid);
-        }
+        this.syncProxy.startBuyProperty(uuid);
     }
 
     public onPropertyRent(uuid: string) {
@@ -257,10 +255,10 @@ export default class BoardSceneController extends SyncedSceneController {
         this.scene.showBuyTilePopUp((propertyLevel > 0), this.propertyHelper.calculatePropertyPrice(propertyLevel));
 
         setTimeout(() => {
-            // If player is still the same hide popup and end turn
+            // If player is still the same hide popup and cancel buy property
             if (this.currentTurn?.getPlayer() == uuid) {
                 this.scene.hideBuyTilePopUp();
-                this.onTurnEnd(uuid)
+                this.currentTurn.cancelBuyProperty();
             }
         }, 3000);
     }

@@ -23,7 +23,7 @@ export default class Turn {
     /**
      * The player that is currently taking their turn
      */
-    private player: string;
+    private readonly player: string;
 
     constructor(controller: BoardSceneController, propertyManager: PropertyManager, player: string) {
         this.controller = controller;
@@ -77,6 +77,14 @@ export default class Turn {
         this.controller.onTurnEnd(this.player);
 
         return true;
+    }
+
+    public cancelBuyProperty(): boolean {
+        if (this.state != TurnState.PROPERTY) return false;
+
+        this.controller.onTurnEnd(this.player);
+
+        return false;
     }
 
     public doUseItem() : boolean{
