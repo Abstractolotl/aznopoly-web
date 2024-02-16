@@ -32,10 +32,8 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
     private initButton() {
         if (!this.aznopoly.isHost) return;
 
-        const startButton = new AzNopolyButton(this, "Start Game", WIDTH/2 + 300, HEIGHT - 120, 250, 55, this.controller.onStartClick.bind(this.controller));
-        this.add.existing(startButton);
-        const leaveButton = new AzNopolyButton(this, "Leave", WIDTH/2 - (300 + 250), HEIGHT - 120, 250, 55, this.controller.onLeaveLobbyClick.bind(this.controller))
-        this.add.existing(leaveButton);
+        const button = new AzNopolyButton(this, "Start Game", WIDTH - 200, HEIGHT - 120, 300, 60, this.controller.onStartClick.bind(this.controller));
+        this.add.existing(button);
     }
 
     public updatePlayerList(player: { uuid: string, name: string, host: boolean }[]) {

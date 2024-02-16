@@ -5,6 +5,7 @@ import RoombaSceneController from "./roomba-scene-controller";
 import AzNopolyGame from "../../game";
 import ColorProgressBar from "../../minigame/color-progressbar";
 import convert from 'color-convert';
+import { FRAME_PADDING } from "@/style";
 
 const GRAPHICS_SWAP_TIME = 1;
 const PAINT_REFRESH_TIME = 0.5;
@@ -38,7 +39,9 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
 
     create() {
         super.create();
-        this.physics.world.setBounds(0, 0, WIDTH, HEIGHT);
+
+        const bounds = MinigameScene.getGameBounds();
+        this.physics.world.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
         this.physics.world.fixedStep = true;
 
         this.paint = this.add.graphics();
@@ -48,9 +51,10 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
             this.paintTexture.destroy();
         });
 
-        this.colorProgressBar = new ColorProgressBar(this, WIDTH / 2 - 200, 25, 400, 40);
+        const rightpanel = MinigameScene.getRightBounds();
+        this.colorProgressBar = new ColorProgressBar(this, rightpanel.x + FRAME_PADDING, rightpanel.y + FRAME_PADDING , rightpanel.width - FRAME_PADDING*2, 40);
         
-        this.add.sprite(0, 0, "roomba-paint").setOrigin(0, 0).setDepth(-1);
+        this.add.sprite(0, 0, "roomba-paint").setOrigin(0, 0).setDepth(0);
         this.add.existing(this.colorProgressBar);
     }
 

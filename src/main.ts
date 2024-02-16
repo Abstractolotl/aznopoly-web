@@ -5,10 +5,13 @@ import LobbyScene from './scene/lobby-scene';
 // import { SimonSaysScene } from './scene/minigame/simon-says-scene';
 import AzNopolyGame from './game';
 import { RoombaScene } from './scene/minigame/roomba-scene';
+import { mock } from './debug-util';
+import { COLOR_BACKGROUND } from './style';
 // import { mock } from './debug-util';
 
 export const WIDTH = 1280;
 export const HEIGHT = 720;
+export const BOARD_SIDE_LENGTH = 5;
 
 window.onload = async () => {
     let game = new Phaser.Game({
@@ -16,6 +19,7 @@ window.onload = async () => {
         width: WIDTH,
         height: HEIGHT,
         parent: 'app',
+        backgroundColor: COLOR_BACKGROUND,
         physics: {
             default: 'arcade',
             arcade: {
@@ -44,12 +48,13 @@ window.onload = async () => {
     //game.scene.add('minigame-simon-says', new SimonSaysScene(aznopoly))
     game.scene.add('minigame-roomba', new RoombaScene(aznopoly))
 
-    //game.scene.start('minigame-roomba');
-    
-    //mock(aznopoly);
-    //game.scene.start('game');
 
-    game.scene.start('title');
+    if (false) {
+        mock(aznopoly);
+        game.scene.start('minigame-roomba');
+    } else {
+        game.scene.start('title');
+    }
     
     Object.assign(window, { game });
 };
