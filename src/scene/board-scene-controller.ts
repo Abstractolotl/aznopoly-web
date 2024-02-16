@@ -26,10 +26,12 @@ export default class BoardSceneController extends SyncedSceneController {
         this.registerSyncedMethod(this.startTurn, true);
         this.registerSyncedMethod(this.startMinigame, true);
         this.registerSyncedMethod(this.updatePlayers, true);
+        this.registerSyncedMethod(this.showPropertyPopUp, true);
+        this.registerSyncedMethod(this.cancelPropertyPopUp, true);
 
         this.registerSyncedMethod(this.doDiceRoll, false);
-        this.registerSyncedMethod(this.finishTurn, false);
-        this.registerSyncedMethod(this.buyTiles, false);
+        this.registerSyncedMethod(this.cancelBuy, false)
+        this.registerSyncedMethod(this.submitBuy, false);
     }
     
     onAllPlayersReady(): void {
@@ -63,9 +65,36 @@ export default class BoardSceneController extends SyncedSceneController {
         }
     }
 
+    private showPropertyPopUp() {
+        if(this.currentPlayerUuid == this.aznopoly.uuid) {
+            const player = this.players.find(p => p.uuid == this.aznopoly.uuid);
+            if (!player) {
+                return;
+            }
+
+            this.scene.showBuyTilePopUp(this.scene.getTile(player.position), player.tiles.filter(t => t == player.position).length);
+        }
+    }
+
+    private cancelPropertyPopUp() {
+        if(this.currentPlayerUuid == this.aznopoly.uuid) {
+            this.scene.hideBuyTilePopUp();
+        }
+    }
+
     public onRollClick() {
         this.scene.disableRollButton();
         this.syncProxy.doDiceRoll();
+    }
+
+    public onTileBuySubmit() {
+        this.scene.hideBuyTilePopUp();
+        this.syncProxy.submitBuy();
+    }
+
+    public onTileBuyCancel() {
+        this.scene.hideBuyTilePopUp();
+        this.syncProxy.cancelBuy();
     }
 
     private doDiceRoll() {
@@ -88,10 +117,35 @@ export default class BoardSceneController extends SyncedSceneController {
 
         player.position += roll;
         this.syncProxy.updatePlayerPosition(sender, player.position);
+
+        let tile = this.scene.getTile(player.position)
+        if(TileType.isCorner(tile.getTileType()) || tile.getTileType() == TileType.ACTION) {
+            this.startNextTurn();
+            return;
+        }
+
+        // Check if any other player owns the tile
+        if (this.players.some(p => p.uuid !== player.uuid && p.tiles.includes(player.position))) {
+            this.startNextTurn();
+            return;
+        }
+
+        // Show buy property popup
+        this.syncProxy.showPropertyPopUp();
+        setTimeout(() => {
+            this.syncProxy.cancelPropertyPopUp();
+            this.startNextTurn();
+        }, 3000);
     }
 
-    private buyTiles(uuid: string, tiles: number[]) {
+    private submitBuy() {
         if (!this.aznopoly.isHost) {
+            return;
+        }
+
+        const uuid = arguments[arguments.length - 1];
+        if (this.currentPlayerUuid != uuid) {
+            console.warn("Received buy from non-current player");
             return;
         }
 
@@ -99,6 +153,20 @@ export default class BoardSceneController extends SyncedSceneController {
         if (sender === undefined) {
             return;
         }
+
+        let currentTile = this.scene.getTile(sender.position).getTileType();
+        if (currentTile == TileType.ACTION || TileType.isCorner(currentTile)) {
+            console.warn("Received buy on non-buyable tile")
+            return;
+        }
+
+        let level = sender.tiles.filter(t => t == sender?.position).length;
+        if (level >= 4) {
+            console.warn("Received buy on max level tile")
+            return;
+        }
+
+        let tiles = this.scene.getTilesOfType(currentTile);
 
         // Check if any tile is already owned by someone else
         for (let tile of tiles) {
@@ -111,7 +179,11 @@ export default class BoardSceneController extends SyncedSceneController {
         sender.tiles.push(...tiles);
 
         this.syncProxy.updatePlayers(this.players);
-        this.syncProxy.finishTurn();
+        this.startNextTurn();
+    }
+
+    private cancelBuy() {
+        this.startNextTurn();
     }
 
     private startNextTurn() {
@@ -139,41 +211,8 @@ export default class BoardSceneController extends SyncedSceneController {
         });
     }
 
-    private finishTurn() {
-        if (this.aznopoly.isHost) {
-            this.startNextTurn();
-        }
-
-        this.scene.hideBuyTilePopUp();
-    }
-
     private updatePlayerPosition(uuid: string, position: number) {
-        let tile = this.scene.updatePlayerPosition(uuid, position);
-        if (tile.getTileType() == TileType.TO_JAIL) {
-            this.syncProxy.updatePlayerPosition(uuid, 10)
-        }
-
-        if(uuid == this.aznopoly.uuid) {
-            if(TileType.isCorner(tile.getTileType()) || tile.getTileType() == TileType.ACTION) {
-                this.syncProxy.finishTurn();
-                return;
-            }
-
-            if (this.players.some(p => p.tiles.includes(position))) {
-                this.syncProxy.finishTurn();
-                return;
-            }
-
-            let player = this.players.find(p => p.uuid == uuid);
-            if (player === undefined) {
-                this.finishTurn();
-                return;
-            }
-
-            let level = player.tiles.filter(t => t == position).length;
-
-            this.scene.showBuyTilePopUp(tile, level);
-        }
+        this.scene.updatePlayerPosition(uuid, position);
     }
 
 }

@@ -40,14 +40,18 @@ export default class GameBoard extends Phaser.GameObjects.Container {
 
         const boardTiles: BoardTile[] = [];
         tiles.length = BOARD_SIDE_LENGTH * 4 + 4;
+
         let index;
         for (let i = 0; i < BOARD_SIDE_LENGTH; i++) {
-            index = 1 + (1 + BOARD_SIDE_LENGTH) * 0 + i;
+            index = (BOARD_SIDE_LENGTH - i)
             boardTiles[index] = new BoardTile(scene, size * (i + 2)     , size * length, size      , size * 2  , tiles[index], TileOrientation.UP);
-            index = 1 + (1 + BOARD_SIDE_LENGTH) * 1 + i;
+
+            index = 1 + (BOARD_SIDE_LENGTH * 2) - i;
             boardTiles[index] = new BoardTile(scene, 0                  , size * (i + 2)    , size * 2  , size      , tiles[index], TileOrientation.RIGHT);
+
             index = 1 + (1 + BOARD_SIDE_LENGTH) * 2 + i;
             boardTiles[index] = new BoardTile(scene, size * (i + 2)     , 0                 , size      , size * 2  , tiles[index], TileOrientation.DOWN);
+
             index = 1 + (1 + BOARD_SIDE_LENGTH) * 3 + i;
             boardTiles[index] = new BoardTile(scene, size * length , size * (i + 2)    , size * 2  , size      , tiles[index], TileOrientation.LEFT);
         }
