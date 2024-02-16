@@ -27,6 +27,9 @@ export default class BoardSceneController extends SyncedSceneController {
     private currentTurn?: Turn;
     private propertyHelper: PropertyManager = new PropertyManager(this);
 
+    // Scheduler for handling time based events
+    private scheduler!: NodeJS.Timeout;
+
     constructor(scene: BoardScene, aznopoly: AzNopolyGame) {
         super(scene, aznopoly, "start");
 
@@ -103,8 +106,6 @@ export default class BoardSceneController extends SyncedSceneController {
             player.tiles.push(value);
         })
 
-        console.log("Player", uuid, "now owns", player.tiles);
-
         this.scene.updatePlayerInfo(uuid, player);
     }
 
@@ -116,6 +117,7 @@ export default class BoardSceneController extends SyncedSceneController {
             return;
         }
 
+        clearTimeout(this.scheduler);
         this.currentTurn?.doBuyProperty();
     }
 
@@ -127,6 +129,7 @@ export default class BoardSceneController extends SyncedSceneController {
             return;
         }
 
+        clearTimeout(this.scheduler);
         this.currentTurn?.cancelBuyProperty();
     }
 
@@ -163,7 +166,7 @@ export default class BoardSceneController extends SyncedSceneController {
         }
 
         this.syncProxy.startBuyProperty(uuid, this.propertyHelper.getPropertyLevel(player.position));
-        setTimeout(() => {
+        this.scheduler = setTimeout(() => {
             this.syncProxy.interruptBuyProperty(uuid);
             this.currentTurn?.cancelBuyProperty();
         }, 3000);

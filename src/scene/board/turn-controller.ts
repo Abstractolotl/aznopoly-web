@@ -40,14 +40,14 @@ export default class Turn {
         const field = this.controller.getPlayerPosition(this.player);
         if( !field ) return false;
 
-        console.log("Player " + this.player + " moved to " + field);
-
         let tile = this.controller.getTile(field);
+        console.log(TileType[tile.getTileType()])
         if(!TileType.isProperty(tile.getTileType())) {
             this.controller.onTurnEnd(this.player);
             return true;
         }
 
+        console.log("Player entered Property Tile")
         this.state = TurnState.PROPERTY;
         if(this.propertyManager.hasToPayRent(this.player, field)) {
             this.controller.onHasToPayRent(this.player);
