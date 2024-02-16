@@ -71,7 +71,11 @@ export default class PropertyManager {
         }
 
         let owner = this.getPropertyOwner(field);
-        return !(owner && owner.uuid == uuid);
+        if (!owner) {
+            return false;
+        }
+
+        return owner.uuid != uuid;
     }
 
     public buyProperty(uuid: string, field: number) {
