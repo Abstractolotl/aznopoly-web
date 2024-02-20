@@ -1,6 +1,8 @@
 import AzNopolyClient from "./client";
 import Room from "./room";
 import { Player } from "./types";
+import { Avatars } from "./ui/avatar";
+import { PlayerProfile } from "./ui/player-info";
 
 export default class AzNopolyGame {
 
@@ -24,6 +26,16 @@ export default class AzNopolyGame {
         return {
             uuid: this.client.id,
             name: this._name,
+        }
+    }
+
+    public getProfile(uuid: string): PlayerProfile {
+        // TODO: should not be hardcoded
+        return {
+            name: this.room.getPlayerName(uuid),
+            avatar: Avatars.AXOLOTL,
+            colorIndex: this.connectedUuids.indexOf(uuid) % 4, // TODO
+            host: this.isPlayerHost(uuid),
         }
     }
 

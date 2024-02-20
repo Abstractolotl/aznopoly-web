@@ -1,11 +1,16 @@
+import AzNopolyPanel from "@/ui/panel";
 import GameBoard from "../board/board";
 import { HEIGHT, WIDTH } from "../main";
-import { FONT_STYLE_BODY } from "../style";
+import { FRAME_PADDING } from "../style";
 import { AzNopolyButton } from "../ui/button";
 import PlayerList from "../ui/player-list";
 import RandomSelectionWheel from "../ui/random-selection-wheel";
 import { BaseScene } from "./base/base-scene";
 import BoardSceneController from "./board-scene-controller";
+import AzNopolyBar from "@/ui/bar";
+import AzNopolyPlayerInfo, { PlayerInfo } from "@/ui/player-info";
+import { Avatars } from "@/ui/avatar";
+import AzNopolyList from "@/ui/element-list";
 
 
 export default class BoardScene extends BaseScene<BoardSceneController> {
@@ -13,8 +18,10 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     private board!: GameBoard;
     private rollButton!: AzNopolyButton;
     private choiceWheel!: RandomSelectionWheel;
+    private playerList!: AzNopolyList<AzNopolyPlayerInfo>;
 
     preload() {
+        AzNopolyPlayerInfo.preload(this);
         GameBoard.preload(this);
         AzNopolyButton.preload(this);
     }
@@ -24,24 +31,34 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     }
 
     create() {
-        const boardSize = HEIGHT * 0.8;
-        this.board = this.add.existing(new GameBoard(this.aznopoly.room.host, this, (WIDTH - boardSize) * 0.5 - 200, (HEIGHT - boardSize) * 0.5, boardSize));
+        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", 50, 200, 150, 55, this.controller.onRollClick.bind(this.controller)));
+        this.rollButton.disable();
+        
+        const RIGHT_PANEL_WIDTH = 350;
+        this.add.existing(new AzNopolyBar(this, "AzNopoly"));
+        const rightPanel = this.add.existing(new AzNopolyPanel(this, WIDTH - RIGHT_PANEL_WIDTH - FRAME_PADDING, AzNopolyBar.HEIGHT + FRAME_PADDING * 2, RIGHT_PANEL_WIDTH, HEIGHT - AzNopolyBar.HEIGHT - FRAME_PADDING * 3).setDepth(-1));
+        const leftPanel = this.add.existing(new AzNopolyPanel(this, FRAME_PADDING, AzNopolyBar.HEIGHT + FRAME_PADDING * 2, WIDTH - FRAME_PADDING * 3 - RIGHT_PANEL_WIDTH, HEIGHT - AzNopolyBar.HEIGHT - FRAME_PADDING * 3).setDepth(-1));
 
-        const playerList = this.add.existing(new PlayerList(this, false, WIDTH - 300, 0, 250));
-        playerList.updatePlayerList(this.aznopoly.room.connectedPlayerIds.map(e => ({uuid: e, name: this.aznopoly.room.getPlayerName(e), host: false})))
-        playerList.updateTitle("");
+        const boardSize = leftPanel.height * 0.8;
+        this.board = this.add.existing(new GameBoard(this.aznopoly.room.host, this, leftPanel.x + leftPanel.width * 0.5 - boardSize * 0.5, leftPanel.y + leftPanel.height * 0.5 - boardSize * 0.5, boardSize));
 
+        this.playerList = this.add.existing(new AzNopolyList(this, rightPanel.x + FRAME_PADDING, rightPanel.y + FRAME_PADDING));
+      
         this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", WIDTH - 325, HEIGHT - 100, 250, 55, this.controller.onRollClick.bind(this.controller)));
         this.rollButton.disable();
 
         this.choiceWheel = this.add.existing(new RandomSelectionWheel(this, WIDTH /2, HEIGHT / 2, {width: 300, height: 40}));
         this.choiceWheel.setVisible(false);
-
-        this.add.text(WIDTH - 300, 300, "Current Turn:", FONT_STYLE_BODY);
+    
     }
 
-    public addPlayers(players: string[]) {
-        players.forEach(player => this.board.addPlayer(player));
+    public addPlayers(infos: (PlayerInfo & {uuid: string})[]) {
+        infos.forEach(info => {
+            this.board.addPlayer(info.uuid);
+            const profile = this.aznopoly.getProfile(info.uuid);
+            this.playerList.addElement(info.uuid, new AzNopolyPlayerInfo(this, 0, 0, info, profile));
+        });
+        
     }
 
     public updatePlayerPosition(uuid: string, position: number) {

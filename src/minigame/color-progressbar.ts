@@ -1,3 +1,4 @@
+import { FRAME_BORDER_RADIUS } from "@/style";
 
 
 export default class ColorProgressBar extends Phaser.GameObjects.Container {
@@ -37,9 +38,9 @@ export default class ColorProgressBar extends Phaser.GameObjects.Container {
         this.graphics.fillRect(this.barWidth * progress, 0, this.barWidth * (1 - progress), this.barHeight);
         
         this.graphics.lineStyle(2, 0xffffff);
-        this.graphics.strokeRoundedRect(-1, -1, this.barWidth+2, this.barHeight+2, 5);
+        this.graphics.strokeRoundedRect(-1, -1, this.barWidth+2, this.barHeight+2, FRAME_BORDER_RADIUS);
         this.graphics.lineStyle(1, 0x000000);
-        this.graphics.strokeRoundedRect(-3, -3, this.barWidth+6, this.barHeight+6, 5);
+        this.graphics.strokeRoundedRect(-3, -3, this.barWidth+6, this.barHeight+6, FRAME_BORDER_RADIUS);
     }
 
 }

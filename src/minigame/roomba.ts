@@ -1,6 +1,6 @@
 import { HEIGHT, WIDTH } from "../main";
 
-const SIZE = 85;
+const SIZE = 60;
 const ARROW_COLOR = 0x00ff00;
 export interface RoombaConfig {
     id: string;
