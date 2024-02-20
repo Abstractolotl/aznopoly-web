@@ -40,4 +40,8 @@ export default class LobbySceneController extends NetworkSceneController {
         this.scene.scene.start('game');
     }
 
+    public onLeaveLobbyClick() {
+        this.scene.scene.start('title');
+    }
+
 }

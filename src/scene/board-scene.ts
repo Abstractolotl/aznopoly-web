@@ -43,6 +43,9 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.board = this.add.existing(new GameBoard(this.aznopoly.room.host, this, leftPanel.x + leftPanel.width * 0.5 - boardSize * 0.5, leftPanel.y + leftPanel.height * 0.5 - boardSize * 0.5, boardSize));
 
         this.playerList = this.add.existing(new AzNopolyList(this, rightPanel.x + FRAME_PADDING, rightPanel.y + FRAME_PADDING));
+      
+        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", WIDTH - 325, HEIGHT - 100, 250, 55, this.controller.onRollClick.bind(this.controller)));
+        this.rollButton.disable();
 
         this.choiceWheel = this.add.existing(new RandomSelectionWheel(this, WIDTH /2, HEIGHT / 2, {width: 300, height: 40}));
         this.choiceWheel.setVisible(false);

@@ -61,9 +61,20 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
         const centerX = WIDTH / 2;
         const centerY = HEIGHT / 2;
 
-        this.lobbyInputField = this.add.existing(new AzNopolyInput(this, centerX - 200, centerY, 300, 55));
-        this.add.existing(new AzNopolyButton(this, 'Join',        centerX + 100, centerY, 100, 55, this.controller.onJoinRoomClick.bind(this.controller)));
-        this.add.existing(new AzNopolyButton(this, 'Create Lobby',centerX - 200, centerY + 75, 400, 55, this.controller.onCreateRoom.bind(this.controller)));
+        const widthInputField = 300;
+        const widthJoinButton = 100;
+        const widthCreateButton = widthInputField + widthJoinButton;
+
+        const heightInputField = 55;
+        const heightJoinButton = 55;
+        const heightCreateButton = 55;
+
+        this.lobbyInputField = this.add.existing(
+            new AzNopolyInput(this, centerX - (widthInputField+widthJoinButton) / 2, centerY, widthInputField, heightInputField));
+        this.add.existing(new AzNopolyButton(this, 'Join', centerX + ((widthInputField/2) - (widthJoinButton/2)), centerY, widthJoinButton,
+            heightJoinButton, this.controller.onJoinRoomClick.bind(this.controller)));
+        this.add.existing(new AzNopolyButton(this, 'Create Lobby',centerX - widthCreateButton / 2, centerY + 75, widthCreateButton,
+            heightCreateButton, this.controller.onCreateRoom.bind(this.controller)));
 
 
         const graphics = this.add.graphics();
