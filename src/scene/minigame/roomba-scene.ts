@@ -8,7 +8,7 @@ import convert from 'color-convert';
 import { FRAME_PADDING } from "@/style";
 
 const GRAPHICS_SWAP_TIME = 1;
-const PAINT_REFRESH_TIME = 0.5;
+const PAINT_REFRESH_TIME = 0.2;
 export class RoombaScene extends MinigameScene<RoombaSceneController> {
 
     private roombas: Roomba[] = [];
@@ -65,7 +65,7 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
     }
 
     public initRoombas(configs: RoombaConfig[]) {
-        this.roombas = configs.map(config => new Roomba(this, config));
+        this.roombas = configs.map(config => new Roomba(this, config, this.aznopoly.getProfile(config.uuid)));
         this.roombas.forEach(roomba => {
             this.add.existing(roomba)
             roomba.paintPath(this.paint);

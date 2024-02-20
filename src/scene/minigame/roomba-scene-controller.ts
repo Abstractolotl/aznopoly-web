@@ -1,7 +1,6 @@
+import { PLAYER_COLORS } from "@/style";
 import AzNopolyGame from "../../game";
-import { HEIGHT as GAME_HEIGHT, WIDTH as GAME_WIDTH } from "../../main";
 import { Roomba, RoombaConfig } from "../../minigame/roomba";
-import { getColorFromUUID } from "../../util";
 import MinigameScene from "../base/minigame-scene";
 import MinigameSceneController from "../base/minigame-scene-controller";
 import { RoombaScene } from "./roomba-scene";
@@ -93,11 +92,13 @@ export default class RoombaSceneController extends MinigameSceneController {
         const x = Math.random() * (bounds.width - Roomba.SIZE * 2) + Roomba.SIZE + bounds.x;
         const y = Math.random() * (bounds.height - Roomba.SIZE * 2) + Roomba.SIZE + bounds.y;
 
-        const color = getColorFromUUID(playerid);
+        const profile = this.aznopoly.getProfile(playerid);
+        const color = PLAYER_COLORS[profile.colorIndex];
         const paintColor = convert.hex.hsl("0x" + color.toString(16));
         paintColor[2] = 40;
         const paintColorHex = Number("0x" + convert.hsl.hex(paintColor));
         return { 
+            uuid: playerid,
             id: Math.random().toString(36).substring(7),
             x, 
             y, 

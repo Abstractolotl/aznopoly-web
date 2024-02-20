@@ -51,7 +51,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
     public addPlayers(infos: (PlayerInfo & {uuid: string})[]) {
         infos.forEach(info => {
-            this.board.addPlayer(info.uuid);
+            this.board.addPlayer(info.uuid, this.aznopoly.getProfile(info.uuid));
             const profile = this.aznopoly.getProfile(info.uuid);
             this.playerList.addElement(info.uuid, new AzNopolyPlayerInfo(this, 0, 0, info, profile));
         });

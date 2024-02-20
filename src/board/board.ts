@@ -1,17 +1,16 @@
 import GameObject = Phaser.GameObjects.Shape;
-import { PacketType } from "../types/client";
-import AzNopolyGame from "../game";
-import { getColorFromUUID } from "../util";
 import BoardTile from "./board-tile.ts";
 import BoardGenerator from "./board-generator.ts";
 import { TileOrientation, TileType } from "../types/board.ts";
+import AzNopolyAvatar from "@/ui/avatar.ts";
+import { PlayerProfile } from "@/ui/player-info.ts";
 
 interface BoardPlayer {
-    gameObject: GameObject,
+    gameObject: AzNopolyAvatar,
     position: number,
 }
 
-const PLAYER_SIZE = 16;
+const PLAYER_SIZE = 32;
 const BOARD_SIDE_LENGTH = 5; // Without corners
 export default class GameBoard extends Phaser.GameObjects.Container {
 
@@ -63,16 +62,15 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         return boardTiles;
     }
 
-    addPlayer(uuid: string, startPos: number = 0) {
+    addPlayer(uuid: string, profile: PlayerProfile, startPos: number = 0) {
         if (this.players.has(uuid)) {
             throw new Error(`Player with UUID ${uuid} already exists!`);
         }
 
         const coords = this.boardTiles[startPos % this.boardTiles.length].getPlayerCenter();
 
-        const color = getColorFromUUID(uuid);
         const player = {
-            gameObject: new Phaser.GameObjects.Rectangle(this.scene, coords.x, coords.y, PLAYER_SIZE, PLAYER_SIZE, color),
+            gameObject: new AzNopolyAvatar(this.scene, coords.x - PLAYER_SIZE * 0.5, coords.y - PLAYER_SIZE * 0.5, PLAYER_SIZE, profile.avatar, profile.colorIndex),
             position: startPos,
         };
         this.add(player.gameObject);
@@ -95,7 +93,7 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         player.position = pos;
         const coords = this.boardTiles[player.position % this.boardTiles.length].getPlayerCenter();
 
-        player.gameObject.setPosition(coords.x, coords.y)
+        player.gameObject.setPosition(coords.x - PLAYER_SIZE * 0.5, coords.y - PLAYER_SIZE * 0.5)
         this.checkPlayerCollisions();
 
         return this.boardTiles[player.position % this.boardTiles.length];
