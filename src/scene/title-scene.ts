@@ -29,8 +29,8 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
         this.load.image('music-off', 'assets/music_off.png');
         this.load.html('input_mask', 'assets/title_screen.html');
 
-        this.load.audio('title-bgm', 'assets/title_bgm.mp3');
-        this.load.audio('game-start', 'assets/game_start.mp3');
+        this.load.audio('title-bgm', 'assets/audio/title_bgm.mp3');
+        this.load.audio('game-start', 'assets/audio/game_start.mp3');
 
         AzNopolyButton.preload(this);
     }

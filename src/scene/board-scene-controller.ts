@@ -1,6 +1,5 @@
 import { Avatars } from "@/ui/avatar";
 import AzNopolyGame from "../game";
-import { SceneSwitcher } from "../scene-switcher";
 import SyncedSceneController from "./base/synced-scene-controller";
 import BoardScene from "./board-scene";
 
