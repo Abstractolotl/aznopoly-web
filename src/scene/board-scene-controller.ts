@@ -16,7 +16,7 @@ interface Player {
 }
 
 export default class BoardSceneController extends SyncedSceneController {
-    
+
     declare protected scene: BoardScene;
 
     /**
@@ -40,7 +40,9 @@ export default class BoardSceneController extends SyncedSceneController {
         this.registerSyncedMethod(this.startBuyProperty, true);
         this.registerSyncedMethod(this.interruptBuyProperty, true);
         this.registerSyncedMethod(this.removeMoney, true);
+        this.registerSyncedMethod(this.addMoney, true);
         this.registerSyncedMethod(this.addTiles, true);
+
 
         this.registerSyncedMethod(this.rollDice, false);
         this.registerSyncedMethod(this.buyProperty, false)
@@ -95,6 +97,17 @@ export default class BoardSceneController extends SyncedSceneController {
         this.scene.updatePlayerInfo(uuid, player);
     }
 
+    private addMoney(uuid: string, amount: number) {
+        const player = this.getPlayer(uuid);
+        if (!player) {
+            console.error("Player not found");
+            return;
+        }
+        player.money += amount;
+
+        this.scene.updatePlayerInfo(uuid, player);
+    }
+
     private addTiles(uuid: string, tiles: number[]) {
         const player = this.getPlayer(uuid);
         if (!player) {
@@ -107,6 +120,20 @@ export default class BoardSceneController extends SyncedSceneController {
         })
 
         this.scene.updatePlayerInfo(uuid, player);
+    }
+
+    public onPropertyBought(uuid: string, fields: number[], price: number) {
+        if (!this.aznopoly.isHost) return;
+
+        this.syncProxy.removeMoney(uuid, price);
+        this.syncProxy.addTiles(uuid, fields);
+    }
+
+    public onPayedRent(uuid: string, owner: string, rent: number) {
+        if (!this.aznopoly.isHost) return;
+
+        this.syncProxy.removeMoney(uuid, rent);
+        this.syncProxy.addMoney(owner, (rent * 0.5));
     }
 
     public buyProperty(uuid: string) {

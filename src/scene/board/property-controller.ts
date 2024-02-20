@@ -1,4 +1,6 @@
 import BoardSceneController from "@/scene/board-scene-controller.ts";
+import BoardScene from "@/scene/board-scene.ts";
+import AzNopolyGame from "@/game.ts";
 
 const MAX_PROPERTY_LEVEL = 3;
 
@@ -92,10 +94,7 @@ export default class PropertyManager {
         let level = this.getPropertyLevel(field);
         let tile = this.controller.getTile(field);
 
-        // @ts-ignore
-        this.controller.syncProxy.removeMoney(uuid, this.calculatePropertyPrice(level))
-        // @ts-ignore
-        this.controller.syncProxy.addTiles(uuid, this.controller.getTiles(tile.getTileType()))
+        this.controller.onPropertyBought(uuid, this.controller.getTiles(tile.getTileType()), this.calculatePropertyPrice(level));
 
         return true;
     }
@@ -112,9 +111,38 @@ export default class PropertyManager {
         }
 
         let level = this.getPropertyLevel(field);
-        // @ts-ignore
-        this.controller.syncProxy.removeMoney(uuid, this.calculatePropertyRent(level))
+        if (level == 0) {
+            return false;
+        }
+
+        this.controller.onPayedRent(uuid, owner!.uuid, this.calculatePropertyRent(level));
 
         return true;
+    }
+}
+
+export abstract class SyncedPropertyController extends BoardSceneController {
+
+    private propertyManager: PropertyManager;
+
+    constructor(scene: BoardScene, aznopoly: AzNopolyGame) {
+        super(scene, aznopoly);
+        this.propertyManager = new PropertyManager(this);
+
+        this.registerSyncedMethod(this.addProperties, true);
+    }
+
+    private addProperties(uuid: string, fields: number[]) {
+        const player = this.getPlayer(uuid);
+        if (!player) {
+            console.error("Player not found");
+            return;
+        }
+
+        fields.forEach(value => {
+            player.tiles.push(value);
+        })
+
+        this.scene.updatePlayerInfo(uuid, player);
     }
 }
