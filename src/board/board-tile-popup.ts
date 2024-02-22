@@ -1,7 +1,5 @@
-import {COLOR_PRIMARY, COLOR_PRIMARY_2, FONT_STYLE_BODY, FONT_STYLE_BUTTON, FONT_STYLE_TITLE_TEXT} from "@/style.ts";
+import {COLOR_PRIMARY, COLOR_PRIMARY_2, FONT_STYLE_BODY, FONT_STYLE_BUTTON, FRAME_PADDING} from "@/style.ts";
 import {AzNopolyButton} from "@/ui/button.ts";
-
-const PADDING = 10;
 
 export default class BoardTilePopUp extends Phaser.GameObjects.Container {
 
@@ -20,7 +18,7 @@ export default class BoardTilePopUp extends Phaser.GameObjects.Container {
 
         this.graphics = new Phaser.GameObjects.Graphics(scene);
 
-        this.titleText = new Phaser.GameObjects.Text(scene, this.width*0.5, -PADDING - 45, "PLACEHOLDER", FONT_STYLE_BUTTON);
+        this.titleText = new Phaser.GameObjects.Text(scene, this.width*0.5, -FRAME_PADDING - 45, "PLACEHOLDER", FONT_STYLE_BUTTON);
         this.titleText.setOrigin(0.5, 0);
 
         this.priceText = new Phaser.GameObjects.Text(scene, this.width*0.5, this.height - 150, "Price: ???", FONT_STYLE_BODY);
@@ -56,9 +54,9 @@ export default class BoardTilePopUp extends Phaser.GameObjects.Container {
     private redrawUi() {
         this.graphics.clear();
         this.graphics.fillStyle(COLOR_PRIMARY_2);
-        this.graphics.fillRect(-PADDING, -PADDING - 50, this.width + PADDING * 2, this.height + PADDING * 2 + 50);
+        this.graphics.fillRect(-FRAME_PADDING, -FRAME_PADDING - 50, this.width + FRAME_PADDING * 2, this.height + FRAME_PADDING * 2 + 50);
 
         this.graphics.fillStyle(COLOR_PRIMARY);
-        this.graphics.fillRect(-PADDING + 5, -PADDING - 50 + 5, this.width + PADDING * 2 - 10, 45);
+        this.graphics.fillRect(-FRAME_PADDING + 5, -FRAME_PADDING - 50 + 5, this.width + FRAME_PADDING * 2 - 10, 45);
     }
 }
