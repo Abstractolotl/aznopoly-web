@@ -120,29 +120,3 @@ export default class PropertyManager {
         return true;
     }
 }
-
-export abstract class SyncedPropertyController extends BoardSceneController {
-
-    private propertyManager: PropertyManager;
-
-    constructor(scene: BoardScene, aznopoly: AzNopolyGame) {
-        super(scene, aznopoly);
-        this.propertyManager = new PropertyManager(this);
-
-        this.registerSyncedMethod(this.addProperties, true);
-    }
-
-    private addProperties(uuid: string, fields: number[]) {
-        const player = this.getPlayer(uuid);
-        if (!player) {
-            console.error("Player not found");
-            return;
-        }
-
-        fields.forEach(value => {
-            player.tiles.push(value);
-        })
-
-        this.scene.updatePlayerInfo(uuid, player);
-    }
-}

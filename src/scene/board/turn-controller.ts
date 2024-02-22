@@ -1,6 +1,6 @@
 import BoardSceneController from "../board-scene-controller";
 import {TileType} from "@/types/board.ts";
-import PropertyManager from "@/scene/board/property-controller.ts";
+import PropertyManager from "@/scene/board/property-manager.ts";
 
 
 enum TurnState {

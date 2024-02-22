@@ -6,7 +6,7 @@ import Turn from "./board/turn-controller";
 import { TileType } from "@/types/board";
 import BoardGenerator from "@/board/board-generator";
 import { BOARD_SIDE_LENGTH } from "@/main";
-import PropertyManager from "@/scene/board/property-controller.ts";
+import PropertyManager from "@/scene/board/property-manager.ts";
 
 interface Player {
     uuid: string;
