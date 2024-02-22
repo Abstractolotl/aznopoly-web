@@ -34,9 +34,6 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     }
 
     create() {
-        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", 50, 200, 150, 55, this.controller.onRollClick.bind(this.controller)));
-        this.rollButton.disable();
-        
         const RIGHT_PANEL_WIDTH = 350;
         this.add.existing(new AzNopolyBar(this, "AzNopoly"));
         const rightPanel = this.add.existing(new AzNopolyPanel(this, WIDTH - RIGHT_PANEL_WIDTH - FRAME_PADDING, AzNopolyBar.HEIGHT + FRAME_PADDING * 2, RIGHT_PANEL_WIDTH, HEIGHT - AzNopolyBar.HEIGHT - FRAME_PADDING * 3).setDepth(-1));
@@ -55,10 +52,6 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
         this.tilePopUp = this.add.existing(new BoardTilePopUp(this, WIDTH / 2, HEIGHT / 2, {width: 300, height: 200}, this.controller.onClickCancelProperty.bind(this.controller), this.controller.onClickSubmitProperty.bind(this.controller)));
         this.tilePopUp.setVisible(false);
-
-        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", 50, 200, 150, 55, this.controller.onRollClick.bind(this.controller)));
-        this.rollButton.disable();
-        this.rollButton.setDepth(100);
     }
 
     public initBoard(tiles: TileType[], players: (PlayerInfo & {uuid: string})[]) {
