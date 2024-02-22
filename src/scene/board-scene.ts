@@ -9,7 +9,7 @@ import BoardSceneController from "./board-scene-controller";
 import AzNopolyBar from "@/ui/bar";
 import AzNopolyPlayerInfo, { PlayerInfo } from "@/ui/player-info";
 import AzNopolyList from "@/ui/element-list";
-import BoardTilePopUp from "@/board/board_tile_popup.ts";
+import BoardTilePopUp from "@/board/board-tile-popup.ts";
 import { TileType } from "@/types/board";
 
 

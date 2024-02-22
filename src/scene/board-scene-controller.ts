@@ -139,6 +139,10 @@ export default class BoardSceneController extends SyncedSceneController {
     public buyProperty(uuid: string) {
         if (!this.aznopoly.isHost) return;
 
+        if(!this.currentTurn?.isOnTurn(uuid)) {
+            return;
+        }
+
         const player = this.players.find(p => p.uuid == uuid);
         if (!player) {
             return;
@@ -150,6 +154,10 @@ export default class BoardSceneController extends SyncedSceneController {
 
     public cancelBuyProperty(uuid: string) {
         if (!this.aznopoly.isHost) return;
+
+        if(!this.currentTurn?.isOnTurn(uuid)) {
+            return;
+        }
 
         const player = this.players.find(p => p.uuid == uuid);
         if (!player) {
@@ -189,6 +197,7 @@ export default class BoardSceneController extends SyncedSceneController {
     public onCanBuyProperty(uuid: string) {
         const player = this.players.find(p => p.uuid == uuid);
         if (!player) {
+            console.error("Player not found");
             return;
         }
 

@@ -32,6 +32,10 @@ export default class Turn {
         this.player = player;
     }
 
+    public isOnTurn(player: string) {
+        return this.player == player;
+    }
+
     public doRoll(sender: string) : boolean {
         if (this.state != TurnState.PRE_ROLL) return false;
         if (sender != this.player) return false;
