@@ -26,6 +26,9 @@ export default class Turn {
      */
     private readonly player: string;
 
+    // Scheduler for handling time based events
+    private scheduler!: NodeJS.Timeout;
+
     constructor(controller: BoardSceneController, propertyManager: PropertyManager, player: string) {
         this.controller = controller;
         this.propertyManager = propertyManager;
@@ -54,6 +57,10 @@ export default class Turn {
         if(this.propertyManager.hasToPayRent(this.player, field)) {
             this.controller.onHasToPayRent(this.player);
         } else if(this.propertyManager.canBuyProperty(this.player, field)) {
+            this.scheduler = setTimeout(() => {
+                this.controller.onBuyInterrupt(this.player);
+                this.cancelBuyProperty();
+            }, 3000);
             this.controller.onCanBuyProperty(this.player);
         } else {
             this.controller.onTurnEnd(this.player);
@@ -64,6 +71,8 @@ export default class Turn {
 
     public doBuyProperty(): boolean {
         if (this.state != TurnState.PROPERTY) return false;
+
+        clearTimeout(this.scheduler);
 
         const field = this.controller.getPlayerPosition(this.player);
         if( !field ) return false;
@@ -82,6 +91,8 @@ export default class Turn {
 
     public cancelBuyProperty(): boolean {
         if (this.state != TurnState.PROPERTY) return false;
+
+        clearTimeout(this.scheduler);
 
         this.state = TurnState.OVER;
         this.controller.onTurnEnd(this.player);

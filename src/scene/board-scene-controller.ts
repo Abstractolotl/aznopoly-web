@@ -27,9 +27,6 @@ export default class BoardSceneController extends SyncedSceneController {
     private currentTurn?: Turn;
     private propertyHelper: PropertyManager = new PropertyManager(this);
 
-    // Scheduler for handling time based events
-    private scheduler!: NodeJS.Timeout;
-
     constructor(scene: BoardScene, aznopoly: AzNopolyGame) {
         super(scene, aznopoly, "start");
 
@@ -42,7 +39,6 @@ export default class BoardSceneController extends SyncedSceneController {
         this.registerSyncedMethod(this.removeMoney, true);
         this.registerSyncedMethod(this.addMoney, true);
         this.registerSyncedMethod(this.addTiles, true);
-
 
         this.registerSyncedMethod(this.rollDice, false);
         this.registerSyncedMethod(this.buyProperty, false)
@@ -136,6 +132,16 @@ export default class BoardSceneController extends SyncedSceneController {
         this.syncProxy.addMoney(owner, (rent * 0.5));
     }
 
+    public onBuyInterrupt(uuid: string) {
+        if (!this.aznopoly.isHost) return;
+
+        if(!this.currentTurn?.isOnTurn(uuid)) {
+            return;
+        }
+
+        this.syncProxy.interruptBuyProperty(uuid);
+    }
+
     public buyProperty(uuid: string) {
         if (!this.aznopoly.isHost) return;
 
@@ -148,7 +154,6 @@ export default class BoardSceneController extends SyncedSceneController {
             return;
         }
 
-        clearTimeout(this.scheduler);
         this.currentTurn?.doBuyProperty();
     }
 
@@ -164,7 +169,6 @@ export default class BoardSceneController extends SyncedSceneController {
             return;
         }
 
-        clearTimeout(this.scheduler);
         this.currentTurn?.cancelBuyProperty();
     }
 
@@ -202,10 +206,6 @@ export default class BoardSceneController extends SyncedSceneController {
         }
 
         this.syncProxy.startBuyProperty(uuid, this.propertyHelper.getPropertyLevel(player.position));
-        this.scheduler = setTimeout(() => {
-            this.syncProxy.interruptBuyProperty(uuid);
-            this.currentTurn?.cancelBuyProperty();
-        }, 3000);
     }
 
     public onHasToPayRent(uuid: string) {
