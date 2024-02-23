@@ -60,8 +60,10 @@ export default class Turret extends Phaser.GameObjects.Container {
                 case "TOP_RIGHT": 
                     indexes = [1, 0, 1, 2];
                     return 1;
-                case "BOTTOM_RIGHT": return 3;
-                case "BOTTOM_LEFT": return  7;
+                case "BOTTOM_RIGHT": 
+                    return 3;
+                case "BOTTOM_LEFT": 
+                    return  7;
             }
         })();
         for (let i = 0; i < 4; i++) {

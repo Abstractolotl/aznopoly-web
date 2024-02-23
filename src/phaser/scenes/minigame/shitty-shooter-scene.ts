@@ -19,9 +19,9 @@ export default class ShittyShooterScene extends MinigameScene<ShittyShooterScene
     public static WORLD_BOUNDS = WORLD_BOUNDS;
     public static PLAYER_BOUNDS: Phaser.Geom.Rectangle[] = [
         new Phaser.Geom.Rectangle(WORLD_BOUNDS.x, WORLD_BOUNDS.y, WORLD_BOUNDS.width / 2, WORLD_BOUNDS.height / 2),
+        new Phaser.Geom.Rectangle(WORLD_BOUNDS.x + WORLD_BOUNDS.width / 2, WORLD_BOUNDS.y + WORLD_BOUNDS.height / 2, WORLD_BOUNDS.width / 2, WORLD_BOUNDS.height / 2),
         new Phaser.Geom.Rectangle(WORLD_BOUNDS.x + WORLD_BOUNDS.width / 2, WORLD_BOUNDS.y, WORLD_BOUNDS.width / 2, WORLD_BOUNDS.height / 2),
         new Phaser.Geom.Rectangle(WORLD_BOUNDS.x, WORLD_BOUNDS.y + WORLD_BOUNDS.height / 2, WORLD_BOUNDS.width / 2, WORLD_BOUNDS.height / 2),
-        new Phaser.Geom.Rectangle(WORLD_BOUNDS.x + WORLD_BOUNDS.width / 2, WORLD_BOUNDS.y + WORLD_BOUNDS.height / 2, WORLD_BOUNDS.width / 2, WORLD_BOUNDS.height / 2),
     ];
 
     private shooting = false;
