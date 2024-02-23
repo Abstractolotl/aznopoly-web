@@ -25,5 +25,5 @@
     "typescript": "^5.2.2",
     "vite": "^5.0.5"
   },
-  "buildNumber": "master-C77"
+  "buildNumber": "board_rework-C80"
 }

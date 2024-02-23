@@ -11,6 +11,7 @@ import { COLOR_BACKGROUND } from './style';
 
 export const WIDTH = 1280;
 export const HEIGHT = 720;
+export const BOARD_SIDE_LENGTH = 5;
 
 window.onload = async () => {
     let game = new Phaser.Game({
