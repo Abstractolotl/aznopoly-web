@@ -18,6 +18,7 @@ export default abstract class NetworkSceneController {
     /**
      * A proxy object that allows for calling methods on the controller.
      * Functions called on the proxy will be sent to all clients and executed asynchonously
+     * Only primitive data types that survive JSON.stringify can be sent as arguments
      * Functions must be registered with registerSyncedMethod
      */
     public syncProxy = new Proxy(this, {

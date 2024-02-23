@@ -7,7 +7,7 @@ import { RoombaScene } from "./roomba-scene";
 import convert from 'color-convert';
 
 
-const MAX_GAME_TIME = 30000;
+const MAX_GAME_TIME = 1000;
 export default class RoombaSceneController extends MinigameSceneController {
 
     declare protected scene: RoombaScene;
@@ -42,7 +42,7 @@ export default class RoombaSceneController extends MinigameSceneController {
             this.syncProxy.lockAllGameplay();
 
             const won = this.getPlayersWon();
-            this.syncProxy.endGame(won, false);
+            this.syncProxy.endGame({playerWon: won, sorted: false});
         }, MAX_GAME_TIME)
     }
 

@@ -1,6 +1,5 @@
 import GameObject = Phaser.GameObjects.Shape;
 import BoardTile from "./board-tile.ts";
-import BoardGenerator from "./board-generator.ts";
 import { TileOrientation, TileType } from "../types/board.ts";
 import AzNopolyAvatar from "@/ui/avatar.ts";
 import { PlayerProfile } from "@/ui/player-info.ts";
@@ -19,45 +18,49 @@ export default class GameBoard extends Phaser.GameObjects.Container {
     }
 
     private players: Map<string, BoardPlayer>;
-    private boardTiles: BoardTile[];
-    private tiles: TileType[];
+    private boardTiles!: BoardTile[];
+    private boardLength: number;
+    private tiles!: TileType[];
 
-    constructor(seed: string, scene: Phaser.Scene, x: number, y: number, size: number) {
+    constructor(scene: Phaser.Scene, x: number, y: number, size: number, boardLength: number) {
         super(scene, x, y);
         this.players = new Map();
         this.width = size;
         this.height = size;
+        this.boardLength = boardLength;
+    }
 
-        this.tiles = BoardGenerator.generateFields(seed, BOARD_SIDE_LENGTH);
-        this.boardTiles = GameBoard.generateBoardTiles(scene, this.tiles, size / (BOARD_SIDE_LENGTH + 4));
+    public init(tiles: TileType[]) {
+        this.tiles = tiles;
+        this.boardTiles = this.generateBoardTiles(this.scene, this.tiles, this.width / (this.boardLength + 4));
         this.boardTiles.forEach(e => this.add(e));
     }
 
-    private static generateBoardTiles(scene: Phaser.Scene, tiles: TileType[], tileWidth: number) {
+    private generateBoardTiles(scene: Phaser.Scene, tiles: TileType[], tileWidth: number) {
         const size = tileWidth;
-        const length = BOARD_SIDE_LENGTH + 2;
+        const length = this.boardLength + 2;
 
         const boardTiles: BoardTile[] = [];
-        tiles.length = BOARD_SIDE_LENGTH * 4 + 4;
+        tiles.length = this.boardLength * 4 + 4;
         let index;
-        for (let i = 0; i < BOARD_SIDE_LENGTH; i++) {
-            index = 1 + (1 + BOARD_SIDE_LENGTH) * 0 + i;
+        for (let i = 0; i < this.boardLength; i++) {
+            index = this.boardLength - i;
             boardTiles[index] = new BoardTile(scene, size * (i + 2)     , size * length, size      , size * 2  , tiles[index], TileOrientation.UP);
-            index = 1 + (1 + BOARD_SIDE_LENGTH) * 1 + i;
+            index = 1 + (this.boardLength * 2) - i;
             boardTiles[index] = new BoardTile(scene, 0                  , size * (i + 2)    , size * 2  , size      , tiles[index], TileOrientation.RIGHT);
-            index = 1 + (1 + BOARD_SIDE_LENGTH) * 2 + i;
+            index = 1 + (1 + this.boardLength) * 2 + i;
             boardTiles[index] = new BoardTile(scene, size * (i + 2)     , 0                 , size      , size * 2  , tiles[index], TileOrientation.DOWN);
-            index = 1 + (1 + BOARD_SIDE_LENGTH) * 3 + i;
+            index = 1 + (1 + this.boardLength) * 3 + i;
             boardTiles[index] = new BoardTile(scene, size * length , size * (i + 2)    , size * 2  , size      , tiles[index], TileOrientation.LEFT);
         }
 
-        index = (BOARD_SIDE_LENGTH + 1) * 0;
+        index = (this.boardLength + 1) * 0;
         boardTiles[index] = new BoardTile(scene, size * length, size * length, size * 2, size * 2, tiles[index], TileOrientation.CORNER);
-        index = (BOARD_SIDE_LENGTH + 1) * 1;
+        index = (this.boardLength + 1) * 1;
         boardTiles[index] = new BoardTile(scene, 0, size * length, size * 2, size * 2, tiles[index], TileOrientation.CORNER);
-        index = (BOARD_SIDE_LENGTH + 1) * 2;
+        index = (this.boardLength + 1) * 2;
         boardTiles[index] = new BoardTile(scene, 0, 0, size * 2, size * 2, tiles[index], TileOrientation.CORNER);
-        index = (BOARD_SIDE_LENGTH + 1) * 3;
+        index = (this.boardLength + 1) * 3;
         boardTiles[index] = new BoardTile(scene, size * length, 0, size * 2, size * 2, tiles[index], TileOrientation.CORNER);
         return boardTiles;
     }
@@ -97,6 +100,35 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         this.checkPlayerCollisions();
 
         return this.boardTiles[player.position % this.boardTiles.length];
+    }
+
+    teleportPlayerToPosition(uuid: string, pos: number) {
+        const player = this.players.get(uuid);
+        if (!player) {
+            throw new Error(`Player with UUID ${uuid} does not exist!`);
+        }
+
+        player.position = pos;
+        const coords = this.boardTiles[player.position % this.boardTiles.length].getPlayerCenter();
+
+        player.gameObject.setPosition(coords.x, coords.y)
+        this.checkPlayerCollisions();
+
+        return this.boardTiles[player.position % this.boardTiles.length];
+    }
+
+    getTile(pos: number) {
+        return this.boardTiles[pos % this.boardTiles.length];
+    }
+
+    getTilesOfType(type: TileType) {
+        let tiles: number[] = [];
+        this.boardTiles.forEach((tile, i) => {
+            if (tile.getTileType() === type) {
+                tiles.push(i);
+            }
+        });
+        return tiles;
     }
 
     private checkPlayerCollisions() {
