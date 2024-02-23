@@ -28,11 +28,7 @@ export default class LobbySceneController extends NetworkSceneController {
     }
 
     private updatePlayerList() {
-        const players = this.aznopoly.connectedUuids.map(uuid => ({
-            uuid: uuid,
-            name: this.aznopoly.room.getPlayerName(uuid),
-            host: this.aznopoly.isPlayerHost(uuid)
-        }))
+        const players = this.aznopoly.connectedUuids.map(uuid => this.aznopoly.getProfile(uuid));
         this.scene.updatePlayerList(players);
     }
 

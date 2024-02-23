@@ -54,10 +54,9 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.tilePopUp.setVisible(false);
     }
 
-    public initBoard(tiles: TileType[], players: (PlayerInfo & {uuid: string})[]) {
-        this.board.init(tiles);
-        players.forEach(info => {
-            this.board.addPlayer(info.uuid);
+    public addPlayers(infos: (PlayerInfo & {uuid: string})[]) {
+        infos.forEach(info => {
+            this.board.addPlayer(info.uuid, this.aznopoly.getProfile(info.uuid));
             const profile = this.aznopoly.getProfile(info.uuid);
             this.playerList.addElement(info.uuid, new AzNopolyPlayerInfo(this, 0, 0, info, profile));
         });

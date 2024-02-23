@@ -6,6 +6,7 @@ import PlayerList from "../ui/player-list";
 import { HEIGHT, WIDTH } from "../main";
 import { BaseScene } from "./base/base-scene";
 import LobbySceneController from "./lobby-scene-controller";
+import { PlayerProfile } from "@/ui/player-info";
 
 export default class LobbyScene extends BaseScene<LobbySceneController> {
 
@@ -39,7 +40,7 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
         this.add.existing(leaveButton);
     }
 
-    public updatePlayerList(player: { uuid: string, name: string, host: boolean }[]) {
+    public updatePlayerList(player: PlayerProfile[]) {
         this.playerList.updatePlayerList(player);
     }
     

@@ -1,27 +1,30 @@
+import { PlayerProfile } from "@/ui/player-info";
 import { HEIGHT, WIDTH } from "../main";
+import AzNopolyAvatar from "@/ui/avatar";
+import { PLAYER_COLORS } from "@/style";
 
 const SIZE = 60;
 const ARROW_COLOR = 0x00ff00;
 export interface RoombaConfig {
+    uuid: string;
     id: string;
     x: number;
     y: number;
     angle: number; 
-    color: number; 
     paintColor: number;
-    speed: number
+    speed: number;
 }
 
 
 export class Roomba extends Phaser.GameObjects.Container {
     static SIZE = SIZE;
 
-    private graphics: Phaser.GameObjects.Image;
+    private graphics: Phaser.GameObjects.Graphics;
+    private image: Phaser.GameObjects.Image;
     private arrow: Phaser.GameObjects.Graphics;
 
     private lastPaintPosition: Phaser.Math.Vector2;
 
-    private color: number;
     private paintColor: number;
     private speed: number;
 
@@ -31,21 +34,26 @@ export class Roomba extends Phaser.GameObjects.Container {
 
     static preload(scene: Phaser.Scene) {
         scene.load.image('roomba', 'assets/roomba.png');
+        AzNopolyAvatar.preload(scene);
     }
 
-    constructor(scene: Phaser.Scene, { id, x, y, angle, color, paintColor, speed} : RoombaConfig) {
+    constructor(scene: Phaser.Scene, { id, x, y, angle, paintColor, speed} : RoombaConfig, profile: PlayerProfile) {
         super(scene, x, y);
 
         this.id = id;
-        this.color = color;
         this.paintColor = paintColor;
         this.speed = speed;
 
-        this.graphics = new Phaser.GameObjects.Image(scene, 0, 0, 'roomba');
-        this.graphics.setScale(SIZE / this.graphics.width);
+        this.image = new Phaser.GameObjects.Image(scene, 0, 0, 'roomba');
+        this.image.setScale(SIZE / this.image.width);
 
         this.arrow = new Phaser.GameObjects.Graphics(scene);
         this.lastPaintPosition = new Phaser.Math.Vector2(x, y);
+
+        this.graphics = new Phaser.GameObjects.Graphics(scene);
+        console.log('color index', profile.colorIndex, PLAYER_COLORS[profile.colorIndex]);
+        this.graphics.lineStyle(5, PLAYER_COLORS[profile.colorIndex]);
+        this.graphics.strokeCircle(0, 0, SIZE/2);
 
         scene.physics.world.enable(this);
         const body = this.body! as Phaser.Physics.Arcade.Body;
@@ -54,7 +62,11 @@ export class Roomba extends Phaser.GameObjects.Container {
         body.setCircle(SIZE/2);
 
         this.add(this.arrow);
+        this.add(this.image);
         this.add(this.graphics);
+        
+        //const avatarSize = SIZE * 0.8;
+        //this.add(new AzNopolyAvatar(scene, -avatarSize/2, -avatarSize/2, avatarSize, profile.avatar, PLAYER_COLORS[profile.colorIndex]))
 
         this.updateDirection(new Phaser.Math.Vector2(Math.cos(angle), Math.sin(angle)));
 
@@ -124,7 +136,7 @@ export class Roomba extends Phaser.GameObjects.Container {
     }
 
     public updateDirection(direction: Phaser.Math.Vector2) {
-        this.graphics.rotation = direction.angle();
+        this.image.rotation = direction.angle();
 
         const normalized = direction.normalize();
         const body = this.body! as Phaser.Physics.Arcade.Body;

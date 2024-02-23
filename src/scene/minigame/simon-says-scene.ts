@@ -39,8 +39,8 @@ export class SimonSaysScene extends MinigameScene {
     preload() {
         super.preload();
         SimonSaysBoard.preload(this);
-        this.load.audio('right', 'assets/correct.mp3');
-        this.load.audio('wrong', 'assets/wrong.mp3');
+        this.load.audio('right', 'assets/audio/correct.mp3');
+        this.load.audio('wrong', 'assets/audio/wrong.mp3');
     }
 
     init(data: any): void {

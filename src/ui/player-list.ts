@@ -1,5 +1,5 @@
-import { FONT_STYLE_BODY, FONT_STYLE_BUTTON } from "../style";
-import { getColorFromUUID } from "../util";
+import { FONT_STYLE_BODY, FONT_STYLE_BUTTON, PLAYER_COLORS } from "../style";
+import { PlayerProfile } from "./player-info";
 
 interface Entry {
     head: Phaser.GameObjects.Image;
@@ -47,19 +47,19 @@ export default class PlayerList extends Phaser.GameObjects.Container {
         this.title.setText(title);
     }
 
-    private createPlayerEntry(name: string, host: boolean, uuid: string): Entry {
-        const headKey = host ? "host-crown" : "player-icon";
+    private createPlayerEntry(profile: PlayerProfile): Entry {
+        const headKey = profile.host ? "host-crown" : "player-icon";
         const head = new Phaser.GameObjects.Image(this.scene, 0, 0, headKey);
         this.add(head);
         const headScale = LINE_HEIGHT / head.height;
         head.setScale(headScale, headScale);
         head.setOrigin(0, 0.5);
-        head.tint = getColorFromUUID(uuid);
+        head.tint = PLAYER_COLORS[profile.colorIndex];
 
-        const text = new Phaser.GameObjects.Text(this.scene, 50, 0, name, FONT_STYLE_BODY);
+        const text = new Phaser.GameObjects.Text(this.scene, 50, 0, profile.name, FONT_STYLE_BODY);
         this.add(text);
         let tail: Phaser.GameObjects.Image | undefined = undefined;
-        if (this.hostView && !host) {
+        if (this.hostView && !profile.host) {
             tail = new Phaser.GameObjects.Image(this.scene, 0 + this.entryWidth, 0, "player-kick");
             this.add(tail);
             const tailScale = LINE_HEIGHT / tail.height;
@@ -69,7 +69,7 @@ export default class PlayerList extends Phaser.GameObjects.Container {
         return { head, text, tail };
     }
 
-    public updatePlayerList(players: {uuid: string, name: string, host: boolean}[]) {
+    public updatePlayerList(players: PlayerProfile[]) {
         const newEntries: Entry[] = [];
 
         const oldEntries = this.playerEntries;;
@@ -82,7 +82,7 @@ export default class PlayerList extends Phaser.GameObjects.Container {
         });
 
         players.forEach(player => {
-            const entry = this.createPlayerEntry(player.name, player.host, player.uuid);
+            const entry = this.createPlayerEntry(player);
             newEntries.push(entry);
         });
 

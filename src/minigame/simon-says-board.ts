@@ -8,7 +8,7 @@ const LOCK_DURATION = 50;
 export class SimonSaysBoard {
 
     static preload(scene: Phaser.Scene) {
-        scene.load.audio('simon-button-sound', 'assets/beep.mp3');
+        scene.load.audio('simon-button-sound', 'assets/audio/beep.mp3');
         scene.load.image('simon-tile-lit', 'assets/simon_lit.png');
         scene.load.image('simon-tile-unlit', 'assets/simon_unlit.png');
     }
