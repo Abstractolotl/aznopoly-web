@@ -1,5 +1,5 @@
 import AzNopolyGame from "@/game";
-import MinigameSceneController from "../base/minigame-scene-controller";
+import MinigameSceneController, { ResultData } from "../base/minigame-scene-controller";
 import ShittyShooterScene from "./shitty-shooter-scene";
 import { CORNER } from "./shitty-shooter/turret";
 
@@ -45,7 +45,11 @@ export default class ShittyShooterSceneController extends MinigameSceneControlle
             this.syncProxy.scene.stopAll();
             const scores = this.scene.getScore();
 
-            this.endGame(Object.keys(scores).sort().slice(0, 1), false);
+            const result: ResultData = {
+                playerWon: Object.keys(scores).sort().slice(0, 1),
+                sorted: false
+            }
+            this.endGame(result);
         }, GAME_TIME);
     }
     

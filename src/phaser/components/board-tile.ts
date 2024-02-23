@@ -38,10 +38,10 @@ export default class BoardTile extends Phaser.GameObjects.Container {
 
         this.image.setInteractive();
         this.image.on(Phaser.Input.Events.POINTER_OVER, () => {
-            this.image.setTint(0xaaaaaa);
+            this.image.setAlpha(0.75)
         });
         this.image.on(Phaser.Input.Events.POINTER_OUT, () => {
-            this.updateTint();
+            this.image.setAlpha(1)
         });
         this.updateTint();
 

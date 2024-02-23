@@ -27,7 +27,7 @@ export default abstract class SyncedSceneController extends NetworkSceneControll
         SceneSwitcher.broadcastSceneReady(this.aznopoly, this.scene.scene.key + "_CREATE")
     }
 
-    onSceneWake(): void {
+    onSceneWake(sys: Phaser.Scenes.Systems, data: any): void {
         if (this.aznopoly.isHost) {
             SceneSwitcher.waitForPlayers(this.aznopoly, this.scene.scene.key + "_WAKE", "wake", this.onAllPlayersRejoined.bind(this));
         }

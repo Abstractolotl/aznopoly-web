@@ -1,5 +1,4 @@
-import AzNopolyGame from "../../../game";
-import NetworkSceneController from "./base-scene-controller";
+import AzNopolyGame from "@/game";
 
 export abstract class BaseScene<T> extends Phaser.Scene {
 
