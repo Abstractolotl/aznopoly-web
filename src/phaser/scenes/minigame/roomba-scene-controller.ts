@@ -5,15 +5,14 @@ import MinigameScene from "../base/minigame-scene";
 import MinigameSceneController from "../base/minigame-scene-controller";
 import { RoombaScene } from "./roomba-scene";
 import convert from 'color-convert';
+import { SETTINGS } from "@/settings";
 
 
-const MAX_GAME_TIME = 1000;
+const MAX_GAME_TIME = 30000;
 export default class RoombaSceneController extends MinigameSceneController {
 
     declare protected scene: RoombaScene;
-
     private locked = false;
-
     private colorUuuidMap = new Map<string, string>();
 
     constructor(scene: RoombaScene, aznopoly: AzNopolyGame) {
@@ -105,7 +104,7 @@ export default class RoombaSceneController extends MinigameSceneController {
             angle: Math.random() * Math.PI * 2,
             color: color,
             paintColor: paintColorHex, 
-            speed: 150
+            speed: SETTINGS.ROOMBA_OUTRAGE.ROOMBA_SPEED
         }
     }
 

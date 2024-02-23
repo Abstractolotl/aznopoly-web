@@ -42,7 +42,7 @@ window.onload = async () => {
     game.scene.add('minigame-roomba', new RoombaScene(aznopoly));
     game.scene.add('minigame-shitty-shooter', new ShittyShooterScene(aznopoly));
 
-    if (true) {
+    if (false) {
         mock(aznopoly);
         game.scene.start('minigame-shitty-shooter');
     } else {

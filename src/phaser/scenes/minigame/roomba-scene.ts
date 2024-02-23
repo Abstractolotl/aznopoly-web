@@ -7,7 +7,7 @@ import convert from 'color-convert';
 import { FRAME_PADDING } from "@/style";
 import { SETTINGS } from "@/settings";
 
-const GRAPHICS_SWAP_TIME = 1;
+const GRAPHICS_SWAP_TIME = 1000000;
 const PAINT_REFRESH_TIME = 0.2;
 export class RoombaScene extends MinigameScene<RoombaSceneController> {
 
