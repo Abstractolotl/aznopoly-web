@@ -1,8 +1,8 @@
 import AzNopolyClient from "./client";
 import Room from "./room";
 import { Player } from "./types";
-import { Avatars } from "./ui/avatar";
-import { PlayerProfile } from "./ui/player-info";
+import { Avatars } from "./phaser/components/ui/avatar";
+import { PlayerProfile } from "./phaser/components/ui/player-info";
 
 export default class AzNopolyGame {
 

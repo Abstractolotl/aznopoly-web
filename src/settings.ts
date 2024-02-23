@@ -1,0 +1,6 @@
+
+
+export const SETTINGS = {
+    DISPLAY_WIDTH: 1280,
+    DISPLAY_HEIGHT: 720,
+}
