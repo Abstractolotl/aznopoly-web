@@ -13,6 +13,10 @@ export default class AzNopolyList<T extends Phaser.GameObjects.Container> extend
         this.height += element.height + FRAME_PADDING;
     }
 
+    preUpdate(time: number, delta: number) {
+        this.elements.forEach(e => e.element.preUpdate?.(time, delta));
+    }
+
     public getElement(key: string) {
         return this.elements.find(e => e.key === key)?.element;
     }

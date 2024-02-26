@@ -65,3 +65,10 @@ export const FONT_STYLE_TITLE_TEXT: TextStyle = {
     stroke: '#ffffff',
     strokeThickness: 10,
 }
+
+export const FONT_STYLE_DIGITS: TextStyle = {
+    fontFamily: '"Kode Mono"',
+    fontSize: "32px",
+    color: toHex(COLOR_TEXT),
+    align: 'center'
+}
