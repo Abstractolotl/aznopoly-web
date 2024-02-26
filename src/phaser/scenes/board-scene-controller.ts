@@ -25,7 +25,7 @@ export default class BoardSceneController extends SyncedSceneController {
     private players!: Player[];
     private minigameInprogress: boolean = false;
     private currentTurn?: Turn;
-    private propertyHelper: PropertyManager = new PropertyManager(this);
+    private propertyManager: PropertyManager = new PropertyManager(this);
 
     constructor(scene: BoardScene, aznopoly: AzNopolyGame) {
         super(scene, aznopoly, "start");
@@ -35,7 +35,7 @@ export default class BoardSceneController extends SyncedSceneController {
         this.registerSyncedMethod(this.startTurn, true);
         this.registerSyncedMethod(this.startMinigame, true);
         this.registerSyncedMethod(this.startBuyProperty, true);
-        this.registerSyncedMethod(this.interruptBuyProperty, true);
+        this.registerSyncedMethod(this.stopBuyPropertyDialog, true);
         this.registerSyncedMethod(this.removeMoney, true);
         this.registerSyncedMethod(this.addMoney, true);
         this.registerSyncedMethod(this.addTiles, true);
@@ -132,44 +132,40 @@ export default class BoardSceneController extends SyncedSceneController {
         this.syncProxy.addMoney(owner, (rent * 0.5));
     }
 
-    public onBuyInterrupt(uuid: string) {
+    public executeCancelBuyProperty(uuid: string) {
         if (!this.aznopoly.isHost) return;
 
-        if(!this.currentTurn?.isOnTurn(uuid)) {
+        if (!this.currentTurn) {
+            console.error("Received cancel buy property request but no turn in progress");
             return;
         }
 
-        this.syncProxy.interruptBuyProperty(uuid);
+        this.syncProxy.stopBuyPropertyDialog();
+        this.currentTurn.doCancelBuyProperty(uuid);
     }
 
-    public buyProperty(uuid: string) {
+    public buyProperty() {
         if (!this.aznopoly.isHost) return;
 
-        if(!this.currentTurn?.isOnTurn(uuid)) {
+        const sender = arguments[arguments.length - 1];
+        if (!this.currentTurn) {
+            console.error("Received buy property request but no turn in progress");
             return;
         }
 
-        const player = this.players.find(p => p.uuid == uuid);
-        if (!player) {
-            return;
-        }
-
-        this.currentTurn?.doBuyProperty();
+        this.currentTurn.doBuyProperty(sender);
     }
 
-    public cancelBuyProperty(uuid: string) {
+    public cancelBuyProperty() {
         if (!this.aznopoly.isHost) return;
 
-        if(!this.currentTurn?.isOnTurn(uuid)) {
+        const sender = arguments[arguments.length - 1];
+        if (!this.currentTurn) {
+            console.error("Received buy property request but no turn in progress");
             return;
         }
 
-        const player = this.players.find(p => p.uuid == uuid);
-        if (!player) {
-            return;
-        }
-
-        this.currentTurn?.cancelBuyProperty();
+        this.currentTurn.doCancelBuyProperty(sender);
     }
 
     public onRollClick() {
@@ -191,22 +187,22 @@ export default class BoardSceneController extends SyncedSceneController {
 
     public onClickSubmitProperty() {
         this.scene.hideBuyTilePopUp();
-        this.syncProxy.buyProperty(this.aznopoly.uuid);
+        this.syncProxy.buyProperty();
     }
 
     public onClickCancelProperty() {
         this.scene.hideBuyTilePopUp();
-        this.syncProxy.cancelBuyProperty(this.aznopoly.uuid);
+        this.syncProxy.cancelBuyProperty();
     }
 
-    public onCanBuyProperty(uuid: string) {
+    public executeBuyPropertyDialog(uuid: string) {
         const player = this.players.find(p => p.uuid == uuid);
         if (!player) {
             console.error("Player not found");
             return;
         }
 
-        this.syncProxy.startBuyProperty(uuid, this.propertyHelper.getPropertyLevel(player.position));
+        this.syncProxy.startBuyProperty(uuid, this.propertyManager.getPropertyLevel(player.position));
     }
 
     public onHasToPayRent(uuid: string) {
@@ -217,20 +213,16 @@ export default class BoardSceneController extends SyncedSceneController {
         }
 
         // TODO: Show that rent was payed
-        this.propertyHelper.payPropertyRent(uuid, player.position)
+        this.propertyManager.payPropertyRent(uuid, player.position)
         // TODO: Check if player is bankrupt
-        this.onTurnEnd(uuid);
     }
 
     private doTurn(uuid: string) {
-        this.currentTurn = new Turn(this, this.propertyHelper, uuid);
+        this.currentTurn = new Turn(this, this.propertyManager, uuid);
         this.syncProxy.startTurn(uuid);
     }
 
-    private interruptBuyProperty(uuid: string) {
-        if(uuid != this.aznopoly.uuid) {
-            return;
-        }
+    private stopBuyPropertyDialog() {
         this.scene.hideBuyTilePopUp();
     }
 
@@ -243,13 +235,13 @@ export default class BoardSceneController extends SyncedSceneController {
         const player = this.players.find(p => p.uuid == uuid);
         if (!player) {
             console.error("Player not found");
-            return;
+            return -1;
         }
-        return player.position;
+        return player.position!;
     }
 
     /* Host Functions */
-    public executeRoll(uuid: string) {
+    public async executeRoll(uuid: string) {
         const roll = Math.floor(Math.random() * 6) + 1;
         const player = this.players.find(p => p.uuid == uuid);
         if (!player) {
@@ -309,7 +301,7 @@ export default class BoardSceneController extends SyncedSceneController {
             return;
         }
 
-        this.scene.showBuyTilePopUp((level > 0), this.propertyHelper.calculatePropertyPrice(level));
+        this.scene.showBuyTilePopUp((level > 0), this.propertyManager.calculatePropertyPrice(level));
     }
 
     /** Utility Functions **/
@@ -325,8 +317,8 @@ export default class BoardSceneController extends SyncedSceneController {
         return player;
     }
 
-    public getTile(pos: number) {
-        return this.scene.getTile(pos);
+    public getTile(pos: number): TileType {
+        return this.scene.getTile(pos).getTileType();
     }
 
     public isFieldOwnedByPlayer(pos: number, uuid: string) {

@@ -1,4 +1,5 @@
 import BoardSceneController from "@/phaser/scenes/board-scene-controller";
+import { TileType } from "@/types/board";
 
 const MAX_PROPERTY_LEVEL = 3;
 
@@ -46,6 +47,10 @@ export default class PropertyManager {
     }
 
     public canBuyProperty(uuid: string, field: number) {
+        if (!TileType.isProperty(this.controller.getTile(field))) {
+            return false;
+        };
+
         let player = this.controller.getPlayer(uuid);
         if (!player) {
             return false;
@@ -92,8 +97,8 @@ export default class PropertyManager {
         let level = this.getPropertyLevel(field);
         let tile = this.controller.getTile(field);
 
-        this.controller.onPropertyBought(uuid, this.controller.getTiles(tile.getTileType()), this.calculatePropertyPrice(level));
 
+        this.controller.onPropertyBought(uuid, this.controller.getTiles(tile), this.calculatePropertyPrice(level));
         return true;
     }
 
