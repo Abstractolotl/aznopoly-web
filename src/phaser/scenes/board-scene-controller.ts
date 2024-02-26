@@ -26,12 +26,12 @@ export default class BoardSceneController extends SyncedSceneController {
     private minigameInprogress: boolean = false;
     private currentTurn?: Turn;
     private propertyManager: PropertyManager = new PropertyManager(this);
+    private tiles!: TileType[];
 
     constructor(scene: BoardScene, aznopoly: AzNopolyGame) {
         super(scene, aznopoly, "start");
 
         this.registerSyncedMethod(this.initBoard, true);
-        this.registerSyncedMethod(this.updatePlayerPosition, true);
         this.registerSyncedMethod(this.startTurn, true);
         this.registerSyncedMethod(this.startMinigame, true);
         this.registerSyncedMethod(this.startBuyProperty, true);
@@ -39,6 +39,10 @@ export default class BoardSceneController extends SyncedSceneController {
         this.registerSyncedMethod(this.removeMoney, true);
         this.registerSyncedMethod(this.addMoney, true);
         this.registerSyncedMethod(this.addTiles, true);
+
+        this.registerSyncedProp("scene");
+        this.registerSyncedMethod(this.scene.updatePlayerPosition, false);
+        this.registerSyncedMethod(this.scene.showDiceRoll, false);
 
         this.registerSyncedMethod(this.rollDice, false);
         this.registerSyncedMethod(this.buyProperty, false)
@@ -75,9 +79,6 @@ export default class BoardSceneController extends SyncedSceneController {
         this.aznopoly.connectedUuids.forEach(uuid => {
             if (!result.playerWon.includes(uuid)) {
                 this.syncProxy.removeMoney(uuid, 100);
-                console.log("Player lost", uuid);
-            } else {
-                console.log("Player won", uuid);
             }
         });
     }
@@ -116,6 +117,7 @@ export default class BoardSceneController extends SyncedSceneController {
         })
 
         this.scene.updatePlayerInfo(uuid, player);
+        this.scene.updateTileOwners(uuid, tiles);
     }
 
     public onPropertyBought(uuid: string, fields: number[], price: number) {
@@ -174,15 +176,17 @@ export default class BoardSceneController extends SyncedSceneController {
     }
 
     public onTurnEnd(uuid: string) {
-        const currentIndex = this.players.findIndex(p => p.uuid == uuid);
-        if (currentIndex == this.players.length - 1) {
-            this.minigameInprogress = true;
-            const minigames = ["minigame-shitty-shooter", "minigame-roomba"]
-            this.syncProxy.startMinigame(minigames[Math.floor(Math.random() * minigames.length)]);
-        } else {
-            const nextPlayer = this.getNextPlayerIndex(uuid);
-            this.doTurn(this.players[nextPlayer].uuid);
-        }
+        setTimeout(() => {
+            const currentIndex = this.players.findIndex(p => p.uuid == uuid);
+            if (currentIndex == this.players.length - 1) {
+                this.minigameInprogress = true;
+                const minigames = ["minigame-shitty-shooter", "minigame-roomba"]
+                this.syncProxy.startMinigame(minigames[Math.floor(Math.random() * minigames.length)]);
+            } else {
+                const nextPlayer = this.getNextPlayerIndex(uuid);
+                this.doTurn(this.players[nextPlayer].uuid);
+            }
+        }, 500)
     }
 
     public onClickSubmitProperty() {
@@ -248,13 +252,17 @@ export default class BoardSceneController extends SyncedSceneController {
             console.error("Player not found");
             return;
         }
+
+        await this.syncProxy.scene.showDiceRoll(roll);
         player.position = (player.position +  roll) % ((SETTINGS.BOARD_SIDE_LENGTH * 4) + 4);
-        this.syncProxy.updatePlayerPosition(uuid, player.position);
+        await this.syncProxy.scene.updatePlayerPosition(uuid, player.position);
     }
 
     /* Network Functions */
     private initBoard(tiles: TileType[], players: Player[]) {
         this.players = players;
+        this.tiles = tiles;
+
         this.scene.initBoard(tiles, players.map((p, i) => ({
             uuid: p.uuid,
             money: p.money
@@ -274,10 +282,6 @@ export default class BoardSceneController extends SyncedSceneController {
         this.currentTurn.doRoll(sender);
     }
 
-    private updatePlayerPosition(uuid: string, position: number) {
-        this.scene.updatePlayerPosition(uuid, position);
-    }
-
     private startMinigame(minigame: string) {
         this.scene.showMinigameSelect("The Minigame").then(() => {
             setTimeout(() => {
@@ -294,6 +298,8 @@ export default class BoardSceneController extends SyncedSceneController {
         if(uuid == this.aznopoly.uuid) {
             this.scene.enableRollButton();
         }
+
+        this.scene.setCurrentTurn(uuid);
     }
 
     private startBuyProperty(uuid: string, level: number) {
@@ -318,7 +324,7 @@ export default class BoardSceneController extends SyncedSceneController {
     }
 
     public getTile(pos: number): TileType {
-        return this.scene.getTile(pos).getTileType();
+        return this.tiles[pos]!;
     }
 
     public isFieldOwnedByPlayer(pos: number, uuid: string) {
@@ -329,7 +335,7 @@ export default class BoardSceneController extends SyncedSceneController {
         return this.players.some(p => p.tiles.includes(pos));
     }
 
-    public getTiles(type: TileType){
-        return this.scene.getTilesOfType(type);
+    public getAllTilesByType(type: TileType){
+        return this.tiles.map((tile, index) => ({tile, index})).filter(t => t.tile == type).map(t => t.index);
     }
 }

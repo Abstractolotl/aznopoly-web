@@ -64,7 +64,7 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         return boardTiles;
     }
 
-    addPlayer(uuid: string, profile: PlayerProfile, startPos: number = 0) {
+    public addPlayer(uuid: string, profile: PlayerProfile, startPos: number = 0) {
         if (this.players.has(uuid)) {
             throw new Error(`Player with UUID ${uuid} already exists!`);
         }
@@ -77,31 +77,12 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         };
         this.add(player.gameObject);
         this.players.set(uuid, player)
-        this.movePlayerToPosition(uuid, 0);
+        this.teleportPlayerToPosition(uuid, 0);
 
         return player;
     }
 
-    movePlayerToPosition(uuid: string, pos: number) : BoardTile {
-        if (!Number.isInteger(pos)) {
-            throw new Error(`Illegal parameter distance: Not an integer (${pos})`);
-        }
-
-        let player = this.players.get(uuid);
-        if (!player) {
-            throw new Error(`Player with UUID ${uuid} does not exist!`);
-        }
-
-        player.position = pos;
-        const coords = this.boardTiles[player.position % this.boardTiles.length].getPlayerCenter();
-
-        player.gameObject.setPosition(coords.x - PLAYER_SIZE * 0.5, coords.y - PLAYER_SIZE * 0.5)
-        this.checkPlayerCollisions();
-
-        return this.boardTiles[player.position % this.boardTiles.length];
-    }
-
-    teleportPlayerToPosition(uuid: string, pos: number) {
+    public teleportPlayerToPosition(uuid: string, pos: number) {
         const player = this.players.get(uuid);
         if (!player) {
             throw new Error(`Player with UUID ${uuid} does not exist!`);
@@ -110,10 +91,14 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         player.position = pos;
         const coords = this.boardTiles[player.position % this.boardTiles.length].getPlayerCenter();
 
-        player.gameObject.setPosition(coords.x, coords.y)
+        player.gameObject.setPosition(coords.x - player.gameObject.width * 0.5, coords.y - player.gameObject.height * 0.5);
         this.checkPlayerCollisions();
 
         return this.boardTiles[player.position % this.boardTiles.length];
+    }
+
+    public getPlayerPosition(uuid: string) {
+        return this.players.get(uuid)?.position;
     }
 
     getTile(pos: number) {
@@ -143,10 +128,12 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         Object.values(positions).forEach((uuids) => {
             if (uuids.length > 1) {
                 let i = 0; 
-                const offset = uuids.length * PLAYER_SIZE * -0.25;
-                uuids.forEach(_ => {
-                    const player = this.players.get(uuids[i]);
-                    player?.gameObject.setX(player.gameObject.x + offset + PLAYER_SIZE * i);
+                const offset = uuids.length * PLAYER_SIZE * -0.15;
+                uuids.forEach(uuid => {
+                    const player = this.players.get(uuids[i])!;
+                    const coords = this.boardTiles[player.position % this.boardTiles.length].getPlayerCenter();
+                    player.gameObject.setPosition(coords.x - player.gameObject.width * 0.5, coords.y - player.gameObject.height * 0.5);
+                    player.gameObject.setY(player.gameObject.x - offset * i);
                     i++;
                 })
             }

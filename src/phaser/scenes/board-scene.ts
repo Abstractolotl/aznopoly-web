@@ -1,6 +1,6 @@
 import AzNopolyPanel from "@/phaser/components/ui/panel";
 import GameBoard from "../components/board";
-import { FRAME_PADDING } from "../../style";
+import { FONT_STYLE_BODY, FONT_STYLE_HEADLINE, FRAME_PADDING } from "../../style";
 import { AzNopolyButton } from "../components/ui/button";
 import RandomSelectionWheel from "../components/ui/random-selection-wheel";
 import { BaseScene } from "./base/base-scene";
@@ -17,6 +17,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     private board!: GameBoard;
     private tilePopUp!: BoardTilePopUp;
     private rollButton!: AzNopolyButton;
+    private rollText!: Phaser.GameObjects.Text;
     private choiceWheel!: RandomSelectionWheel;
     private playerList!: AzNopolyList<AzNopolyPlayerInfo>;
 
@@ -43,6 +44,10 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
         this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", SETTINGS.DISPLAY_WIDTH - 325, SETTINGS.DISPLAY_HEIGHT - 100, 250, 55, this.controller.onRollClick.bind(this.controller)));
         this.rollButton.disable();
+
+        this.rollText = this.add.text(this.rollButton.x, this.rollButton.y - 64 - FRAME_PADDING, "6", FONT_STYLE_HEADLINE);
+        this.rollText.setOrigin(0.5, 0.5);
+        this.rollText.setVisible(false);
 
         this.choiceWheel = this.add.existing(new RandomSelectionWheel(this, SETTINGS.DISPLAY_WIDTH /2, SETTINGS.DISPLAY_HEIGHT / 2, {width: 300, height: 40}));
         this.choiceWheel.setVisible(false);
@@ -72,12 +77,65 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         }
         playerInfoElement.updateInfo(info);
     }
+    
+    public setCurrentTurn(uuid: string) {
+        this.playerList.elements.forEach(e => e.element.setX(0));
+        this.playerList.getElement(uuid)!.setX(+35);
+    }
 
-    public updatePlayerPosition(uuid: string, position: number, teleport: boolean = false) {
-        if(teleport) {
-            return this.board.teleportPlayerToPosition(uuid, position);
-        }
-        return this.board.movePlayerToPosition(uuid, position);
+    public updatePlayerPosition(uuid: string, targetPosition: number) {
+        return new Promise<void>(resolve => {
+            // if (teleport) {
+            //     this.board.teleportPlayerToPosition(uuid, position);
+            //     resolve();
+            //     return;
+            // }
+
+            
+            const startPos = this.board.getPlayerPosition(uuid)!;
+            const tilesToMove = (targetPosition > startPos) ? targetPosition - startPos : (targetPosition + (4 * SETTINGS.BOARD_SIDE_LENGTH) + 4) - startPos;
+
+            console.log("moving", tilesToMove, "tiles");
+
+            for(let i = 0; i <= tilesToMove; i++) {
+                setTimeout(() => {
+                    console.log("step", i)
+                    this.board.teleportPlayerToPosition(uuid, startPos + i);
+                    if(i === tilesToMove) {
+                        this.rollText.setVisible(false);
+                        console.log("resolve")
+                        setTimeout(resolve, 500);
+                    }
+                    this.rollText.setText(Number.parseInt(this.rollText.text) - 1 + "");
+                }, 250 * (i));
+            }
+        });
+
+        
+    }
+
+    public updateTileOwners(uuid: string, tileIndexes: number[]) {
+        tileIndexes.forEach(tilePos => {
+            const tile = this.board.getTile(tilePos)!;
+            tile.setOwner(this.aznopoly.getProfile(uuid));
+        })
+    }
+
+    public showDiceRoll(roll: number) {
+        this.rollText.setVisible(true);
+        return new Promise<void>(resolve => {
+            let rollCount = 0;
+            const interval = setInterval(() => {
+                this.rollText.setText((Math.floor(Math.random() * 6) + 1).toString());
+                rollCount++;
+                if(rollCount >= 10) {
+                    clearInterval(interval);
+                    this.rollText.setText(roll.toString());
+                    this.rollText.setVisible(true);
+                    setTimeout(resolve, 500);
+                }
+            }, 50);
+        });
     }
 
     public enableRollButton() {
@@ -103,14 +161,6 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
     public hideMinigameSelect() {
         this.choiceWheel.setVisible(false);
-    }
-
-    public getTile(position: number) {
-        return this.board.getTile(position);
-    }
-
-    public getTilesOfType(type: TileType) {
-        return this.board.getTilesOfType(type);
     }
 
 }

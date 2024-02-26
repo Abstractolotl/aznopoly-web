@@ -98,7 +98,7 @@ export default class PropertyManager {
         let tile = this.controller.getTile(field);
 
 
-        this.controller.onPropertyBought(uuid, this.controller.getTiles(tile), this.calculatePropertyPrice(level));
+        this.controller.onPropertyBought(uuid, this.controller.getAllTilesByType(tile), this.calculatePropertyPrice(level));
         return true;
     }
 

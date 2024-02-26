@@ -21,11 +21,11 @@ export default class AnimatedText extends Phaser.GameObjects.Container {
             duration: 1000,
         },
         [TextAnimationType.GRAVITY_FALL]: {
-            duration: 500,
+            duration: 1500,
             altTextVisible: true,
         },
         [TextAnimationType.FALL_INTO]: {
-            duration: 400,
+            duration: 1500,
             altTextVisible: true,
             textDelayed: true,
         },

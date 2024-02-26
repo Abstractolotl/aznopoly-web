@@ -94,7 +94,7 @@ export default abstract class NetworkSceneController {
         const proxyPropName = Object.keys(this).find(k => (this as any)[k] === proxiedObject);
         return (...args: any[]) => {
             const packet = this.sendExecPacket(proxyPropName!, String(prop), ...args); 
-            this.executePacket(packet);
+            return this.executePacket(packet);
         }
     }
 
@@ -140,7 +140,7 @@ export default abstract class NetworkSceneController {
             console.error(`Method ${packet.data.method} is not a function`);
             return;
         }
-        (method).apply(proxied, [...packet.data.arguments, packet.sender]);
+        return (method).apply(proxied, [...packet.data.arguments, packet.sender]);
     }
 
 }

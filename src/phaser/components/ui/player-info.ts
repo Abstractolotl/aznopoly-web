@@ -75,6 +75,7 @@ export default class AzNopolyPlayerInfo extends Phaser.GameObjects.Container {
 
     public updateInfo(info: PlayerInfo) {
         const moneyDif = info.money - this.lastMoney;
+        this.lastMoney = info.money;
         
         if (moneyDif > 0) {
             this.moneyText.setTextAnimated(` ${info.money}`, TextAnimationType.FALL_INTO, {
