@@ -49,7 +49,7 @@ export default class ShittyShooterSceneController extends MinigameSceneControlle
                 playerWon: Object.keys(scores).sort().slice(0, 1),
                 sorted: false
             }
-            this.endGame(result);
+            this.syncProxy.endGame(result);
         }, GAME_TIME);
     }
     

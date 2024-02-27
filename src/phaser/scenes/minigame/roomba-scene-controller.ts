@@ -8,7 +8,7 @@ import convert from 'color-convert';
 import { SETTINGS } from "@/settings";
 
 
-const MAX_GAME_TIME = 30000;
+const MAX_GAME_TIME = 1000;
 export default class RoombaSceneController extends MinigameSceneController {
 
     declare protected scene: RoombaScene;
@@ -47,6 +47,7 @@ export default class RoombaSceneController extends MinigameSceneController {
 
     private getPlayersWon() {
         const paintMap = this.scene.getPaintMap();
+        console.log(paintMap);
         const paintedColors = Object.keys(paintMap).filter(e => e != "000000");
 
         const won = paintedColors.sort()
@@ -78,7 +79,7 @@ export default class RoombaSceneController extends MinigameSceneController {
         const roombaConfigs = [];
         for (let j = 0; j < this.aznopoly.connectedUuids.length; j++) {
             const uuid = this.aznopoly.connectedUuids[j] ;
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 3; i++) {
                 roombaConfigs.push(this.generateRandomRoombaConfig(uuid));
             }
             this.colorUuuidMap.set(roombaConfigs[roombaConfigs.length-1].paintColor.toString(16).toUpperCase(), uuid);

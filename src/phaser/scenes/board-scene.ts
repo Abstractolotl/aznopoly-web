@@ -95,15 +95,11 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
             const startPos = this.board.getPlayerPosition(uuid)!;
             const tilesToMove = (targetPosition > startPos) ? targetPosition - startPos : (targetPosition + (4 * SETTINGS.BOARD_SIDE_LENGTH) + 4) - startPos;
 
-            console.log("moving", tilesToMove, "tiles");
-
             for(let i = 0; i <= tilesToMove; i++) {
                 setTimeout(() => {
-                    console.log("step", i)
                     this.board.teleportPlayerToPosition(uuid, startPos + i);
                     if(i === tilesToMove) {
                         this.rollText.setVisible(false);
-                        console.log("resolve")
                         setTimeout(resolve, 500);
                     }
                     this.rollText.setText(Number.parseInt(this.rollText.text) - 1 + "");
