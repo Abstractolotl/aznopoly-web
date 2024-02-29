@@ -26,7 +26,7 @@ export default class PlayerList extends Phaser.GameObjects.Container {
     private graphics!: Phaser.GameObjects.Graphics;
     private playerEntries: Entry[] = [];
 
-    constructor(scene: Phaser.Scene, hostView: boolean, x: number, y: number, entryWidth: number) {
+    constructor(scene: Phaser.Scene, hostView: boolean, x: number, y: number, entryWidth: number, entryHeight: number, fontSize: number) {
         super(scene);
 
         this.hostView = hostView;
@@ -37,9 +37,12 @@ export default class PlayerList extends Phaser.GameObjects.Container {
         this.graphics = new Phaser.GameObjects.Graphics(scene);
         this.add(this.graphics);
         this.graphics.fillStyle(0x000000, 0.5);        
-        this.graphics.fillRoundedRect(-PADDING, -PADDING, this.entryWidth + (2 * PADDING),  (2 * PADDING) + (LINE_HEIGHT * 5) + (LINE_GAP * 4), 5);
-        
-        this.title = new Phaser.GameObjects.Text(scene, 0, 0, "", FONT_STYLE_BODY);
+        this.graphics.fillRoundedRect(-PADDING, -PADDING, this.entryWidth + (2 * PADDING),  (2 * PADDING) + (entryHeight) + (LINE_GAP * 4), 5);
+
+        const fontStyle = FONT_STYLE_BODY
+        fontStyle.fontSize = fontSize
+
+        this.title = new Phaser.GameObjects.Text(scene, 0, 0, "", fontStyle);
         this.add(this.title);
     }
 

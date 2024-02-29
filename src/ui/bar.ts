@@ -6,13 +6,22 @@ const BAR_HEIGHT = 100;
 export default class AzNopolyBar extends Phaser.GameObjects.Container {
     static HEIGHT = BAR_HEIGHT;
 
-    constructor(scene: Phaser.Scene, title: string) {
+    constructor(scene: Phaser.Scene, title: string, widthPercent) {
         super(scene, 0, FRAME_PADDING);
 
-        const width = WIDTH * 0.75;
+        const width = WIDTH * widthPercent/100;
         this.add(new AzNopolyPanel(scene, WIDTH / 2 - width / 2, 0, width, BAR_HEIGHT));
 
         this.add(new Phaser.GameObjects.Text(scene, WIDTH / 2, BAR_HEIGHT / 2, title, FONT_STYLE_HEADLINE).setOrigin(0.5, 0.5));
     }
+
+/*    constructor(scene: Phaser.Scene, title: string, widthPercentage: number) {
+        super(scene, 0, FRAME_PADDING);
+
+        const width = WIDTH * widthPercentage/100;
+        this.add(new AzNopolyPanel(scene, WIDTH / 2 - width / 2, 0, width, BAR_HEIGHT));
+
+        this.add(new Phaser.GameObjects.Text(scene, WIDTH / 2, BAR_HEIGHT / 2, title, FONT_STYLE_HEADLINE).setOrigin(0.5, 0.5));
+    }*/
 
 }

@@ -44,7 +44,7 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
         this.centerText.setOrigin(0.5, 0.5);
         this.centerText.setDepth(1000);
 
-        this.add.existing(new AzNopolyBar(this, "Roomba Outrage"))
+        this.add.existing(new AzNopolyBar(this, "Roomba Outrage", 75))
 
         const gameBounds = MinigameScene.getGameBounds();
         const gamePanel = new AzNopolyPanel(this, gameBounds.x, gameBounds.y, gameBounds.width, gameBounds.height);
