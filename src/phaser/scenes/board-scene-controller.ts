@@ -289,6 +289,7 @@ export default class BoardSceneController extends SyncedSceneController {
                 if (this.aznopoly.isHost) {
                     this.scene.scene.sleep();
                     this.scene.scene.launch(minigame);
+                    this.scene.stopMusic();
                 }
             }, 500)
         });

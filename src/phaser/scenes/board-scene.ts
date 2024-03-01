@@ -21,10 +21,15 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     private choiceWheel!: RandomSelectionWheel;
     private playerList!: AzNopolyList<AzNopolyPlayerInfo>;
 
+    private bgm!: Phaser.Sound.BaseSound;
+    private popupSound!: Phaser.Sound.BaseSound;
+
     preload() {
         AzNopolyPlayerInfo.preload(this);
         GameBoard.preload(this);
         AzNopolyButton.preload(this);
+        this.load.audio('board-bgm', 'assets/audio/night-walk-electro-swing.mp3')
+        this.load.audio('popup-sound', 'assets/audio/minigame-roulette-sound.mp3')
     }
     
     init() {
@@ -40,9 +45,14 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         const boardSize = leftPanel.height * 0.8;
         this.board = this.add.existing(new GameBoard(this, leftPanel.x + leftPanel.width * 0.5 - boardSize * 0.5, leftPanel.y + leftPanel.height * 0.5 - boardSize * 0.5, boardSize, SETTINGS.BOARD_SIDE_LENGTH));
 
+        this.popupSound = this.sound.add('popup-sound', { volume: 0.6});
+        this.bgm = this.sound.add('board-bgm', { loop: true, volume: 0.2});
+        this.bgm.play();
+        this.scene.scene.events.on('wake', this.startMusic, this);
+
         this.playerList = this.add.existing(new AzNopolyList(this, rightPanel.x + FRAME_PADDING, rightPanel.y + FRAME_PADDING));
 
-        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", SETTINGS.DISPLAY_WIDTH - 325, SETTINGS.DISPLAY_HEIGHT - 100, 250, 55, this.controller.onRollClick.bind(this.controller)));
+        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", SETTINGS.DISPLAY_WIDTH - 325, SETTINGS.DISPLAY_HEIGHT - 100, 250, 55, true, this.controller.onRollClick.bind(this.controller)));
         this.rollButton.disable();
 
         this.rollText = this.add.text(this.rollButton.x, this.rollButton.y - 64 - FRAME_PADDING, "6", FONT_STYLE_HEADLINE);
@@ -143,6 +153,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     }
 
     public showBuyTilePopUp(upgrade: boolean, level: number) {
+        this.popupSound.play();
         this.tilePopUp.show(upgrade, level);
     }
 
@@ -151,6 +162,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     }
 
     public showMinigameSelect(name: string) : Promise<void> {
+        this.popupSound.play();
         this.choiceWheel.setVisible(true);
         return this.choiceWheel.startSpin(["???", "???", "???"], name);
     }
@@ -158,5 +170,14 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     public hideMinigameSelect() {
         this.choiceWheel.setVisible(false);
     }
+
+    public stopMusic() {
+        this.bgm.pause();
+    }
+
+    public startMusic() {
+        this.bgm.resume();
+    }
+
 
 }

@@ -39,9 +39,11 @@ export default class RoombaSceneController extends MinigameSceneController {
 
         setTimeout(() => {
             this.syncProxy.lockAllGameplay();
+            this.scene.stopMusic();
 
             const won = this.getPlayersWon();
             this.syncProxy.endGame({playerWon: won, sorted: false});
+            this.scene.stopMusic();
         }, MAX_GAME_TIME)
     }
 

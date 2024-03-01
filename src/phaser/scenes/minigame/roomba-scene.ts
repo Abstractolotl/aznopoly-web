@@ -20,6 +20,7 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
     private paintTexture!: Phaser.Textures.DynamicTexture;
 
     private colorProgressBar!: ColorProgressBar;
+    private bgm!: Phaser.Sound.BaseSound;
 
     constructor(aznopoly: AzNopolyGame) {
         super(aznopoly);
@@ -35,6 +36,8 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
     preload() {
         super.preload();
         Roomba.preload(this);
+        //this.load.audio('roomba-bgm', 'assets/audio/lady-of-the-80s.mp3');
+        this.load.audio('roomba-bgm', 'assets/audio/night-walk-electro-swing.mp3');
     }
 
     create() {
@@ -51,6 +54,9 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
             this.paint.destroy();
             this.paintTexture.destroy();
         });
+
+        this.bgm = this.game.sound.add('roomba-bgm', { loop: true, volume: 0.2});
+        this.bgm.play();
 
         const rightpanel = MinigameScene.getRightBounds();
         this.colorProgressBar = new ColorProgressBar(this, rightpanel.x + FRAME_PADDING, rightpanel.y + FRAME_PADDING , rightpanel.width - FRAME_PADDING*2, 40);
@@ -171,6 +177,10 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
                     return prev;
                 }, {} as {[key: string]: number});
 
+    }
+
+    public stopMusic() {
+        this.bgm.pause();
     }
 
 

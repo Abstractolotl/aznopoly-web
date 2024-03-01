@@ -27,8 +27,9 @@ export default class BoardTilePopUp extends Phaser.GameObjects.Container {
         this.priceText = new Phaser.GameObjects.Text(scene, this.width*0.5, this.height - 150, "Price: ???", FONT_STYLE_BODY);
         this.priceText.setOrigin(0.5, 0.5);
 
-        this.cancelButton = new AzNopolyButton(scene, "Cancel", 0, this.height - 50, this.width, 50, onCancel);
-        this.submitButton = new AzNopolyButton(scene, "Accept", 0, this.height - 100, this.width, 50, onSubmit);
+
+        this.cancelButton = new AzNopolyButton(scene, "Cancel", 0, this.height - 50, this.width, 50, true, onCancel);
+        this.submitButton = new AzNopolyButton(scene, "Accept", 0, this.height - 100, this.width, 50, true, onSubmit);
 
         this.timer = new TimeBar(scene, 0, 0, this.width, 10, 1);
 
