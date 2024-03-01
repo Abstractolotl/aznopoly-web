@@ -37,7 +37,7 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
         super.preload();
         Roomba.preload(this);
         //this.load.audio('roomba-bgm', 'assets/audio/lady-of-the-80s.mp3');
-        this.load.audio('roomba-bgm', 'assets/audio/night-walk-electro-swing.mp3');
+        this.load.audio('roomba-bgm', 'assets/audio/start-now-synth-pop.mp3');
     }
 
     create() {
