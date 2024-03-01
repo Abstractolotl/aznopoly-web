@@ -1,6 +1,4 @@
-import BoardSceneController from "@/scene/board-scene-controller.ts";
-import BoardScene from "@/scene/board-scene.ts";
-import AzNopolyGame from "@/game.ts";
+import BoardSceneController from "@/phaser/scenes/board-scene-controller";
 
 const MAX_PROPERTY_LEVEL = 3;
 

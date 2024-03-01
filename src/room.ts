@@ -2,11 +2,6 @@ import AzNopolyClient from "./client";
 import AzNopolyGame from "./game";
 import { PacketType, RoomInitPacket, RoomJoinPacket, RoomLeavePacket, RoomNamePacket } from "./types/client";
 
-interface Player {
-    uuid: string;
-    name: string;
-}
-
 export enum RoomEvent {
     READY = "READY",
     JOIN = "JOIN",

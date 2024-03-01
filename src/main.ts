@@ -1,30 +1,27 @@
 import Phaser from 'phaser';
-import TitleScene from './scene/title-scene';
-import BoardScene from './scene/board-scene';
-import LobbyScene from './scene/lobby-scene';
-// import { SimonSaysScene } from './scene/minigame/simon-says-scene';
+import TitleScene from './phaser/scenes/title-scene';
+import BoardScene from './phaser/scenes/board-scene';
+import LobbyScene from './phaser/scenes/lobby-scene';
 import AzNopolyGame from './game';
-import { RoombaScene } from './scene/minigame/roomba-scene';
-import { mock } from './debug-util';
+import { RoombaScene } from './phaser/scenes/minigame/roomba-scene';
+import { mock } from './util/debug-util';
 import { COLOR_BACKGROUND } from './style';
-// import { mock } from './debug-util';
 
-export const WIDTH = 1280;
-export const HEIGHT = 720;
-export const BOARD_SIDE_LENGTH = 5;
+import ShittyShooterScene from './phaser/scenes/minigame/shitty-shooter-scene';
+import { SETTINGS } from './settings';
 
 window.onload = async () => {
     let game = new Phaser.Game({
         type: Phaser.AUTO,
-        width: WIDTH,
-        height: HEIGHT,
+        width: SETTINGS.DISPLAY_WIDTH,
+        height: SETTINGS.DISPLAY_HEIGHT,
         parent: 'app',
         backgroundColor: COLOR_BACKGROUND,
         physics: {
             default: 'arcade',
             arcade: {
                 gravity: { y: 0 },
-                debug: true
+                debug: false
             }
         },
         scale: {
@@ -37,21 +34,17 @@ window.onload = async () => {
     });
 
     const aznopoly = new AzNopolyGame();
-    //await mock(aznopoly);
-    //console.log("mocked");
-
     game.scene.add('title', new TitleScene(aznopoly));
     game.scene.add('lobby', new LobbyScene(aznopoly));
     game.scene.add('game', new BoardScene(aznopoly));
 
     //Minigames
-    //game.scene.add('minigame-simon-says', new SimonSaysScene(aznopoly))
-    game.scene.add('minigame-roomba', new RoombaScene(aznopoly))
-
+    game.scene.add('minigame-roomba', new RoombaScene(aznopoly));
+    game.scene.add('minigame-shitty-shooter', new ShittyShooterScene(aznopoly));
 
     if (false) {
         mock(aznopoly);
-        game.scene.start('minigame-roomba');
+        game.scene.start('minigame-shitty-shooter');
     } else {
         game.scene.start('title');
     }
