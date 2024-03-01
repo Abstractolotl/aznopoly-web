@@ -8,7 +8,7 @@ import convert from 'color-convert';
 import { SETTINGS } from "@/settings";
 
 
-const MAX_GAME_TIME = 1000;
+const MAX_GAME_TIME = 30000;
 export default class RoombaSceneController extends MinigameSceneController {
 
     declare protected scene: RoombaScene;
