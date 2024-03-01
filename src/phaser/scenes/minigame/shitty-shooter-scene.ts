@@ -1,8 +1,8 @@
 import AzNopolyAvatar from "@/phaser/components/ui/avatar";
 import MinigameScene from "../base/minigame-scene";
 import ShittyShooterSceneController from "./shitty-shooter-scene-controller";
-import Bullet from "./shitty-shooter/bullet";
-import Turret, { CORNER } from "./shitty-shooter/turret";
+import Bullet from "../../components/shitty-shooter/bullet";
+import Turret, { CORNER } from "../../components/shitty-shooter/turret";
 import LoveGoomba from "@/phaser/components/minigame/love-goomba";
 import { FRAME_PADDING, PLAYER_COLORS } from "@/style";
 import AzNopolyPanel from "@/phaser/components/ui/panel";
@@ -53,10 +53,14 @@ export default class ShittyShooterScene extends MinigameScene<ShittyShooterScene
 
         this.bulletGroup = this.add.group();
         this.goombaGroup = this.add.group();
+
+
         this.physics.add.collider(this.goombaGroup, this.goombaGroup);
+
         this.physics.add.overlap(this.bulletGroup, this.goombaGroup, (a, b) => {
             this.onGoombaBuleltCollision(a as Bullet, b as LoveGoomba);
         });
+        
         this.physics.world.on('worldbounds', (body: Phaser.Physics.Arcade.Body) => {
             if (body.gameObject instanceof Bullet) {
                 body.gameObject.onReflect();
