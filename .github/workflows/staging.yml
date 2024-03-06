@@ -53,7 +53,7 @@ jobs:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
         env:
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
-          IMAGE_NAME: ${{needs.publish.outputs.image}}
+          IMAGE_NAME: ${{needs.build.outputs.image}}
 
   cleanup:
     runs-on: ubuntu-latest
