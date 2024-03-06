@@ -16,7 +16,7 @@ jobs:
 
       - name: Generate image name
         id: image_name
-        run: echo "image=$GITHUB_HEAD_REF" >> $GITHUB_OUTPUT
+        run: echo "image=${GITHUB_HEAD_REF/\//-}" >> $GITHUB_OUTPUT
 
       - name: Login to Harbor
         run: |
@@ -49,7 +49,7 @@ jobs:
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v3
         with:
-          exec: helm upgrade --install --atomic --timeout 5m --history-max 5 --namespace=frontend --set image.tag=${IMAGE_NAME} --set ingress.domain=${GITHUB_HEAD_REF}.aznopoly.abstractolotl.de aznopoly-web-${GITHUB_HEAD_REF} helm-charts
+          exec: helm upgrade --install --atomic --timeout 5m --history-max 5 --namespace=frontend --set image.tag=${IMAGE_NAME} --set ingress.domain=${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de aznopoly-web-${GITHUB_HEAD_REF/\//-} helm-charts
           kubeconfig: '${{ secrets.KUBECONFIG }}'
         env:
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
