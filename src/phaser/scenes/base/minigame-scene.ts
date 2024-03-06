@@ -1,5 +1,5 @@
 import AzNopolyBar from "@/phaser/components/ui/bar";
-import { FONT_STYLE_HEADLINE, FRAME_PADDING } from "../../../style";
+import { FONT_STYLE_HEADLINE, FRAME_PADDING } from "@/style";
 import { BaseScene } from "./base-scene";
 import MinigameSceneController, { ResultData } from "./minigame-scene-controller";
 import AzNopolyPanel from "@/phaser/components/ui/panel";
