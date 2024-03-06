@@ -8,7 +8,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && github.event.action != 'closed'
+    if: github.event.action != 'closed'
     outputs:
       image: ${{ steps.image_name.outputs.image }}
     steps:
@@ -40,7 +40,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && github.event.action != 'closed' && github.event.action != 'merged'
+    if: github.event.action != 'closed' && github.event.action != 'merged'
 
     steps:
       - name: 'Checkout'  # Checkout the repository code.
@@ -57,7 +57,7 @@ jobs:
 
   cleanup:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && github.event.action == 'closed'
+    if: github.event.action == 'closed'
     steps:
       - name: 'Checkout'  # Checkout the repository code.
         uses: 'actions/checkout@v3'
