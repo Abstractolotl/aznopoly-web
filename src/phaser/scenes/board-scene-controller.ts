@@ -181,7 +181,7 @@ export default class BoardSceneController extends SyncedSceneController {
         const currentIndex = this.players.findIndex(p => p.uuid == uuid);
         if (currentIndex == this.players.length - 1) {
             this.minigameInprogress = true;
-            const minigames = ["minigame-shitty-shooter", "minigame-roomba"]
+            const minigames = ["minigame-shitty-shooter", "minigame-roomba", "minigame-clicker-race"]
             this.syncProxy.startMinigame(minigames[Math.floor(Math.random() * minigames.length)]);
         } else {
             const nextPlayer = this.getNextPlayerIndex(uuid);
