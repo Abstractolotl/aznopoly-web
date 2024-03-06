@@ -33,7 +33,7 @@ jobs:
           IMAGE_NAME: ${{ steps.image_name.outputs.image }}
 
       - name: Push the Docker image
-        run: docker push $HARBOR_URI/abstractolotl/aznopoly-web:${IMAGE_NAME}
+        run: docker push $HARBOR_URI/abstractolotl/aznopoly-web --all-tags
         env:
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
 
