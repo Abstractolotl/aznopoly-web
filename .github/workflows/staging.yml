@@ -77,10 +77,11 @@ jobs:
           exec: helm uninstall aznopoly-web-${GITHUB_HEAD_REF} --namespace=frontend
           kubeconfig: '${{ secrets.KUBECONFIG }}'
 
+      - name: Set environment variable
+        run: echo "STAGING_URL=https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de" >> $GITHUB_ENV
+
       - name: Delete Comment
         uses: thollander/actions-comment-pull-request@v2
-        env:
-          STAGING_URL: https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de
         with:
           message: |
             The staging environment is now available at [${{ env.STAGING_URL }}](${{ env.STAGING_URL }}).
