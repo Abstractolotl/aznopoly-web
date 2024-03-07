@@ -60,7 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          msg: "The staging environment for aznopoly-web-${GITHUB_HEAD_REF} has been updated. You can access it at https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de"
+          msg: "The staging environment has been updated. You can access it at https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de"
           check_for_duplicate_msg: true  # OPTIONAL
           delete_prev_regex_msg: "You can access it at https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de"  # OPTIONAL
           duplicate_msg_pattern: "You can access it at https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de"
