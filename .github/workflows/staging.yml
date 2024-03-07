@@ -56,11 +56,14 @@ jobs:
           IMAGE_NAME: ${{needs.build.outputs.image}}
 
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v1
+        uses: thollander/actions-comment-pull-request@v2
+        env:
+          STAGING_URL: https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de
         with:
-          message: "The staging environment is now available at https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de"
+          message: | 
+            The staging environment is now available at [${{ env.STAGING_URL }}](${{ env.STAGING_URL }}).
+          comment_tag: staging
           comment_includes: "The staging environment is now available"
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup:
     runs-on: ubuntu-latest
@@ -74,3 +77,13 @@ jobs:
         with:
           exec: helm uninstall aznopoly-web-${GITHUB_HEAD_REF} --namespace=frontend
           kubeconfig: '${{ secrets.KUBECONFIG }}'
+
+      - name: Delete Comment
+        uses: thollander/actions-comment-pull-request@v2
+        env:
+          STAGING_URL: https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de
+        with:
+          message: |
+            The staging environment is now available at [${{ env.STAGING_URL }}](${{ env.STAGING_URL }}).
+          comment_tag: staging
+          mode: delete
