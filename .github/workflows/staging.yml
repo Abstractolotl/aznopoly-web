@@ -55,10 +55,11 @@ jobs:
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
           IMAGE_NAME: ${{needs.build.outputs.image}}
 
+      - name: Set environment variable
+        run: echo "STAGING_URL=https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de" >> $GITHUB_ENV
+
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v2
-        env:
-          STAGING_URL: "https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de"
         with:
           message: | 
             The staging environment is now available at [${{ env.STAGING_URL }}](${{ env.STAGING_URL }}).
