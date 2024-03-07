@@ -58,7 +58,7 @@ jobs:
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v2
         env:
-          STAGING_URL: https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de
+          STAGING_URL: "https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de"
         with:
           message: | 
             The staging environment is now available at [${{ env.STAGING_URL }}](${{ env.STAGING_URL }}).
