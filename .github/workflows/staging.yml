@@ -63,7 +63,6 @@ jobs:
           message: | 
             The staging environment is now available at [${{ env.STAGING_URL }}](${{ env.STAGING_URL }}).
           comment_tag: staging
-          comment_includes: "The staging environment is now available"
 
   cleanup:
     runs-on: ubuntu-latest
