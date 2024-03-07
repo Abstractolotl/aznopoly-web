@@ -55,15 +55,13 @@ jobs:
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
           IMAGE_NAME: ${{needs.build.outputs.image}}
 
-      - name: Comment
-        uses: unsplash/comment-on-pr@v1.3.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v1
         with:
-          msg: "The staging environment has been updated. You can access it at https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de"
-          check_for_duplicate_msg: true  # OPTIONAL
-          delete_prev_regex_msg: "You can access it at https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de"  # OPTIONAL
-          duplicate_msg_pattern: "You can access it at https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de"
+          message: |
+            The staging environment is now available at https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de
+          comment_includes: "The staging environment is now available"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup:
     runs-on: ubuntu-latest
