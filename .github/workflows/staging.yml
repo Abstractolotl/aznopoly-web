@@ -75,7 +75,7 @@ jobs:
       - name: Delete the Helm release
         uses: WyriHaximus/github-action-helm3@v3
         with:
-          exec: helm uninstall aznopoly-web-${GITHUB_HEAD_REF} --namespace=frontend
+          exec: helm uninstall aznopoly-web-${GITHUB_HEAD_REF/\//-} --namespace=frontend
           kubeconfig: '${{ secrets.KUBECONFIG }}'
 
       - name: Set environment variable
