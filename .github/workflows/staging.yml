@@ -2,13 +2,13 @@ name: Dev Staging
 
 on:
   pull_request:
-    types: [ opened, closed, synchronize, ready_for_review ]
+    types: [ opened, closed, synchronize, ready_for_review, converted_to_draft ]
 
 jobs:
 
   build:
     runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
+    if: github.event.action != 'closed' && github.pull_request.draft == false && github.event.action != 'converted_to_draft'
     outputs:
       image: ${{ steps.image_name.outputs.image }}
     steps:
@@ -40,7 +40,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event.action != 'closed' && github.event.action != 'merged'
+    if: github.pull_request.draft == false && github.event.action != 'closed' && github.event.action != 'merged' && github.event.action != 'converted_to_draft'
 
     steps:
       - name: 'Checkout'  # Checkout the repository code.
@@ -57,7 +57,7 @@ jobs:
 
   cleanup:
     runs-on: ubuntu-latest
-    if: github.event.action == 'closed'
+    if: github.event.action == 'closed' || github.event.action == 'converted_to_draft'
     steps:
       - name: 'Checkout'  # Checkout the repository code.
         uses: 'actions/checkout@v3'
