@@ -48,7 +48,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.popupSound = this.sound.add('popup-sound', { volume: 0.6});
         this.bgm = this.sound.add('board-bgm', { loop: true, volume: 0.2});
         this.bgm.play();
-        this.scene.scene.events.on('wake', this.startMusic, this);
+        this.scene.scene.events.on(Phaser.Scenes.Events.WAKE, this.startMusic, this);
 
         this.playerList = this.add.existing(new AzNopolyList(this, rightPanel.x + FRAME_PADDING, rightPanel.y + FRAME_PADDING));
 
