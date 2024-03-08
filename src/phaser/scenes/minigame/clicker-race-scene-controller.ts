@@ -18,6 +18,7 @@ export default class ClickerRaceSceneController extends MinigameSceneController 
         this.registerSyncedMethod(this.scene.stopAllPlayers, true);
         this.registerSyncedMethod(this.scene.startTimeBar, true);
 
+        this.registerSyncedMethod(this.requestPlayerMove, false);
         this.registerSyncedMethod(this.finishedGame, false)
     }
 
@@ -70,7 +71,7 @@ export default class ClickerRaceSceneController extends MinigameSceneController 
     }
 
     public onPlayerClick(uuid: string) {
-        this.requestPlayerMove(uuid);
+        this.syncProxy.requestPlayerMove(uuid);
         this.scene.randomInput()
     }
 
