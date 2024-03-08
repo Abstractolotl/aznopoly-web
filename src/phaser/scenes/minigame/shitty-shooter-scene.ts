@@ -30,6 +30,9 @@ export default class ShittyShooterScene extends MinigameScene<ShittyShooterScene
     private bulletGroup!: Phaser.GameObjects.Group;
     private goombaGroup!: Phaser.GameObjects.Group;
 
+    private bgm!: Phaser.Sound.BaseSound;
+    private shootSound!: Phaser.Sound.BaseSound;
+
     private turrets: { [uuid: string]: Turret } = {};
     private goombas: { [id: string]: LoveGoomba } = {};
 
@@ -40,6 +43,8 @@ export default class ShittyShooterScene extends MinigameScene<ShittyShooterScene
         AzNopolyAvatar.preload(this);
         LoveGoomba.preload(this);
         Bullet.preload(this);
+        this.load.audio('shittyShooterBgm', 'assets/audio/start-now-synth-pop.mp3');
+        this.load.audio('shittyShooterShoot', 'assets/audio/laser.mp3')
     }
 
     init() {
@@ -50,6 +55,10 @@ export default class ShittyShooterScene extends MinigameScene<ShittyShooterScene
         super.create();
         const bounds = WORLD_BOUNDS;
         this.physics.world.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
+
+        this.shootSound = this.game.sound.add('shittyShooterShoot', { volume: 0.1});
+        this.bgm = this.game.sound.add('shittyShooterBgm', { loop: true, volume: 0.2});
+        this.bgm.play();
 
         this.bulletGroup = this.add.group();
         this.goombaGroup = this.add.group();
@@ -139,6 +148,7 @@ export default class ShittyShooterScene extends MinigameScene<ShittyShooterScene
     }
 
     public addBullet(x: number, y: number, direction: Phaser.Math.Vector2) {
+        this.shootSound.play()
         const sender = arguments[arguments.length - 1];
         const bullet = this.add.existing(new Bullet(this, sender, x, y, new Phaser.Math.Vector2(direction.x, direction.y)));
         this.bulletGroup.add(bullet);
@@ -195,6 +205,10 @@ export default class ShittyShooterScene extends MinigameScene<ShittyShooterScene
         });
 
         return scores;
+    }
+
+    public stopMusic() {
+        this.bgm.pause();
     }
 
 }

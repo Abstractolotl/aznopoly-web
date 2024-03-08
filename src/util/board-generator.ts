@@ -24,7 +24,7 @@ export default class BoardGenerator {
         }
     };
 
-    public static generateFields(seed: string, boardSideLength: number, config: Config = BoardGenerator.defaultConfig) {
+    public static generateFields(seed: string, boardSideLength: number, config: Config = BoardGenerator.defaultConfig) : TileType[] {
         if (getNumTiles(config) != boardSideLength * 4) {
             throw new Error("Invalid configuration. Got: " + getNumTiles(config) + " but expected " + boardSideLength * 4);
         }

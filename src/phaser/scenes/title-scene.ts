@@ -72,9 +72,9 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
         this.lobbyInputField = this.add.existing(
             new AzNopolyInput(this, centerX - (widthInputField+widthJoinButton) / 2, centerY, widthInputField, heightInputField));
         this.add.existing(new AzNopolyButton(this, 'Join', centerX + ((widthInputField/2) - (widthJoinButton/2)), centerY, widthJoinButton,
-            heightJoinButton, this.controller.onJoinRoomClick.bind(this.controller)));
+            heightJoinButton, false, this.controller.onJoinRoomClick.bind(this.controller)));
         this.add.existing(new AzNopolyButton(this, 'Create Lobby',centerX - widthCreateButton / 2, centerY + 75, widthCreateButton,
-            heightCreateButton, this.controller.onCreateRoom.bind(this.controller)));
+            heightCreateButton, false, this.controller.onCreateRoom.bind(this.controller)));
 
 
         const graphics = this.add.graphics();

@@ -43,13 +43,14 @@ export default class ShittyShooterSceneController extends MinigameSceneControlle
 
         setTimeout(() => {
             this.syncProxy.scene.stopAll();
+            this.scene.stopMusic();
             const scores = this.scene.getScore();
 
             const result: ResultData = {
                 playerWon: Object.keys(scores).sort().slice(0, 1),
                 sorted: false
             }
-            this.endGame(result);
+            this.syncProxy.endGame(result);
         }, GAME_TIME);
     }
     

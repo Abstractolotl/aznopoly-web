@@ -39,14 +39,17 @@ export default class RoombaSceneController extends MinigameSceneController {
 
         setTimeout(() => {
             this.syncProxy.lockAllGameplay();
+            this.scene.stopMusic();
 
             const won = this.getPlayersWon();
             this.syncProxy.endGame({playerWon: won, sorted: false});
+            this.scene.stopMusic();
         }, MAX_GAME_TIME)
     }
 
     private getPlayersWon() {
         const paintMap = this.scene.getPaintMap();
+        console.log(paintMap);
         const paintedColors = Object.keys(paintMap).filter(e => e != "000000");
 
         const won = paintedColors.sort()
@@ -78,7 +81,7 @@ export default class RoombaSceneController extends MinigameSceneController {
         const roombaConfigs = [];
         for (let j = 0; j < this.aznopoly.connectedUuids.length; j++) {
             const uuid = this.aznopoly.connectedUuids[j] ;
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 3; i++) {
                 roombaConfigs.push(this.generateRandomRoombaConfig(uuid));
             }
             this.colorUuuidMap.set(roombaConfigs[roombaConfigs.length-1].paintColor.toString(16).toUpperCase(), uuid);
@@ -93,9 +96,9 @@ export default class RoombaSceneController extends MinigameSceneController {
 
         const profile = this.aznopoly.getProfile(playerid);
         const color = PLAYER_COLORS[profile.colorIndex];
-        const paintColor = convert.hex.hsl("0x" + color.toString(16));
+        const paintColor = convert.hex.hsl("0x" + color.toString(16).padStart(6, '0'));
         paintColor[2] = 40;
-        const paintColorHex = Number("0x" + convert.hsl.hex(paintColor));
+        const paintColorHex = Number("0x" + convert.hsl.hex(paintColor).padStart(6, '0'));
         return { 
             uuid: playerid,
             id: Math.random().toString(36).substring(7),
