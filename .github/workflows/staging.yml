@@ -1,0 +1,90 @@
+name: Dev Staging
+
+on:
+  pull_request:
+    types: [ opened, closed, synchronize, ready_for_review, converted_to_draft ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false && github.event.action != 'closed' && github.event.action != 'converted_to_draft'
+    outputs:
+      image: ${{ steps.image_name.outputs.image }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Generate image name
+        id: image_name
+        run: echo "image=dev-$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Login to Harbor
+        run: |
+          echo $HARBOR_PASSWORD | docker login $HARBOR_URI -u $HARBOR_USERNAME --password-stdin
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+          HARBOR_URI: ${{ secrets.HARBOR_URI }}
+
+      - name: Build the Docker image
+        run: docker buildx build . --file Dockerfile --tag $HARBOR_URI/abstractolotl/aznopoly-web:${IMAGE_NAME}
+        env:
+          HARBOR_URI: ${{ secrets.HARBOR_URI }}
+          IMAGE_NAME: ${{ steps.image_name.outputs.image }}
+
+      - name: Push the Docker image
+        run: docker push $HARBOR_URI/abstractolotl/aznopoly-web --all-tags
+        env:
+          HARBOR_URI: ${{ secrets.HARBOR_URI }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false && github.event.action != 'closed' && github.event.action != 'merged' && github.event.action != 'converted_to_draft'
+
+    steps:
+      - name: 'Checkout'  # Checkout the repository code.
+        uses: 'actions/checkout@v3'
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v3
+        with:
+          exec: helm upgrade --install --atomic --timeout 5m --history-max 5 --namespace=frontend --set image.tag=${IMAGE_NAME} --set ingress.domain=${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de aznopoly-web-${GITHUB_HEAD_REF/\//-} helm-charts
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+        env:
+          HARBOR_URI: ${{ secrets.HARBOR_URI }}
+          IMAGE_NAME: ${{needs.build.outputs.image}}
+
+      - name: Set environment variable
+        run: echo "STAGING_URL=https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de" >> $GITHUB_ENV
+
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            The staging environment is now available at [${{ env.STAGING_URL }}](${{ env.STAGING_URL }}).
+          comment_tag: staging
+
+  cleanup:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed' || github.event.action == 'converted_to_draft'
+    steps:
+      - name: 'Checkout'  # Checkout the repository code.
+        uses: 'actions/checkout@v3'
+
+      - name: Delete the Helm release
+        uses: WyriHaximus/github-action-helm3@v3
+        with:
+          exec: helm uninstall aznopoly-web-${GITHUB_HEAD_REF/\//-} --namespace=frontend
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+
+      - name: Set environment variable
+        run: echo "STAGING_URL=https://${GITHUB_HEAD_REF/\//-}.aznopoly.abstractolotl.de" >> $GITHUB_ENV
+
+      - name: Delete Comment
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            The staging environment is now available at [${{ env.STAGING_URL }}](${{ env.STAGING_URL }}).
+          comment_tag: staging
+          mode: delete

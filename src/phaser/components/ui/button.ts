@@ -40,7 +40,12 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         this.buttonText.setOrigin(0.5, 0.5);
 
         this.setSize(width, height);
-        this.setInteractive()
+        this.setInteractive({
+            hitArea: new Phaser.Geom.Rectangle(0, 0, width, height),
+            hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+            useHandCursor: false,
+            draggable: false
+        })
 
         this.on('pointerdown', this.onPointerDown.bind(this));
         this.on('pointerup', this.onPointerUp.bind(this));
@@ -82,6 +87,8 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
 
         this.isDown = false;
         this.isHovered = false;
+
+        this.updateButtonShape();
     }
 
     private onPointerDown() {
