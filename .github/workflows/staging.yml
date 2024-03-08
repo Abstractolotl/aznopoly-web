@@ -18,6 +18,14 @@ jobs:
         id: image_name
         run: echo "image=dev-$(date +%s)" >> $GITHUB_OUTPUT
 
+      - name: Get Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Bump version
+        run: node bump-build-version.js
+
       - name: Login to Harbor
         run: |
           echo $HARBOR_PASSWORD | docker login $HARBOR_URI -u $HARBOR_USERNAME --password-stdin

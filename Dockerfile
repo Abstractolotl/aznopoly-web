@@ -12,7 +12,6 @@ RUN cd /temp/dev && yarn
 FROM install AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
-RUN node bump-build-version.js
 
 ENV NODE_ENV=production
 RUN yarn build
