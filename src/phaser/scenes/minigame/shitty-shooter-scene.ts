@@ -55,7 +55,7 @@ export default class ShittyShooterScene extends MinigameScene<ShittyShooterScene
         this.goombaGroup = this.add.group();
         this.physics.add.collider(this.goombaGroup, this.goombaGroup);
         this.physics.add.overlap(this.bulletGroup, this.goombaGroup, (a, b) => {
-            this.onGoombaBuleltCollision(a as Bullet, b as LoveGoomba);
+            this.onGoombaBulletCollision(a as Bullet, b as LoveGoomba);
         });
         this.physics.world.on('worldbounds', (body: Phaser.Physics.Arcade.Body) => {
             if (body.gameObject instanceof Bullet) {
@@ -144,7 +144,7 @@ export default class ShittyShooterScene extends MinigameScene<ShittyShooterScene
         this.bulletGroup.add(bullet);
     }
 
-    private onGoombaBuleltCollision(bullet: Bullet, goomba: LoveGoomba) {
+    private onGoombaBulletCollision(bullet: Bullet, goomba: LoveGoomba) {
         bullet.destroy();
         if (this.aznopoly.isHost) {
             const goombaId = Object.keys(this.goombas).find(id => this.goombas[id] === goomba);

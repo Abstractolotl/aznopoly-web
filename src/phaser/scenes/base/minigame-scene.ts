@@ -48,7 +48,7 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
     }
 
     protected drawSceneLayout() {
-        this.add.existing(new AzNopolyBar(this, "Roomba Outrage"))
+        this.add.existing(new AzNopolyBar(this, "Minigame"))
 
         const gameBounds = MinigameScene.getGameBounds();
         const gamePanel = new AzNopolyPanel(this, gameBounds.x, gameBounds.y, gameBounds.width, gameBounds.height);
