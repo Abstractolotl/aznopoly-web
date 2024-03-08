@@ -17,19 +17,15 @@ service:
 ingress:
   enabled: true
   className: ""
+  tls: true
+  domain: aznopoly.abstractolotl.de
+  host:
+    path: /
+    pathType: ImplementationSpecific
   annotations:
     kubernetes.io/ingress.class: traefik
     traefik.ingress.kubernetes.io/router.middlewares: default-secured@kubernetescrd
     cert-manager.io/cluster-issuer: letsencrypt-production
-  hosts:
-    - host: aznopoly.abstractolotl.de
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls:
-    - secretName: aznopoly.abstractolotl.de
-      hosts:
-        - aznopoly.abstractolotl.de
 
 resources:
   requests:
