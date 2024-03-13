@@ -26,8 +26,7 @@ export default class Turn {
      */
     private readonly player: string;
 
-    // Scheduler for handling time based events
-    private scheduler!: NodeJS.Timeout;
+    private propertyBuyTimer!: NodeJS.Timeout;
 
     constructor(controller: BoardSceneController, propertyManager: PropertyManager, player: string) {
         this.controller = controller;
@@ -39,69 +38,54 @@ export default class Turn {
         return this.player == player;
     }
 
-    public doRoll(sender: string) : boolean {
-        if (this.state != TurnState.PRE_ROLL) return false;
+    public async doRoll(sender: string) {
+        if (this.state != TurnState.PRE_ROLL) return;
+        if (sender != this.player) return;
+
+        await this.controller.executeRoll(this.player);
+
+        const fieldPosition = this.controller.getPlayerPosition(this.player);
+        if(this.propertyManager.hasToPayRent(this.player, fieldPosition)) {
+            this.controller.onHasToPayRent(this.player);
+        }
+
+        if(this.propertyManager.canBuyProperty(this.player, fieldPosition)) {
+            this.state = TurnState.PROPERTY;
+            this.controller.executeBuyPropertyDialog(this.player);
+            this.propertyBuyTimer = setTimeout(() => {
+                this.controller.executeCancelBuyProperty(this.player);
+            }, 3000);
+            return;
+        }
+
+        this.endTurn();
+        return;
+    }
+
+    public doBuyProperty(sender: string) {
+        if (this.state != TurnState.PROPERTY) return;
+        if (sender != this.player) return;
+
+        const fieldPosition = this.controller.getPlayerPosition(this.player);
+        this.propertyManager.buyProperty(this.player, fieldPosition!);
+        
+        this.endTurn();
+        return true;
+    }
+
+    public doCancelBuyProperty(sender: string): boolean {
+        if (this.state != TurnState.PROPERTY) return false;
         if (sender != this.player) return false;
 
-        this.controller.executeRoll(this.player);
-        const field = this.controller.getPlayerPosition(this.player);
-        if( !field ) return false;
-
-        let tile = this.controller.getTile(field);
-        if(!TileType.isProperty(tile.getTileType())) {
-            this.controller.onTurnEnd(this.player);
-            return true;
-        }
-
-        this.state = TurnState.PROPERTY;
-        if(this.propertyManager.hasToPayRent(this.player, field)) {
-            this.controller.onHasToPayRent(this.player);
-        } else if(this.propertyManager.canBuyProperty(this.player, field)) {
-            this.scheduler = setTimeout(() => {
-                this.controller.onBuyInterrupt(this.player);
-                this.cancelBuyProperty();
-            }, 3000);
-            this.controller.onCanBuyProperty(this.player);
-        } else {
-            this.controller.onTurnEnd(this.player);
-        }
-
+        clearTimeout(this.propertyBuyTimer);
+        
+        this.endTurn();
         return true;
     }
 
-    public doBuyProperty(): boolean {
-        if (this.state != TurnState.PROPERTY) return false;
-
-        clearTimeout(this.scheduler);
-
-        const field = this.controller.getPlayerPosition(this.player);
-        if( !field ) return false;
-
-        let tile = this.controller.getTile(field);
-        if(!TileType.isProperty(tile.getTileType())) {
-            this.controller.onTurnEnd(this.player);
-            return true;
-        }
-
-        this.propertyManager.buyProperty(this.player, field!);
-        this.controller.onTurnEnd(this.player);
-
-        return true;
-    }
-
-    public cancelBuyProperty(): boolean {
-        if (this.state != TurnState.PROPERTY) return false;
-
-        clearTimeout(this.scheduler);
-
+    private endTurn() {
         this.state = TurnState.OVER;
         this.controller.onTurnEnd(this.player);
-
-        return false;
-    }
-
-    public doUseItem() : boolean{
-        return false;
     }
 
 }

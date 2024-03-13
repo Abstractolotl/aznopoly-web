@@ -31,6 +31,9 @@ export default class AzNopolyAvatar extends Phaser.GameObjects.Container {
         this.graphics = new Phaser.GameObjects.Graphics(scene);
         this.setBorderColor(colorIndex);
 
+        this.width = this.image.displayWidth;
+        this.height = this.image.displayHeight;
+        
         this.add(this.image);
         this.add(this.graphics);
     }

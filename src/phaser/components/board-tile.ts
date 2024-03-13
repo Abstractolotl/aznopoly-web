@@ -1,6 +1,14 @@
 import Phaser, {Scene} from "phaser";
 import { TileOrientation, TileType } from "../../types/board.ts";
-import { FONT_STYLE_BODY } from "../../style.ts";
+import { FONT_STYLE_BODY, PLAYER_COLORS } from "../../style.ts";
+import convert from 'color-convert';
+import { PlayerProfile } from "./ui/player-info.ts";
+
+const color = (c: number) => {
+    const hsl = convert.hex.hsv("#"+c.toString(16).padStart(6, '0'));
+    hsl[1] = 25;
+    return Number("0x" + convert.hsv.hex(hsl));
+}
 
 export default class BoardTile extends Phaser.GameObjects.Container {
 
@@ -12,6 +20,14 @@ export default class BoardTile extends Phaser.GameObjects.Container {
         scene.load.image('tile-right', 'assets/board/tile-right.png')
     }
 
+    private static TINTS: { [key: string]: number } = {
+        [TileType.PROPERTY_BLUE]: color(0x0000ff),
+        [TileType.PROPERTY_GREEN]: color(0x00ff00),
+        [TileType.PROPERTY_RED]: color(0xff0000),
+        [TileType.PROPERTY_YELLOW]: color(0xffff00),
+        [TileType.PROPERTY_PURPLE]: color(0x800080),
+    }
+
     private tileType: TileType;
     private tileDirection: TileOrientation;
 
@@ -19,6 +35,7 @@ export default class BoardTile extends Phaser.GameObjects.Container {
     private readonly tileHeight: number;
 
     private image: Phaser.GameObjects.Image;
+    private graphics: Phaser.GameObjects.Graphics;
 
     constructor(scene: Scene, x: number, y: number, width: number, height: number, type: TileType, direction: TileOrientation) {
         super(scene, x, y);
@@ -45,7 +62,13 @@ export default class BoardTile extends Phaser.GameObjects.Container {
         });
         this.updateTint();
 
+        this.graphics = new Phaser.GameObjects.Graphics(scene);
+        if (TileType.isProperty(type)) {
+            this.drawTopPart(0xffffff);
+        }
+
         this.add(this.image);
+        this.add(this.graphics);
 
         if (direction == TileOrientation.CORNER) {
             let text = new Phaser.GameObjects.Text(scene, 0, 0, TileType[type], FONT_STYLE_BODY);
@@ -60,28 +83,31 @@ export default class BoardTile extends Phaser.GameObjects.Container {
         }
     }
 
+    public setOwner(profile: PlayerProfile) {
+        this.drawTopPart(PLAYER_COLORS[profile.colorIndex]);
+    }
+
+    private drawTopPart(color: number) {
+        this.graphics.fillStyle(color);
+        switch (this.tileDirection) {
+            case TileOrientation.UP:
+                this.graphics.fillRect(1, 1, this.width - 2, 27);
+                break;
+            case TileOrientation.DOWN:
+                this.graphics.fillRect(1, this.height - 27, this.width - 2, 25);
+                break;
+            case TileOrientation.LEFT:
+                this.graphics.fillRect(1, 1, 27, this.height - 2);
+                break;
+            case TileOrientation.RIGHT:
+                this.graphics.fillRect(this.width - 27, 1, 25, this.height - 2);
+                break;
+        }
+    }
+
     private updateTint() {
         this.image.clearTint();
-        
-        if (this.tileType == TileType.PROPERTY_BLUE) {
-            this.image.setTint(0x0000ff);
-        }
-
-        if (this.tileType == TileType.PROPERTY_GREEN) {
-            this.image.setTint(0x00ff00);
-        }
-
-        if (this.tileType == TileType.PROPERTY_RED) {
-            this.image.setTint(0xff0000);
-        }
-
-        if (this.tileType == TileType.PROPERTY_YELLOW) {
-            this.image.setTint(0xffff00);
-        }
-
-        if (this.tileType == TileType.PROPERTY_PURPLE) {
-            this.image.setTint(0x800080);
-        }
+        this.image.setTint(BoardTile.TINTS[this.tileType] || 0xffffff);
     }
 
     getTexture(direction: TileOrientation) : string {

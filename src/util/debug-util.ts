@@ -10,7 +10,7 @@ export function mock(aznopoly: AzNopolyGame) {
         removeEventListener: () => {},
     };
     game._room = {
-        connectedPlayerIds: ["1111-2222-3333-4444", "222"],
+        connectedPlayerIds: ["1111-2222-3333-4444", "222", "333", "444"],
         host: "1111-2222-3333-4444",
         getPlayerName: () => "mockius maximus",
     };

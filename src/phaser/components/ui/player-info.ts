@@ -1,5 +1,6 @@
-import { FONT_STYLE_BODY, FRAME_PADDING } from "@/style";
+import { FONT_STYLE_BODY, FONT_STYLE_DIGITS, FRAME_PADDING } from "@/style";
 import AzNopolyAvatar, { Avatars } from "./avatar";
+import AnimatedText, { TextAnimationType } from "./animated-text";
 
 
 export interface PlayerInfo {
@@ -24,11 +25,13 @@ export default class AzNopolyPlayerInfo extends Phaser.GameObjects.Container {
 
     private avatar: AzNopolyAvatar;
     private nameText: Phaser.GameObjects.Text;
-    private moneyText: Phaser.GameObjects.Text;
+    private moneyText: AnimatedText;
+    private lastMoney: number;
 
     constructor(scene: Phaser.Scene, x: number, y: number, info: PlayerInfo, profile: PlayerProfile) {
         super(scene, x, y);
         this.setSize(400, HEIGHT);
+        this.lastMoney = info.money;
         
         this.avatar = new AzNopolyAvatar(scene, FRAME_PADDING, FRAME_PADDING, 64, profile.avatar, profile.colorIndex);
         
@@ -42,8 +45,7 @@ export default class AzNopolyPlayerInfo extends Phaser.GameObjects.Container {
         moneyIcon.setOrigin(0, 0.5);
         moneyIcon.setScale(this.nameText.height / moneyIcon.height);
 
-        this.moneyText = new Phaser.GameObjects.Text(scene, 0, 0, `${info.money}`, style);
-        this.moneyText.setOrigin(0, 0);
+        this.moneyText = new AnimatedText(scene, 0, 0, ` ${info.money}`, FONT_STYLE_DIGITS);
         this.moneyText.setPosition(moneyIcon.x + moneyIcon.displayWidth, this.nameText.y + this.nameText.height);
 
         this.add(this.avatar);
@@ -61,6 +63,10 @@ export default class AzNopolyPlayerInfo extends Phaser.GameObjects.Container {
         }
     }
 
+    preUpdate(time: number, delta: number) {
+        this.moneyText.preUpdate(time, delta);
+    }
+
     public updateProfile(profile: PlayerProfile) {
         this.avatar.setAvatar(profile.avatar);
         //TODO: this.avatar.setColor(profile.colorIndex);
@@ -68,7 +74,22 @@ export default class AzNopolyPlayerInfo extends Phaser.GameObjects.Container {
     }
 
     public updateInfo(info: PlayerInfo) {
-        this.moneyText.setText(`${info.money}`);
+        const moneyDif = info.money - this.lastMoney;
+        this.lastMoney = info.money;
+        
+        if (moneyDif > 0) {
+            this.moneyText.setTextAnimated(` ${info.money}`, TextAnimationType.FALL_INTO, {
+                altText: `+${moneyDif}`,
+                altTextStyle: Object.assign({}, FONT_STYLE_DIGITS, { fill: '#00ff00' }),
+            });
+        }
+
+        if (moneyDif < 0) {
+            this.moneyText.setTextAnimated(` ${info.money}`, TextAnimationType.GRAVITY_FALL, {
+                altText: `${moneyDif}`,
+                altTextStyle: Object.assign({}, FONT_STYLE_DIGITS, { fill: '#ff0000' }),
+            });
+        }
     }
 
 }

@@ -11,7 +11,8 @@ const HOVER_SCALE = 1.15
 const HOVER_SCALE_PIXEL = 5
 export class AzNopolyButton extends Phaser.GameObjects.Container {
 
-    public static preload(scene: Phaser.Scene) {
+    static preload(scene: Phaser.Scene) {
+        scene.load.audio("soundEffect", "assets/audio/button_press_sound1.mp3");
     }
 
     private buttonText!: Phaser.GameObjects.Text;
@@ -21,15 +22,20 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
     private isHovered: boolean = false;
     private hoverTimer: number = 0;
     private enabled: boolean = true;
+    private audioButtonSound!: Audio;
+    private playSoundEnabled: boolean = true;
 
     private onClick: () => void;
-
-    constructor(scene: Phaser.Scene, title: string, x: number, y: number, width: number, height: number, onClick: () => void) {
+    constructor(scene: Phaser.Scene, title: string, x: number, y: number, width: number, height: number, playSound: boolean, onClick: () => void) {
         super(scene, x + width/2, y + height/2);
         this.onClick = onClick;
 
+        this.playSoundEnabled = playSound;
+
         this.graphic = new Phaser.GameObjects.Graphics(scene);
-        
+
+        this.audioButtonSound = scene.sound.add("soundEffect", { volume: 1.2 });
+
         this.buttonText = new Phaser.GameObjects.Text(scene, 0, 0, title, FONT_STYLE_BUTTON);
         this.buttonText.setOrigin(0.5, 0.5);
 
@@ -96,7 +102,9 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         this.hoverTimer = MAX_HOVER_TIMER;
         this.updateButtonShape();
 
-        //this.audioDown.play();
+        if (this.playSoundEnabled) {
+            this.playButtonSound();
+        }
         this.onClick();
     }
 
@@ -130,6 +138,10 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         
         this.graphic.lineStyle(5, fillColor, 1);
         this.graphic.strokeRect(-this.width*0.5, -this.height*0.5, this.width, this.height);
+    }
+
+    private playButtonSound() {
+        this.audioButtonSound.play();
     }
 
 }

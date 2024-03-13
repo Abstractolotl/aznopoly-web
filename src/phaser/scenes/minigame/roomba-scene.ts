@@ -7,19 +7,20 @@ import convert from 'color-convert';
 import { FRAME_PADDING } from "@/style";
 import { SETTINGS } from "@/settings";
 
-const GRAPHICS_SWAP_TIME = 1000000;
+const TEXTURE_PAINT_TIME = 1000;
 const PAINT_REFRESH_TIME = 0.2;
 export class RoombaScene extends MinigameScene<RoombaSceneController> {
 
     private roombas: Roomba[] = [];
 
     private timeSinceLastPaint = 0;
-    private timeSinceGraphicsSwap = 0;
+    private timeSinceTexturePaint = 0;
 
     private paint!: Phaser.GameObjects.Graphics; 
     private paintTexture!: Phaser.Textures.DynamicTexture;
 
     private colorProgressBar!: ColorProgressBar;
+    private bgm!: Phaser.Sound.BaseSound;
 
     constructor(aznopoly: AzNopolyGame) {
         super(aznopoly);
@@ -29,12 +30,14 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
         this.controller = new RoombaSceneController(this, this.aznopoly);
         this.roombas = []
         this.timeSinceLastPaint = 0;
-        this.timeSinceGraphicsSwap = 0;
+        this.timeSinceTexturePaint = 0;
     }
 
     preload() {
         super.preload();
         Roomba.preload(this);
+        //this.load.audio('roomba-bgm', 'assets/audio/lady-of-the-80s.mp3');
+        this.load.audio('roomba-bgm', 'assets/audio/start-now-synth-pop.mp3');
     }
 
     create() {
@@ -44,12 +47,16 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
         this.physics.world.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
         this.physics.world.fixedStep = true;
 
-        this.paint = this.add.graphics();
         this.paintTexture = this.textures.addDynamicTexture("roomba-paint", SETTINGS.DISPLAY_WIDTH, SETTINGS.DISPLAY_HEIGHT)!;
+        this.paint = this.add.graphics();
+        this.paint.setDepth(1);
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             this.paint.destroy();
             this.paintTexture.destroy();
         });
+
+        this.bgm = this.game.sound.add('roomba-bgm', { loop: true, volume: 0.2});
+        this.bgm.play();
 
         const rightpanel = MinigameScene.getRightBounds();
         this.colorProgressBar = new ColorProgressBar(this, rightpanel.x + FRAME_PADDING, rightpanel.y + FRAME_PADDING , rightpanel.width - FRAME_PADDING*2, 40);
@@ -61,7 +68,7 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
     update(_: number, delta: number) {
         super.update(_, delta);
         this.paintRoombaUpdate(delta);
-        this.graphicSwapUpdate(delta);
+        this.paintTextureUpdate(delta);
     }
 
     public initRoombas(configs: RoombaConfig[]) {
@@ -69,6 +76,7 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
         this.roombas.forEach(roomba => {
             this.add.existing(roomba)
             roomba.paintPath(this.paint);
+            roomba.setDepth(10);
         });
         this.physics.add.collider(this.roombas, this.roombas);
     }
@@ -99,24 +107,21 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
         }
     }
 
-    private graphicSwapUpdate(delta: number) {
-        this.timeSinceGraphicsSwap += delta / 1000;
-        if (this.timeSinceGraphicsSwap > GRAPHICS_SWAP_TIME) {
-            this.timeSinceGraphicsSwap = 0;
-            
-            this.paintTexture.draw(this.paint, 0, 0);
-            this.calculatePaintPercentage();
-
-            this.paint.clear();
+    private paintTextureUpdate(delta: number) {
+        this.timeSinceTexturePaint += delta;
+        if (this.timeSinceTexturePaint > TEXTURE_PAINT_TIME) {
+            this.timeSinceTexturePaint = 0;
+            this.paintToTexture();
         }
     }
 
-    private calculatePaintPercentage() {
-        const result = this.getPaintMap();
-        this.updateProgressBar(result);
+    private paintToTexture() {
+        this.paintTexture.draw(this.paint, 0, 0);
+        this.paint.clear();
     }
 
     public getPaintMap() {
+        this.paintToTexture();
         if (this.paintTexture.renderTarget) {
             const renderer = this.paintTexture.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
 
@@ -172,6 +177,10 @@ export class RoombaScene extends MinigameScene<RoombaSceneController> {
                     return prev;
                 }, {} as {[key: string]: number});
 
+    }
+
+    public stopMusic() {
+        this.bgm.pause();
     }
 
 
