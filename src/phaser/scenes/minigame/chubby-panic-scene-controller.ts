@@ -55,7 +55,18 @@ export default class ChubbyPanicSceneController extends MinigameSceneController 
         this.aznopoly.connectedUuids.forEach((uuid) => {
             this.syncProxy.scene.updateRacers(uuid);
         });
+        this.spawnFood();
+    }
 
+    public spawnFood(): void {
+        //set random number between 1 and 5 and if number is 5 spawn food top of screen
+        const random = Math.floor(Math.random() * 5) + 1;
+        if(random === 5){
+            const randomId = Math.random().toString(36).substring(7);
+            const randomX = ChubbyPanicScene.WORLD_BOUNDS.x + Math.random() * ChubbyPanicScene.WORLD_BOUNDS.width;
+            const randomY = ChubbyPanicScene.WORLD_BOUNDS.y;
+            this.syncProxy.scene.initFood(randomId, randomX, randomY);
+        }
     }
 
 

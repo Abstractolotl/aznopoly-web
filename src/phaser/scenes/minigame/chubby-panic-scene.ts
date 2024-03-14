@@ -155,7 +155,7 @@ export class ChubbyPanicScene extends MinigameScene<ChubbyPanicSceneController> 
     }
 
     protected drawSceneLayout(): void {
-        this.add.existing(new AzNopolyPanel(this, 0, 0, 800, 600));
+        //this.add.existing(new AzNopolyPanel(this, 0, 0, 800, 600));
     }
 
     public updateChubbyRacerDirection(chubbyRacer: ChubbyRacer) {

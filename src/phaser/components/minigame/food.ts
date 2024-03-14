@@ -23,7 +23,7 @@ export class Food extends Phaser.GameObjects.Container {
         this.id = id;
 
         this.graphics = new Phaser.GameObjects.Graphics(scene);
-        this.graphics.fillStyle(0x00ff00);
+        this.graphics.fillStyle(0x00ffff);
         this.graphics.fillCircle(0, 0, SIZE);
         this.add(this.graphics);
 
@@ -34,6 +34,8 @@ export class Food extends Phaser.GameObjects.Container {
         body.setCircle(SIZE / 2);
 
         this.add(this.graphics);
+
+        body.setVelocity(0, 1000);
     }
 
 
