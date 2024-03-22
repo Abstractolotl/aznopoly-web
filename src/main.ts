@@ -44,7 +44,7 @@ window.onload = async () => {
     game.scene.add('minigame-shitty-shooter', new ShittyShooterScene(aznopoly));
     game.scene.add('minigame-water-drop', new WaterDropScene(aznopoly));
 
-    if (true) {
+    if (!true) {
         mock(aznopoly);
         game.scene.start('minigame-water-drop');
     } else {
