@@ -11,7 +11,12 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
     public static getGameBounds() {
         const panelHeight = SETTINGS.DISPLAY_HEIGHT - FRAME_PADDING * 3 - AzNopolyBar.HEIGHT;
         const panelWidth = SETTINGS.DISPLAY_WIDTH - 400;
-        return new Phaser.Geom.Rectangle(FRAME_PADDING, AzNopolyBar.HEIGHT + FRAME_PADDING * 2, panelWidth, panelHeight);
+        return new Phaser.Geom.Rectangle(
+            (SETTINGS.DISPLAY_WIDTH - panelWidth) * 0.5, 
+            AzNopolyBar.HEIGHT + FRAME_PADDING * 2, 
+            panelWidth, 
+            panelHeight
+        );
     }
 
     static getRightBounds() {
@@ -59,7 +64,7 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
         this.add.existing(rightPanel);
     }
 
-    update(time: number, delta: number) {
+     update(time: number, delta: number) {
         if (this.startTimer > 0) {
             this.startTimer -= delta;
 
