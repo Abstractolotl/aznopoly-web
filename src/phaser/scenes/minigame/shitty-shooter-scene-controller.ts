@@ -1,7 +1,7 @@
 import AzNopolyGame from "@/game";
 import MinigameSceneController, { ResultData } from "../base/minigame-scene-controller";
 import ShittyShooterScene from "./shitty-shooter-scene";
-import { CORNER } from "./shitty-shooter/turret";
+import { CORNER } from "../../components/shitty-shooter/turret";
 
 const GAME_TIME = 20000;
 export default class ShittyShooterSceneController extends MinigameSceneController {
@@ -67,5 +67,5 @@ export default class ShittyShooterSceneController extends MinigameSceneControlle
         this.syncProxy.scene.updateGoomba(id, x, y, direction);
 
     }
-    
+
 }
