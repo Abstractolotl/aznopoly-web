@@ -9,6 +9,7 @@ import { COLOR_BACKGROUND } from './style';
 
 import ShittyShooterScene from './phaser/scenes/minigame/shitty-shooter-scene';
 import { SETTINGS } from './settings';
+import {OddOneOutScene} from "@/phaser/scenes/minigame/oddOneOut-scene.ts";
 
 window.onload = async () => {
     let game = new Phaser.Game({
@@ -41,10 +42,11 @@ window.onload = async () => {
     //Minigames
     game.scene.add('minigame-roomba', new RoombaScene(aznopoly));
     game.scene.add('minigame-shitty-shooter', new ShittyShooterScene(aznopoly));
+    game.scene.add('minigame-odd-one-out', new OddOneOutScene(aznopoly));
 
-    if (false) {
+    if (true) {
         mock(aznopoly);
-        game.scene.start('minigame-shitty-shooter');
+        game.scene.start('minigame-odd-one-out');
     } else {
         game.scene.start('title');
     }
