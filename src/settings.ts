@@ -1,8 +1,8 @@
 
 
 export const SETTINGS = {
-    DISPLAY_WIDTH: 1280,
-    DISPLAY_HEIGHT: 720,
+    DISPLAY_WIDTH: 1920,
+    DISPLAY_HEIGHT: 1080,
     BOARD_SIDE_LENGTH: 5, // Without corners
 
     AVAILABLE_MINIGAMES: [

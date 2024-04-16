@@ -6,6 +6,8 @@ import { BaseScene } from "@/phaser/scenes/base/base-scene.ts";
 import * as pjson from "@/../package.json"
 import AzNopolyInput from "@/phaser/components/ui/input-field.ts";
 import { SETTINGS } from "@/settings.ts";
+import AzNopolyPanel from "../components/ui/panel.ts";
+import TitlePanel from "../components/ui/title/title-panel.ts";
 
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
@@ -23,6 +25,7 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
     
     preload() {
         AzNopolyInput.preload(this);
+        TitlePanel.preload(this);
 
         this.load.image('abstracto', 'assets/background_clouds.png');
         this.load.image('music-on', 'assets/music_on.png');
@@ -40,49 +43,55 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
     }
 
     create() {
-        const titleText = " AzNopoly "
         const copyrightText = "© 2024 AzNopoly - (build " + ((pjson || {}) as any).buildNumber + ")";
+
         const background = this.add.image(0, 0, 'abstracto');
-        const targetScale = SETTINGS.DISPLAY_WIDTH / background.width;
-        background.setScale(targetScale);
+        background.setScale(SETTINGS.DISPLAY_WIDTH / background.width);
         background.setOrigin(0, 0);
 
         this.bgm = this.game.sound.add('title-bgm', { loop: true });
-        this.bgm.play();
         this.bgm.volume = 0.25;
+        this.bgm.play();
+
         this.audioStart = this.game.sound.add('game-start');
 
         this.initButtons();
         this.add.text(SETTINGS.DISPLAY_WIDTH/2,SETTINGS.DISPLAY_HEIGHT - 20, copyrightText, FONT_STYLE_COPYRIGHT_FLAVOUR_TEXT).setOrigin(0.5, 0.5)
-        this.add.text(SETTINGS.DISPLAY_WIDTH/2, SETTINGS.DISPLAY_HEIGHT/4, titleText, FONT_STYLE_TITLE_TEXT).setOrigin(0.5, 0.5)
-    }
+     }
 
     private initButtons() {
-        const centerX = SETTINGS.DISPLAY_WIDTH / 2;
-        const centerY = SETTINGS.DISPLAY_HEIGHT / 2;
+        const panel = new TitlePanel(this);
 
-        const widthInputField = 300;
-        const widthJoinButton = 100;
-        const widthCreateButton = widthInputField + widthJoinButton;
+        panel.setOnJoin(this.controller.onJoinRoomClick.bind(this.controller));
+        panel.setOnCreate(this.controller.onCreateRoom.bind(this.controller));
 
-        const heightInputField = 55;
-        const heightJoinButton = 55;
-        const heightCreateButton = 55;
+        this.add.existing(panel);
 
-        this.lobbyInputField = this.add.existing(
-            new AzNopolyInput(this, centerX - (widthInputField+widthJoinButton) / 2, centerY, widthInputField, heightInputField));
-        this.add.existing(new AzNopolyButton(this, 'Join', centerX + ((widthInputField/2) - (widthJoinButton/2)), centerY, widthJoinButton,
-            heightJoinButton, false, this.controller.onJoinRoomClick.bind(this.controller)));
-        this.add.existing(new AzNopolyButton(this, 'Create Lobby',centerX - widthCreateButton / 2, centerY + 75, widthCreateButton,
-            heightCreateButton, false, this.controller.onCreateRoom.bind(this.controller)));
+        // const centerX = SETTINGS.DISPLAY_WIDTH / 2;
+        // const centerY = SETTINGS.DISPLAY_HEIGHT / 2;
+
+        // const widthInputField = 300;
+        // const widthJoinButton = 100;
+        // const widthCreateButton = widthInputField + widthJoinButton;
+
+        // const heightInputField = 55;
+        // const heightJoinButton = 55;
+        // const heightCreateButton = 55;
+
+        // this.lobbyInputField = this.add.existing(
+        //     new AzNopolyInput(this, centerX - (widthInputField+widthJoinButton) / 2, centerY, widthInputField, heightInputField));
+        // this.add.existing(new AzNopolyButton(this, 'Join', centerX + ((widthInputField/2) - (widthJoinButton/2)), centerY, widthJoinButton,
+        //     heightJoinButton, false, this.controller.onJoinRoomClick.bind(this.controller)));
+        // this.add.existing(new AzNopolyButton(this, 'Create Lobby',centerX - widthCreateButton / 2, centerY + 75, widthCreateButton,
+        //     heightCreateButton, false, this.controller.onCreateRoom.bind(this.controller)));
 
 
-        const graphics = this.add.graphics();
-        graphics.lineStyle(2, 0x000000, 1);
-        graphics.strokeCircle(SETTINGS.DISPLAY_WIDTH - 50, 50, 20);
+        // const graphics = this.add.graphics();
+        // graphics.lineStyle(2, 0x000000, 1);
+        // graphics.strokeCircle(SETTINGS.DISPLAY_WIDTH - 50, 50, 20);
         this.btnMusic = this.add.image(SETTINGS.DISPLAY_WIDTH - 50, 50, 'music-on');
-        this.btnMusic.setInteractive();
-        this.btnMusic.on('pointerdown', this.controller.onMusicButtonClicked.bind(this.controller));
+        // this.btnMusic.setInteractive();
+        // this.btnMusic.on('pointerdown', this.controller.onMusicButtonClicked.bind(this.controller));
     }
     
     public stopMusic() {

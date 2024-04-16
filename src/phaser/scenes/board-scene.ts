@@ -52,7 +52,8 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
         this.playerList = this.add.existing(new AzNopolyList(this, rightPanel.x + FRAME_PADDING, rightPanel.y + FRAME_PADDING));
 
-        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", SETTINGS.DISPLAY_WIDTH - 325, SETTINGS.DISPLAY_HEIGHT - 100, 250, 55, true, this.controller.onRollClick.bind(this.controller)));
+        this.rollButton = this.add.existing(new AzNopolyButton(this, "Roll Dice", SETTINGS.DISPLAY_WIDTH - 325, SETTINGS.DISPLAY_HEIGHT - 100, 250));
+        this.rollButton.setOnClick(this.controller.onRollClick.bind(this.controller));
         this.rollButton.disable();
 
         this.rollText = this.add.text(this.rollButton.x, this.rollButton.y - 64 - FRAME_PADDING, "6", FONT_STYLE_HEADLINE);

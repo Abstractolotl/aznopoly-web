@@ -1,14 +1,11 @@
-    import { COLOR_CONTRAST, COLOR_PRIMARY } from "../../../style";
-import { easeOutElastic } from "../../../util/util";
+import { COLOR_BUTTON_PRIMARY, FONT_STYLE_BUTTON, FONT_STYLE_BUTTON_HOVER } from "@/style";
 
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
-export const FONT_STYLE_BUTTON: Phaser.Types.GameObjects.Text.TextStyle = { font: '600 32px Comfortaa', color: '#ffffff', align: 'center' }
-export const FONT_STYLE_BUTTON_DOWN: Phaser.Types.GameObjects.Text.TextStyle = { font: '600 32px Comfortaa', color: '#ffffff', align: 'center' }
-
 const MAX_HOVER_TIMER = 0.05;
-const HOVER_SCALE = 1.15
-const HOVER_SCALE_PIXEL = 5
+const OUTLINE_WIDTH = 2;
+const OUTLINE_VERT_SPACING = 50;
+const OUTLINE_HOR_SPACING = 20;
 export class AzNopolyButton extends Phaser.GameObjects.Container {
 
     static preload(scene: Phaser.Scene) {
@@ -22,24 +19,27 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
     private isHovered: boolean = false;
     private hoverTimer: number = 0;
     private enabled: boolean = true;
-    private audioButtonSound!: Audio;
+    private audioButtonSound?: Audio;
     private playSoundEnabled: boolean = true;
+    private onClick?: () => void;
 
-    private onClick: () => void;
-    constructor(scene: Phaser.Scene, title: string, x: number, y: number, width: number, height: number, playSound: boolean, onClick: () => void) {
-        super(scene, x + width/2, y + height/2);
-        this.onClick = onClick;
-
-        this.playSoundEnabled = playSound;
-
-        this.graphic = new Phaser.GameObjects.Graphics(scene);
-
-        this.audioButtonSound = scene.sound.add("soundEffect", { volume: 1.2 });
+    constructor(scene: Phaser.Scene, title: string, x: number, y: number, width?: number) {
+        super(scene);
 
         this.buttonText = new Phaser.GameObjects.Text(scene, 0, 0, title, FONT_STYLE_BUTTON);
         this.buttonText.setOrigin(0.5, 0.5);
 
-        this.setSize(width, height);
+        if (width === undefined) {
+            this.setSize(this.buttonText.width + OUTLINE_VERT_SPACING, this.buttonText.height + OUTLINE_HOR_SPACING);
+            this.setPosition(x, y);
+        } else {
+            this.setSize(width, this.buttonText.height + OUTLINE_HOR_SPACING);
+            this.setPosition(x + width * 0.5, y + this.height * 0.5)
+        }
+
+        //this.audioButtonSound = scene.sound.add("soundEffect");
+        this.graphic = new Phaser.GameObjects.Graphics(scene);
+
         this.setInteractive()
 
         this.on('pointerdown', this.onPointerDown.bind(this));
@@ -53,7 +53,12 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
 
     }
 
+    public setOnClick(onClick: () => void) {
+        this.onClick = onClick;
+    }
+
     preUpdate(time: number, delta: number) {
+        /*
         if (this.isHovered) {
             this.hoverTimer += delta / 1000;
             this.hoverTimer = Math.min(MAX_HOVER_TIMER, this.hoverTimer);
@@ -66,6 +71,7 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         const t = Math.min(1, this.hoverTimer / MAX_HOVER_TIMER);
         const targetScale = HOVER_SCALE + (2 * HOVER_SCALE_PIXEL / this.width);
         this.graphic.scale = t * (targetScale - 1) + 1;
+        */
     }
 
     public enable() {
@@ -105,13 +111,14 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         if (this.playSoundEnabled) {
             this.playButtonSound();
         }
-        this.onClick();
+        this.onClick?.();
     }
 
     private onHover() {
         if (!this.enabled) return;
 
         this.isHovered = true;
+        this.updateButtonShape();
     }
 
     private onHoverOut() {
@@ -120,28 +127,46 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         this.isHovered = false;
         this.hoverTimer = MAX_HOVER_TIMER;
         this.isDown = false;
+
+        this.updateButtonShape();
     }
 
     private updateButtonShape() {
-        const outlineColor = COLOR_PRIMARY;
-        const fillColor = COLOR_CONTRAST;
+        const outlineColor = COLOR_BUTTON_PRIMARY;
+        //const fillColor = COLOR_BUTTON_PRIMARY;
 
         this.graphic.clear();
-        if (this.isDown) {
-            this.buttonText.setStyle(FONT_STYLE_BUTTON_DOWN);
-            this.graphic.fillStyle(outlineColor, 1);
-        } else {
-            this.buttonText.setStyle(FONT_STYLE_BUTTON);
-            this.graphic.fillStyle(fillColor, 1);
+        this.buttonText.setStyle(FONT_STYLE_BUTTON);
+        if (this.isHovered) {
+
+            if (this.isDown) {
+                this.graphic.fillStyle(COLOR_BUTTON_PRIMARY, 1);
+            } else {
+                this.graphic.fillStyle(COLOR_BUTTON_PRIMARY, 0.8);
+            }
+            
+            this.graphic.fillRoundedRect(-this.width*0.5, -this.height*0.5, this.width, this.height, this.height*0.5);
+            this.buttonText.setStyle(FONT_STYLE_BUTTON_HOVER);
         }
-        this.graphic.fillRect(-this.width*0.5, -this.height*0.5, this.width, this.height);
+
+        // if (this.isDown) {
+        //     this.buttonText.setStyle(FONT_STYLE_BUTTON_DOWN);
+        //     this.graphic.fillStyle(outlineColor, 1);
+        // } else {
+        //     this.buttonText.setStyle(FONT_STYLE_BUTTON);
+        //     this.graphic.fillStyle(fillColor, 1);
+        // }
+
+        //this.graphic.fillStyle(fillColor, 1);
+        //this.graphic.fillRect(-this.width*0.5, -this.height*0.5, this.width, this.height);
         
-        this.graphic.lineStyle(5, fillColor, 1);
-        this.graphic.strokeRect(-this.width*0.5, -this.height*0.5, this.width, this.height);
+        this.graphic.lineStyle(OUTLINE_WIDTH, COLOR_BUTTON_PRIMARY, 1);
+        this.graphic.strokeRoundedRect(-this.width*0.5, -this.height*0.5, this.width, this.height, this.height*0.5);
+        //this.graphic.strokeRect(-this.width*0.5, -this.height*0.5, this.width, this.height);
     }
 
     private playButtonSound() {
-        this.audioButtonSound.play();
+        this.audioButtonSound?.play();
     }
 
 }

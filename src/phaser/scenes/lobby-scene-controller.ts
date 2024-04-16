@@ -15,10 +15,10 @@ export default class LobbySceneController extends NetworkSceneController {
     }
 
     onSceneCreate(): void {
-        this.aznopoly.room.addEventListener(RoomEvent.JOIN, this.onRoomUpdated.bind(this));
-        this.aznopoly.room.addEventListener(RoomEvent.LEAVE, this.onRoomUpdated.bind(this));
-        this.aznopoly.room.addEventListener(RoomEvent.READY, this.onRoomUpdated.bind(this));
-        this.aznopoly.room.addEventListener(RoomEvent.UPDATE, this.onRoomUpdated.bind(this));
+        //this.aznopoly.room.addEventListener(RoomEvent.JOIN, this.onRoomUpdated.bind(this));
+        //this.aznopoly.room.addEventListener(RoomEvent.LEAVE, this.onRoomUpdated.bind(this));
+        //this.aznopoly.room.addEventListener(RoomEvent.READY, this.onRoomUpdated.bind(this));
+        //this.aznopoly.room.addEventListener(RoomEvent.UPDATE, this.onRoomUpdated.bind(this));
         
         this.updatePlayerList();
     }
