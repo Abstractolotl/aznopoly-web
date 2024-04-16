@@ -25,8 +25,7 @@ export default class TitleSceneController  {
         }
     }
 
-    public onJoinRoomClick() {
-        const code = this.scene.getInputtedLobbyCode();
+    public onJoinRoomClick(code: string) {
         if (!code || code.length !== 6) {
             return
         }

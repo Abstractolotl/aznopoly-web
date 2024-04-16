@@ -28,22 +28,28 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
         this.add.existing(new TilingBackground(this, 'lobby_bg', new Phaser.Math.Vector2(2, 1), 35, 1.75));
         this.add.text(0, 0, `Lobby ( ${this.aznopoly.room.id} )`, FONT_STYLE_HEADLINE);
         
-        this.playerList = this.add.existing(new PlayerList(this, this.aznopoly.isHost, 100, 200, 450));
+        this.playerList = new PlayerList(this, this.aznopoly.isHost, SETTINGS.DISPLAY_WIDTH * 0.5 - 200 - 10, SETTINGS.DISPLAY_HEIGHT * 0.5 - 100);
+        const profile = new ProfileCustomizationPanel(this, SETTINGS.DISPLAY_WIDTH * 0.5 + 300 + 10, SETTINGS.DISPLAY_HEIGHT * 0.5 - 100, this.aznopoly.getProfile(this.aznopoly.uuid));
+        profile.setProfileChangeCallback(this.onProfileChange.bind(this));
 
-        const profile = new ProfileCustomizationPanel(this, SETTINGS.DISPLAY_WIDTH - 700, 100)
-
+        this.add.existing(this.playerList);
         this.add.existing(profile);
         this.initButton();
+    }
+
+    private onProfileChange(profile: PlayerProfile) {
+        this.aznopoly.setProfile(this.aznopoly.uuid, profile);
+        this.controller.syncProxy.updatePlayerProfile(profile);
     }
 
     private initButton() {
         if (!this.aznopoly.isHost) return;
 
-        const startButton = new AzNopolyButton(this, "Start Game", SETTINGS.DISPLAY_WIDTH/2 + 300, SETTINGS.DISPLAY_HEIGHT - 120, 250);
+        const startButton = new AzNopolyButton(this, "Start Game", SETTINGS.DISPLAY_WIDTH/2 + 10, SETTINGS.DISPLAY_HEIGHT * 0.5 + 150, 250);
         startButton.setOnClick(this.controller.onStartClick.bind(this.controller));
         this.add.existing(startButton);
 
-        const leaveButton = new AzNopolyButton(this, "Leave", SETTINGS.DISPLAY_WIDTH/2 - (300 + 250), SETTINGS.DISPLAY_HEIGHT - 120, 250);
+        const leaveButton = new AzNopolyButton(this, "Leave", SETTINGS.DISPLAY_WIDTH/2 - 250  - 10, SETTINGS.DISPLAY_HEIGHT * 0.5 + 150, 250);
         leaveButton.setOnClick(this.controller.onLeaveLobbyClick.bind(this.controller));
         this.add.existing(leaveButton);
     }

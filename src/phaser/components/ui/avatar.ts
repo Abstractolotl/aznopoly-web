@@ -70,9 +70,14 @@ export default class AzNopolyAvatar extends Phaser.GameObjects.Container {
     public setBorderColor(color: number) {
         this.colorIndex = color;
         this.graphics.clear();
-        this.graphics.lineStyle(8, PLAYER_COLORS[color]);
+        const borderWidth = this.image.displayWidth / 15;
+        this.graphics.lineStyle(borderWidth, PLAYER_COLORS[color]);
         const radius = this.image.displayWidth / 2;
         this.graphics.strokeCircle(radius, radius, radius);
+    }
+
+    public getBorderColor() {
+        return this.colorIndex;
     }
     
 }

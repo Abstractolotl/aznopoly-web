@@ -46,4 +46,5 @@ input {
 input.code {
     letter-spacing: 8px;
     caret-color: transparent;
+    text-transform: uppercase;
 }

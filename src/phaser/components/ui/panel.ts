@@ -9,8 +9,8 @@ export default class AzNopolyPanel extends Phaser.GameObjects.Container {
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number, headline?: string) {
         super(scene, x, y);
-        
         this.setSize(width, height)
+        
         this.graphics = new Phaser.GameObjects.Graphics(scene);
         this.graphics.fillStyle(COLOR_FRAME_BACKGROUND, COLOR_FRAME_BACKGROUND_TRANSPARENCY);
         this.graphics.fillRoundedRect(0, 0, width, height, FRAME_BORDER_RADIUS);
@@ -23,7 +23,7 @@ export default class AzNopolyPanel extends Phaser.GameObjects.Container {
             this.topbarRect = new Phaser.Geom.Rectangle(FRAME_PADDING, 0, width - FRAME_PADDING * 2, FONT_STYLE_HEADLINE_SIZE + FRAME_PADDING * 1.5);
             this.contentRect = new Phaser.Geom.Rectangle(FRAME_PADDING, this.topbarRect.height + FRAME_PADDING, this.topbarRect.width, height - this.topbarRect.height - FRAME_PADDING * 2);
 
-            this.headline = new Phaser.GameObjects.Text(scene, this.topbarRect.x, this.topbarRect.y + this.topbarRect.height * 0.5, headline, FONT_STYLE_HEADLINE);
+            this.headline = new Phaser.GameObjects.Text(scene, this.topbarRect.x, this.topbarRect.y + this.topbarRect.height * 0.55, headline, FONT_STYLE_HEADLINE);
             this.headline.setOrigin(0, 0.5);
 
             this.add(this.headline);

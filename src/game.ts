@@ -3,12 +3,15 @@ import Room from "./room";
 import { Player } from "./types";
 import { Avatars } from "./phaser/components/ui/avatar";
 import { PlayerProfile } from "./phaser/components/ui/player-info";
+import { PacketType, RoomInitPacket } from "./types/client";
 
 export default class AzNopolyGame {
 
     private _room!: Room;
     private _client!: AzNopolyClient;
     private _name!: string;
+
+    private profiles: {[uuid: string]: PlayerProfile} = {};
 
     constructor() {
         (window as any)["aznopoly"] = this;
@@ -18,6 +21,16 @@ export default class AzNopolyGame {
         this._client = new AzNopolyClient();
         this._room = new Room(roomId, this, this.client);
         this._name = this.getPlayerName();
+
+        this._client.addEventListener(PacketType.ROOM_INIT, ((event: CustomEvent<RoomInitPacket>) => {
+            const uuid = event.detail.data.uuid;
+            this.setProfile(uuid, {
+                name: localStorage.getItem("playerName") || "Player",
+                colorIndex: parseInt(localStorage.getItem("playerColor") || "0"),
+                avatar: localStorage.getItem("playerAvatar") as Avatars || Avatars.AXOLOTL,
+                host: uuid === event.detail.data.room.host,
+            });
+        }) as EventListener);
 
         this._client.connect(roomId);
     }
@@ -30,13 +43,15 @@ export default class AzNopolyGame {
     }
 
     public getProfile(uuid: string): PlayerProfile {
-        // TODO: should not be hardcoded
-        return {
-            name: this.room.getPlayerName(uuid),
-            avatar: Avatars.AXOLOTL,
-            colorIndex: this.connectedUuids.indexOf(uuid) % 4, // TODO
-            host: this.isPlayerHost(uuid),
+        if (this.profiles[uuid]) {
+            return this.profiles[uuid];
+        } else {
+            throw new Error(`No profile found for ${uuid}`);
         }
+    }
+
+    public setProfile(uuid: string, profile: PlayerProfile) {
+        this.profiles[uuid] = profile;
     }
 
     public get uuid(): string {

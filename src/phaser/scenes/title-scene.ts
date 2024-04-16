@@ -12,16 +12,6 @@ import TitlePanel from "../components/ui/title/title-panel.ts";
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
 export default class TitleScene extends BaseScene<TitleSceneController> {
-
-    private bgm!: Audio;
-    private audioStart!: Audio;
-    private btnMusic!: Phaser.GameObjects.Image;
-
-    private lobbyInputField!: AzNopolyInput;
-    
-    constructor(aznopoly: AzNopolyGame) {
-        super(aznopoly);
-    }
     
     preload() {
         AzNopolyInput.preload(this);
@@ -36,6 +26,16 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
         this.load.audio('game-start', 'assets/audio/game_start.mp3');
 
         AzNopolyButton.preload(this);
+    }
+
+    private bgm!: Audio;
+    private audioStart!: Audio;
+    private btnMusic!: Phaser.GameObjects.Image;
+
+    private lobbyInputField!: AzNopolyInput;
+    
+    constructor(aznopoly: AzNopolyGame) {
+        super(aznopoly);
     }
 
     init() {
@@ -106,10 +106,6 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
 
     public playStartSound() {
         this.audioStart.play();
-    }
-
-    public getInputtedLobbyCode(): string {
-        return this.lobbyInputField.getValue();
     }
 
 }

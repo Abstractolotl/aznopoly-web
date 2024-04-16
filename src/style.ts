@@ -54,7 +54,7 @@ export const FONT_STYLE_BUTTON_HOVER: TextStyle = {
 }
 
 
-export const FONT_STYLE_BODY_SIZE = 24;
+export const FONT_STYLE_BODY_SIZE = 20;
 export const FONT_STYLE_BODY: TextStyle = {
     fontFamily: FONT_DEFAULT,
     fontSize: FONT_STYLE_BODY_SIZE,

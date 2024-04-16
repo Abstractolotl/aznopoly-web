@@ -20,9 +20,9 @@ export default class AzNopolyInput extends Phaser.GameObjects.Container {
         // this.graphics.fillStyle(0xffffff, 1);
         // this.graphics.fillRect(0, 0, width, height);
         if (type === "code") {
-            this.graphics.fillStyle(0xffffff, 0.5);
+            this.graphics.fillStyle(0xffffff, 0.25);
             for(let i = 0; i < 6; i++) {
-                this.graphics.fillRect(0 + i * 20 -2, height * 0.25, 17, height * 0.55);
+                this.graphics.fillRect(0 + i * 20 -2, height * 0.2, 17, height * 0.60);
             }
     
             this.dom.createFromCache('input_mask');

@@ -17,7 +17,7 @@ export default class TitlePanel extends AzNopolyPanel {
     private onCreate?: () => void;
 
     constructor(scene: Phaser.Scene) {
-        super(scene, (SETTINGS.DISPLAY_WIDTH - WIDTH) * 0.5, (SETTINGS.DISPLAY_HEIGHT - HEIGHT) * 0.5, WIDTH, HEIGHT, "AzNopoly");
+        super(scene, (SETTINGS.DISPLAY_WIDTH - WIDTH) * 0.5, (SETTINGS.DISPLAY_HEIGHT - HEIGHT) * 0.5, WIDTH, HEIGHT, "LOBBY");
         this.initLeft();
         this.initRight();
     }
