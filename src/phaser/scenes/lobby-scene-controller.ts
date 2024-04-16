@@ -55,7 +55,7 @@ export default class LobbySceneController extends NetworkSceneController {
                 }
             })
             .filter(e => e !== undefined);
-        this.scene.updatePlayerList(players);
+        this.scene.updatePlayerList(players as PlayerProfile[]);
     }
 
     public onStartClick() {
