@@ -4,11 +4,12 @@ import BoardScene from './phaser/scenes/board-scene';
 import LobbyScene from './phaser/scenes/lobby-scene';
 import AzNopolyGame from './game';
 import { RoombaScene } from './phaser/scenes/minigame/roomba-scene';
-import { mock } from './util/debug-util';
 import { COLOR_BACKGROUND } from './style';
 
 import ShittyShooterScene from './phaser/scenes/minigame/shitty-shooter-scene';
 import { SETTINGS } from './settings';
+import {RoomEvent} from "@/room.ts";
+import {DiscordClient} from "@/util/discord.ts";
 
 window.onload = async () => {
     let game = new Phaser.Game({
@@ -20,7 +21,7 @@ window.onload = async () => {
         physics: {
             default: 'arcade',
             arcade: {
-                gravity: { y: 0 },
+                gravity: {y: 0},
                 debug: false
             }
         },
@@ -42,9 +43,16 @@ window.onload = async () => {
     game.scene.add('minigame-roomba', new RoombaScene(aznopoly));
     game.scene.add('minigame-shitty-shooter', new ShittyShooterScene(aznopoly));
 
-    if (false) {
-        mock(aznopoly);
-        game.scene.start('minigame-shitty-shooter');
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('room') !== null) {
+        let roomId = params.get('room') as string;
+        aznopoly.init(roomId);
+        aznopoly.room.addEventListener(RoomEvent.READY, () => {
+            game.scene.start('lobby');
+        }, {once: true});
+    } else if (params.get('discord') !== null) {
+        let discordClient = new DiscordClient();
+        await discordClient.handleAuthentication();
     } else {
         game.scene.start('title');
     }

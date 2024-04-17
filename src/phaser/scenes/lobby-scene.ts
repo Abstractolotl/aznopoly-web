@@ -1,4 +1,4 @@
-import { FONT_STYLE_HEADLINE } from "../../style";
+import { FONT_STYLE_HEADLINE } from "@/style.ts";
 
 import TilingBackground from "../components/ui/tiling-background";
 import { AzNopolyButton } from "../components/ui/button";
@@ -14,6 +14,7 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
 
     preload() {
         PlayerList.preload(this);
+        AzNopolyButton.preload(this);
         this.load.image('host_crown', 'assets/crown.png');
         this.load.image('lobby_bg', 'assets/lobby_background.png');
     }
