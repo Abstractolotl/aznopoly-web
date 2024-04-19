@@ -1,11 +1,9 @@
 import {DiscordSDK, DiscordSDKMock} from '@discord/embedded-app-sdk';
 
 const queryParams = new URLSearchParams(window.location.search);
-const isEmbedded = queryParams.get('frame_id') != null;
 
 export class DiscordClient {
     private discordSdk: DiscordSDK | DiscordSDKMock;
-    private mockUserId: string | undefined;
 
     constructor() {
         console.log(import.meta.env.VITE_CLIENT_ID)
