@@ -1,21 +1,64 @@
-import {DiscordSDK} from '@discord/embedded-app-sdk';
+import {DiscordSDK, DiscordSDKMock} from '@discord/embedded-app-sdk';
 
+const queryParams = new URLSearchParams(window.location.search);
+const isEmbedded = queryParams.get('frame_id') != null;
 
 export class DiscordClient {
-    discordSdk: DiscordSDK;
+    private discordSdk: DiscordSDK | DiscordSDKMock;
+    private mockUserId: string | undefined;
 
     constructor() {
+        console.log(import.meta.env.VITE_CLIENT_ID)
         if(import.meta.env.VITE_CLIENT_ID === undefined) {
             throw new Error('Client ID is not defined');
         }
 
-        this.discordSdk = new DiscordSDK(import.meta.env.VITE_CLIENT_ID);
+        if (isEmbedded) {
+            this.discordSdk = new DiscordSDK(import.meta.env.VITE_CLIENT_ID);
+        } else {
+            this.mockUserId = this.getOverrideOrRandomSessionValue('user_id');
+            const mockGuildId = this.getOverrideOrRandomSessionValue('guild_id');
+            const mockChannelId = this.getOverrideOrRandomSessionValue('channel_id');
+
+            this.discordSdk = new DiscordSDKMock(import.meta.env.VITE_CLIENT_ID, mockGuildId, mockChannelId)
+        }
+    }
+
+    async initMocks() {
+        const discriminator = String(this.mockUserId!.charCodeAt(0) % 5);
+
+        this.discordSdk._updateCommandMocks({
+            authenticate: async () => {
+                return await {
+                    access_token: 'mock_token',
+                    user: {
+                        username: this.mockUserId!,
+                        discriminator,
+                        id: this.mockUserId!,
+                        avatar: null,
+                        public_flags: 1,
+                    },
+                    scopes: [],
+                    expires: new Date(2112, 1, 1).toString(),
+                    application: {
+                        description: 'mock_app_description',
+                        icon: 'mock_app_icon',
+                        id: 'mock_app_id',
+                        name: 'mock_app_name',
+                    },
+                };
+            },
+        });
     }
 
     async handleAuthentication() {
+        if (!isEmbedded) {
+            await this.initMocks();
+        }
+
         await this.discordSdk.ready()
 
-        const {code} = await this.discordSdk.commands.authorize({
+        const { code} = await this.discordSdk.commands.authorize({
             client_id: import.meta.env.VITE_CLIENT_ID,
             response_type: 'code',
             state: '',
@@ -46,11 +89,10 @@ export class DiscordClient {
         const response = await fetch('https://aznopoly.abstractolotl.de/server/token', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                code,
-            }),
+            body: JSON.stringify({code}),
         });
         const {access_token} = await response.json();
 
@@ -76,4 +118,26 @@ export class DiscordClient {
         return activityChannel;
     }
 
+    private getOverrideOrRandomSessionValue(queryParam: `${SessionStorageQueryParam}`) {
+        const overrideValue = queryParams.get(queryParam);
+        if (overrideValue != null) {
+            return overrideValue;
+        }
+
+        const currentStoredValue = sessionStorage.getItem(queryParam);
+        if (currentStoredValue != null) {
+            return currentStoredValue;
+        }
+
+        // Set queryParam to a random 8-character string
+        const randomString = Math.random().toString(36).slice(2, 10);
+        sessionStorage.setItem(queryParam, randomString);
+        return randomString;
+    }
+}
+
+enum SessionStorageQueryParam {
+    user_id = 'user_id',
+    guild_id = 'guild_id',
+    channel_id = 'channel_id',
 }
