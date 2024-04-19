@@ -8,6 +8,8 @@ import AzNopolyInput from "@/phaser/components/ui/input-field.ts";
 import { SETTINGS } from "@/settings.ts";
 import AzNopolyPanel from "../components/ui/panel.ts";
 import TitlePanel from "../components/ui/title/title-panel.ts";
+import Board3D from "./board/board-3d.ts";
+import AzPhaserGame from "@/main.ts";
 
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 

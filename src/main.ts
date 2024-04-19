@@ -11,10 +11,20 @@ import ShittyShooterScene from './phaser/scenes/minigame/shitty-shooter-scene';
 import { SETTINGS } from './settings';
 import WaterDropScene from './phaser/scenes/minigame/water-drop-scene';
 
+import * as THREE from 'three';
+import { context } from 'three/examples/jsm/nodes/Nodes.js';
+
 window.onload = () => {
     setTimeout(async () => {
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize( SETTINGS.DISPLAY_WIDTH, SETTINGS.DISPLAY_HEIGHT);
+        document.body.querySelector("#app")!.appendChild( renderer.domElement );
+        renderer.domElement.style.position = 'absolute';
+        renderer.autoClear = false;
+
         let game = new Phaser.Game({
-            type: Phaser.AUTO,
+            type: Phaser.WEBGL,
             width: SETTINGS.DISPLAY_WIDTH,
             height: SETTINGS.DISPLAY_HEIGHT,
             parent: 'app',
@@ -32,8 +42,11 @@ window.onload = () => {
             },
             dom: {
                 createContainer: true
-            }
+            },
+            canvas: renderer.domElement,
+            context: renderer.getContext() as any,
         });
+        (game as any).threeRenderer = renderer;
     
         const aznopoly = new AzNopolyGame();
         game.scene.add('title', new TitleScene(aznopoly));
@@ -56,5 +69,6 @@ window.onload = () => {
         }
         
         Object.assign(window, { game });
+        
     }, 250)
 };

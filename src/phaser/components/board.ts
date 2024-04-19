@@ -3,6 +3,7 @@ import BoardTile from "./board-tile.ts";
 import { TileOrientation, TileType } from "../../types/board.ts";
 import AzNopolyAvatar from "@/phaser/components/ui/avatar.ts";
 import { PlayerProfile } from "@/phaser/components/ui/player-info.ts";
+import Board3D from "../scenes/board/board-3d.ts";
 
 interface BoardPlayer {
     gameObject: AzNopolyAvatar,
@@ -10,7 +11,16 @@ interface BoardPlayer {
 }
 
 const PLAYER_SIZE = 32;
-export default class GameBoard extends Phaser.GameObjects.Container {
+
+export default interface GameBoard {
+    init(tiles: TileType[]): void;
+    addPlayer(uuid: string, profile: PlayerProfile, startPos?: number): BoardPlayer;
+    teleportPlayerToPosition(uuid: string, pos: number): void;
+    getPlayerPosition(uuid: string): number | undefined;
+    updateTileOwner(ownerProfile: PlayerProfile, tileIndex: number): void;
+}
+
+export class GameBoard2D extends Phaser.GameObjects.Container implements GameBoard {
 
     public static preload(scene: Phaser.Scene) {
         BoardTile.preload(scene);
@@ -29,10 +39,20 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         this.boardLength = boardLength;
     }
 
+    updateTileOwner(ownerProfile: PlayerProfile, tileIndex: number): void {
+        const tile = this.getTile(tileIndex);
+        tile.setOwner(ownerProfile);
+    }
+
     public init(tiles: TileType[]) {
         this.tiles = tiles;
         this.boardTiles = this.generateBoardTiles(this.scene, this.tiles, this.width / (this.boardLength + 4));
         this.boardTiles.forEach(e => this.add(e));
+
+
+        const b3d = new Board3D(this.scene);
+        b3d.init(tiles);
+        this.add(b3d);
     }
 
     private generateBoardTiles(scene: Phaser.Scene, tiles: TileType[], tileWidth: number) {
@@ -94,14 +114,14 @@ export default class GameBoard extends Phaser.GameObjects.Container {
         player.gameObject.setPosition(coords.x - player.gameObject.width * 0.5, coords.y - player.gameObject.height * 0.5);
         this.checkPlayerCollisions();
 
-        return this.boardTiles[player.position % this.boardTiles.length];
+        //return this.boardTiles[player.position % this.boardTiles.length];
     }
 
     public getPlayerPosition(uuid: string) {
         return this.players.get(uuid)?.position;
     }
 
-    getTile(pos: number) {
+    private getTile(pos: number) {
         return this.boardTiles[pos % this.boardTiles.length];
     }
 

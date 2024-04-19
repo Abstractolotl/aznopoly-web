@@ -1,5 +1,5 @@
 import AzNopolyPanel from "@/phaser/components/ui/panel";
-import GameBoard from "../components/board";
+import GameBoard, { GameBoard2D } from "../components/board";
 import { FONT_STYLE_BODY, FONT_STYLE_HEADLINE, FRAME_PADDING } from "../../style";
 import { AzNopolyButton } from "../components/ui/button";
 import RandomSelectionWheel from "../components/ui/random-selection-wheel";
@@ -26,7 +26,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
     preload() {
         AzNopolyPlayerInfo.preload(this);
-        GameBoard.preload(this);
+        GameBoard2D.preload(this);
         AzNopolyButton.preload(this);
         this.load.audio('board-bgm', 'assets/audio/night-walk-electro-swing.mp3')
         this.load.audio('popup-sound', 'assets/audio/minigame-roulette-sound.mp3')
@@ -43,7 +43,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         const leftPanel = this.add.existing(new AzNopolyPanel(this, FRAME_PADDING, AzNopolyBar.HEIGHT + FRAME_PADDING * 2, SETTINGS.DISPLAY_WIDTH - FRAME_PADDING * 3 - RIGHT_PANEL_WIDTH, SETTINGS.DISPLAY_HEIGHT - AzNopolyBar.HEIGHT - FRAME_PADDING * 3).setDepth(-1));
 
         const boardSize = leftPanel.height * 0.8;
-        this.board = this.add.existing(new GameBoard(this, leftPanel.x + leftPanel.width * 0.5 - boardSize * 0.5, leftPanel.y + leftPanel.height * 0.5 - boardSize * 0.5, boardSize, SETTINGS.BOARD_SIDE_LENGTH));
+        this.board = this.add.existing(new GameBoard2D(this, leftPanel.x + leftPanel.width * 0.5 - boardSize * 0.5, leftPanel.y + leftPanel.height * 0.5 - boardSize * 0.5, boardSize, SETTINGS.BOARD_SIDE_LENGTH));
 
         this.popupSound = this.sound.add('popup-sound', { volume: 0.6});
         this.bgm = this.sound.add('board-bgm', { loop: true, volume: 0.2});
@@ -123,8 +123,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
     public updateTileOwners(uuid: string, tileIndexes: number[]) {
         tileIndexes.forEach(tilePos => {
-            const tile = this.board.getTile(tilePos)!;
-            tile.setOwner(this.aznopoly.getProfile(uuid));
+            this.board.updateTileOwner(this.aznopoly.getProfile(uuid), tilePos);
         })
     }
 
