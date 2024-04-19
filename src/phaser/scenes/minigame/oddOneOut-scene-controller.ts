@@ -2,6 +2,7 @@ import MinigameSceneController from "@/phaser/scenes/base/minigame-scene-control
 import {OddOneOutScene} from "@/phaser/scenes/minigame/oddOneOut-scene.ts";
 import AzNopolyGame from "@/game.ts";
 import {oddOneAsset} from "@/phaser/components/minigame/oddOneAsset.ts";
+import {Player} from "@/types";
 
 const MAX_GAME_TIME = 30000;
 export class OddOneOutSceneController extends MinigameSceneController {
@@ -14,7 +15,6 @@ export class OddOneOutSceneController extends MinigameSceneController {
 
         this.registerSyncedProp("scene");
 
-        this.registerSyncedMethod(this.scene.initiateOddOnesInGrid, true);
         this.registerSyncedMethod(this.scene.initiateOddOne, true);
     }
 
@@ -35,14 +35,14 @@ export class OddOneOutSceneController extends MinigameSceneController {
             for (let j = 0; j < gridSizeY; j++) {
                 const x = i * spacingX + spacingX / 2 + offSetX; // Calculate x position
                 const y = j * spacingY + spacingY / 2 + offSetY; // Calculate y position
-                this.syncProxy.scene.initiateOddOne(x, y, this.isOdd()) // Add to the array
+                this.syncProxy.scene.initiateOddOne(i+j, x, y, this.isOdd()) // Add to the array
             }
         }
 
-        setTimeout(() => {
-            //this.scene.stopMusic();
-            this.syncProxy.endGame({playerWon: [], sorted: false});
-        }, MAX_GAME_TIME);
+        // setTimeout(() => {
+        //     //this.scene.stopMusic();
+        //     this.syncProxy.endGame({playerWon: [], sorted: false});
+        // }, MAX_GAME_TIME);
     }
 
     private isOdd(): boolean {

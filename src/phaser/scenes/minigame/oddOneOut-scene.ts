@@ -16,6 +16,7 @@ export class OddOneOutScene extends MinigameScene<OddOneOutSceneController> {
 
     private oddOneAssets: oddOneAsset[] = [];
     private graphics!: Phaser.GameObjects.Graphics;
+    private playerPoints: number[] = [];
 
     private oddTries: number = 0;
 
@@ -40,26 +41,15 @@ export class OddOneOutScene extends MinigameScene<OddOneOutSceneController> {
         this.add.existing(new AzNopolyPanel(this, 230, 50, 800, 600));
     }
 
-    initiateOddOne(x: number, y: number, isOdd: boolean) {
-        const oddOne = this.add.existing(new oddOneAsset(this, x, y, isOdd));
-    }
-    initiateOddOnesInGrid() {
-        // const oddTries: number = 0;
-        // const gridSizeX = 5; // Number of assets in a row
-        // const gridSizeY = 5; // Number of assets in a column
-        // const spacingX = 100; // Horizontal spacing between assets
-        // const spacingY = 100; // Vertical spacing between assets
-        //
-        // for (let i = 0; i < gridSizeX; i++) {
-        //     for (let j = 0; j < gridSizeY; j++) {
-        //         const x = i * spacingX + spacingX / 2; // Calculate x position
-        //         const y = j * spacingY + spacingY / 2; // Calculate y position
-        //         const asset = new oddOneAsset(this, x, y); // Create new instance of oddOneAsset
-        //         this.oddOneAssets.push(asset); // Add to the array
-        //     }
-        // }
+    initiateOddOne(id: number, x: number, y: number, isOdd: boolean) {
+        let oddOne = this.add.existing(new oddOneAsset(this, id, x, y, isOdd));
+        oddOne.setInteractive()
+        oddOne.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.onClicked(oddOne));
     }
 
-    //returns 1 10% of the time and increments oddTries when 1
+    onClicked(oddOne: oddOneAsset) {
+        console.log("clicked" + oddOne.id);
+        //oddOne.destroy();
+    }
 
 }
