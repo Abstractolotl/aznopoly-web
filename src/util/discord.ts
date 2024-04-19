@@ -13,49 +13,11 @@ export class DiscordClient {
             throw new Error('Client ID is not defined');
         }
 
-        if (isEmbedded) {
-            this.discordSdk = new DiscordSDK(import.meta.env.VITE_CLIENT_ID);
-        } else {
-            this.mockUserId = this.getOverrideOrRandomSessionValue('user_id');
-            const mockGuildId = this.getOverrideOrRandomSessionValue('guild_id');
-            const mockChannelId = this.getOverrideOrRandomSessionValue('channel_id');
-
-            this.discordSdk = new DiscordSDKMock(import.meta.env.VITE_CLIENT_ID, mockGuildId, mockChannelId)
-        }
+        this.discordSdk = new DiscordSDK(import.meta.env.VITE_CLIENT_ID);
     }
 
-    async initMocks() {
-        const discriminator = String(this.mockUserId!.charCodeAt(0) % 5);
-
-        this.discordSdk._updateCommandMocks({
-            authenticate: async () => {
-                return await {
-                    access_token: 'mock_token',
-                    user: {
-                        username: this.mockUserId!,
-                        discriminator,
-                        id: this.mockUserId!,
-                        avatar: null,
-                        public_flags: 1,
-                    },
-                    scopes: [],
-                    expires: new Date(2112, 1, 1).toString(),
-                    application: {
-                        description: 'mock_app_description',
-                        icon: 'mock_app_icon',
-                        id: 'mock_app_id',
-                        name: 'mock_app_name',
-                    },
-                };
-            },
-        });
-    }
 
     async handleAuthentication() {
-        if (!isEmbedded) {
-            await this.initMocks();
-        }
-
         await this.discordSdk.ready()
 
         const { code} = await this.discordSdk.commands.authorize({
