@@ -1,6 +1,7 @@
-import { FONT_STYLE_BODY, FONT_STYLE_DIGITS, FRAME_PADDING } from "@/style";
+import { FONT_STYLE_BODY, FONT_STYLE_DIGITS, FONT_STYLE_EYECATCHER, FRAME_PADDING, PLAYER_COLORS } from "@/style";
 import AzNopolyAvatar, { Avatars } from "./avatar";
 import AnimatedText, { TextAnimationType } from "./animated-text";
+import AzNopolyPanel from "./panel";
 
 
 export interface PlayerInfo {
@@ -15,7 +16,11 @@ export interface PlayerProfile {
 }
 
 const HEIGHT = 64;
+const WIDTH = 350;
+const GAP = 25;
 export default class AzNopolyPlayerInfo extends Phaser.GameObjects.Container {
+    static HEIGHT = HEIGHT;
+    static WIDTH = WIDTH;
 
     static preload(scene: Phaser.Scene) {
         AzNopolyAvatar.preload(scene);
@@ -23,31 +28,33 @@ export default class AzNopolyPlayerInfo extends Phaser.GameObjects.Container {
         scene.load.image("icon_crown", "assets/icons/icon_crown.png");
     }
 
+    private panel: AzNopolyPanel;
     private avatar: AzNopolyAvatar;
     private nameText: Phaser.GameObjects.Text;
     private moneyText: AnimatedText;
     private lastMoney: number;
+    private colorIndex: number;
 
     constructor(scene: Phaser.Scene, x: number, y: number, info: PlayerInfo, profile: PlayerProfile) {
         super(scene, x, y);
-        this.setSize(400, HEIGHT);
+        this.setSize(WIDTH, HEIGHT);
         this.lastMoney = info.money;
+        this.colorIndex = profile.colorIndex;
         
-        this.avatar = new AzNopolyAvatar(scene, FRAME_PADDING, FRAME_PADDING, 64, profile.avatar, profile.colorIndex);
-        
-        const style = Object.assign({}, FONT_STYLE_BODY, {fontSize: HEIGHT * 0.4})
+        this.panel = new AzNopolyPanel(scene, HEIGHT * 0.5, 0, WIDTH - HEIGHT * 0.5, HEIGHT);
+        this.avatar = new AzNopolyAvatar(scene, HEIGHT*0.5, HEIGHT * 0.5, HEIGHT, profile.avatar, profile.colorIndex);
 
-        this.nameText = new Phaser.GameObjects.Text(scene, 0, 0, profile.name, style);
+        this.nameText = new Phaser.GameObjects.Text(scene, HEIGHT + 10, 0, profile.name, FONT_STYLE_EYECATCHER);
         this.nameText.setOrigin(0, 0);
-        this.nameText.setPosition(FRAME_PADDING * 2 + HEIGHT, FRAME_PADDING);
 
         const moneyIcon = new Phaser.GameObjects.Image(scene, this.nameText.x, this.nameText.y + this.nameText.height * 1.5 , "icon_money");
         moneyIcon.setOrigin(0, 0.5);
         moneyIcon.setScale(this.nameText.height / moneyIcon.height);
 
-        this.moneyText = new AnimatedText(scene, 0, 0, ` ${info.money}`, FONT_STYLE_DIGITS);
+        this.moneyText = new AnimatedText(scene, 0, 0, ` ${info.money}`, FONT_STYLE_BODY);
         this.moneyText.setPosition(moneyIcon.x + moneyIcon.displayWidth, this.nameText.y + this.nameText.height);
 
+        this.add(this.panel);
         this.add(this.avatar);
         this.add(this.nameText);
         this.add(this.moneyText);
@@ -55,16 +62,26 @@ export default class AzNopolyPlayerInfo extends Phaser.GameObjects.Container {
 
         if (profile.host) {
             const hostIcon = new Phaser.GameObjects.Image(scene, 0, 0, "icon_crown");
-            hostIcon.setOrigin(0.5, 0.5);
             hostIcon.setScale(32 / hostIcon.height);
-            hostIcon.setPosition(this.avatar.x + hostIcon.width * 0.5, this.avatar.y);
+            hostIcon.setPosition(this.avatar.x, this.avatar.y - this.avatar.height * 0.5 );
             hostIcon.setTint(0xffd700);
             this.add(hostIcon);
         }
+
+        this.setIsOnTurn(false);
     }
 
     preUpdate(time: number, delta: number) {
         this.moneyText.preUpdate(time, delta);
+    }
+
+    public setOnHover(hoverIn: () => void, hoverOut: () => void) {
+        this.setInteractive({
+            hitArea: new Phaser.Geom.Rectangle(this.width * 0.5, this.height * 0.5, this.width, this.height),
+            hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        });
+        this.on("pointerover", hoverIn);
+        this.on("pointerout", hoverOut);
     }
 
     public updateProfile(profile: PlayerProfile) {
@@ -78,17 +95,25 @@ export default class AzNopolyPlayerInfo extends Phaser.GameObjects.Container {
         this.lastMoney = info.money;
         
         if (moneyDif > 0) {
-            this.moneyText.setTextAnimated(` ${info.money}`, TextAnimationType.FALL_INTO, {
+            this.moneyText.setTextAnimated(` ${info.money}`, TextAnimationType.SIDE, { 
                 altText: `+${moneyDif}`,
-                altTextStyle: Object.assign({}, FONT_STYLE_DIGITS, { fill: '#00ff00' }),
+                altTextStyle: Object.assign({}, FONT_STYLE_DIGITS, { fill: '#66FF66' })
             });
         }
 
         if (moneyDif < 0) {
-            this.moneyText.setTextAnimated(` ${info.money}`, TextAnimationType.GRAVITY_FALL, {
+            this.moneyText.setTextAnimated(` ${info.money}`, TextAnimationType.SIDE, { 
                 altText: `${moneyDif}`,
-                altTextStyle: Object.assign({}, FONT_STYLE_DIGITS, { fill: '#ff0000' }),
+                altTextStyle: Object.assign({}, FONT_STYLE_DIGITS, { fill: '#FF6666' })
             });
+        }
+    }
+
+    public setIsOnTurn(isOnTurn: boolean) {
+        if (isOnTurn) {
+            this.panel.setBorder(PLAYER_COLORS[this.colorIndex]);
+        } else {
+            this.panel.setBorder(0x000000, 0);
         }
     }
 

@@ -17,11 +17,11 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
 
     private isDown: boolean = false;
     private isHovered: boolean = false;
-    private hoverTimer: number = 0;
     private enabled: boolean = true;
     private audioButtonSound?: Audio;
     private playSoundEnabled: boolean = true;
     private onClick?: () => void;
+    private image?: Phaser.GameObjects.Image;
 
     constructor(scene: Phaser.Scene, title: string, x: number, y: number, width?: number) {
         super(scene);
@@ -50,11 +50,25 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         this.updateButtonShape();
         this.add(this.graphic);
         this.add(this.buttonText);
+    }
 
+    public setImage(image: string) {
+        if (!this.image) {
+            this.image = new Phaser.GameObjects.Image(this.scene, 0, 0, image);
+            this.image.setOrigin(0.5, 0.5);
+            this.add(this.image);
+        } else {
+            this.image.setTexture(image);
+        }
     }
 
     public setOnClick(onClick: () => void) {
         this.onClick = onClick;
+    }
+
+    public setOnHover(hoverIn: () => void, hoverOut: () => void) {
+        this.on('pointerover', hoverIn);
+        this.on('pointerout', hoverOut);
     }
 
     preUpdate(time: number, delta: number) {
@@ -78,11 +92,13 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         this.setInteractive();
         this.buttonText.setAlpha(1);
         this.enabled = true;
+        this.alpha = 1;
     }
 
     public disable() {
         this.disableInteractive();
         this.buttonText.setAlpha(0);
+        this.alpha = 0;
 
         this.enabled = false;
 
@@ -105,7 +121,6 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
 
         this.isDown = false;
         this.isHovered = false;
-        this.hoverTimer = MAX_HOVER_TIMER;
         this.updateButtonShape();
 
         if (this.playSoundEnabled) {
@@ -125,7 +140,6 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         if (!this.enabled) return;
 
         this.isHovered = false;
-        this.hoverTimer = MAX_HOVER_TIMER;
         this.isDown = false;
 
         this.updateButtonShape();

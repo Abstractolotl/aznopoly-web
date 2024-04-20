@@ -6,7 +6,7 @@ const COLORS_WHITE = 0xFFFFFF;
 // Semantic values
 export const COLOR_FRAME_DECORATION = COLORS_WHITE;
 export const COLOR_FRAME_BACKGROUND = COLORS_BLACK;
-export const COLOR_FRAME_BACKGROUND_TRANSPARENCY = 0.2;
+export const COLOR_FRAME_BACKGROUND_TRANSPARENCY = 0.5;
 
 export const COLOR_BUTTON_PRIMARY = COLORS_WHITE;
 
@@ -21,10 +21,10 @@ const toHex = (color: number) => {
 type TextStyle = Phaser.Types.GameObjects.Text.TextStyle;
 
 // Used for title in top bar of frames
-export const FONT_STYLE_HEADLINE_SIZE = 16;
-export const FONT_STYLE_HEADLINE: TextStyle = {
+export const FONT_STYLE_HEADLINE_PANEL_SIZE = 16;
+export const FONT_STYLE_PANEL_HEADLINE: TextStyle = {
     fontFamily: FONT_DEFAULT,
-    fontSize: FONT_STYLE_HEADLINE_SIZE,
+    fontSize: FONT_STYLE_HEADLINE_PANEL_SIZE,
     color: toHex(COLORS_WHITE),
     align: 'center',
     
@@ -37,7 +37,6 @@ export const FONT_STYLE_EYECATCHER: TextStyle = {
     color: toHex(COLORS_WHITE),
     align: 'center',
 }
-
 
 export const FONT_STYLE_BUTTON_SIZE = 18;
 export const FONT_STYLE_BUTTON: TextStyle = { 
@@ -52,7 +51,6 @@ export const FONT_STYLE_BUTTON_HOVER: TextStyle = {
     color: toHex(COLORS_BLACK),
     align: 'center' 
 }
-
 
 export const FONT_STYLE_BODY_SIZE = 20;
 export const FONT_STYLE_BODY: TextStyle = {
@@ -78,7 +76,7 @@ export const FONT_STYLE_BUTTON_DOWN: Phaser.Types.GameObjects.Text.TextStyle = {
 export const COLOR_PRIMARY = 0x4690A9;
 
 export const COLOR_ACCENT = 0x4690A9;
-export const COLOR_BACKGROUND = 0x73c8e4;
+export const COLOR_BACKGROUND = 0x000000;
 export const COLOR_TEXT = COLOR_PRIMARY;
 export const COLOR_TEXT_INVERTED = 0x4690A9;
 export const COLOR_BACKGROUND_LIGHT = 0xe6f9ff;
@@ -102,8 +100,8 @@ export const FONT_STYLE_TITLE_TEXT: TextStyle = {
 }
 
 export const FONT_STYLE_DIGITS: TextStyle = {
-    fontFamily: '"Kode Mono"',
-    fontSize: "32px",
+    fontFamily: FONT_DEFAULT,
+    fontSize: FONT_STYLE_BODY_SIZE,
     color: toHex(COLOR_TEXT),
     align: 'center'
 }

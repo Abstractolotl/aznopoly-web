@@ -92,8 +92,8 @@ export default class Lane extends Phaser.GameObjects.Container {
         this.drop.scale = 1;
         
         const body = this.drop.body as Phaser.Physics.Arcade.Body;
-        body.setAccelerationY(0);
-        body.setVelocityY(0);
+        body?.setAccelerationY(0);
+        body?.setVelocityY(0);
     }
 
     public updateGlass(width: number, height: number) {

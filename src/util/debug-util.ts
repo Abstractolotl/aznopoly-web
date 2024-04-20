@@ -24,6 +24,7 @@ export function mock(aznopoly: AzNopolyGame) {
             colorIndex: 0,
             uuid: "1111-2222-3333-4444",
             avatar: Avatars.AXOLOTL,
+            host: true,
         },
         "222": {
             name: "mockius minimus",

@@ -1,4 +1,4 @@
-import { FONT_STYLE_HEADLINE } from "../../style";
+import { FONT_STYLE_PANEL_HEADLINE } from "../../style";
 
 import TilingBackground from "../components/ui/tiling-background";
 import { AzNopolyButton } from "../components/ui/button";
@@ -25,8 +25,9 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
     }
 
     create() {
+        this.cameras.main.fadeIn(100);
         this.add.existing(new TilingBackground(this, 'lobby_bg', new Phaser.Math.Vector2(2, 1), 35, 1.75));
-        this.add.text(0, 0, `Lobby ( ${this.aznopoly.room.id} )`, FONT_STYLE_HEADLINE);
+        this.add.text(0, 0, `Lobby ( ${this.aznopoly.room.id} )`, FONT_STYLE_PANEL_HEADLINE);
         
         this.playerList = new PlayerList(this, this.aznopoly.isHost, SETTINGS.DISPLAY_WIDTH * 0.5 - 200 - 10, SETTINGS.DISPLAY_HEIGHT * 0.5 - 100);
         const profile = new ProfileCustomizationPanel(this, SETTINGS.DISPLAY_WIDTH * 0.5 + 300 + 10, SETTINGS.DISPLAY_HEIGHT * 0.5 - 100, this.aznopoly.getProfile(this.aznopoly.uuid));

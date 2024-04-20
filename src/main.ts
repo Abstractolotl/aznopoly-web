@@ -12,15 +12,26 @@ import { SETTINGS } from './settings';
 import WaterDropScene from './phaser/scenes/minigame/water-drop-scene';
 
 import * as THREE from 'three';
-import { context } from 'three/examples/jsm/nodes/Nodes.js';
+
+//import * as WebGLDebugUtils from './webgl-debug.js';
+import DebugScene from './phaser/scenes/debug-scene.js';
 
 window.onload = () => {
     setTimeout(async () => {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('webgl2')!;
+        // const debugContext = WebGLDebugUtils.default.makeDebugContext(context,
+        //     console.error,
+        //     (funcName: string, args: any) => {
+        //         if (funcName === "pixelStorei") {
+        //             console.log(funcName, args)
+        //         }
+        //     },
+        // );
+        document.body.querySelector("#app")!.appendChild(canvas);
 
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize( SETTINGS.DISPLAY_WIDTH, SETTINGS.DISPLAY_HEIGHT);
-        document.body.querySelector("#app")!.appendChild( renderer.domElement );
-        renderer.domElement.style.position = 'absolute';
+        const renderer = new THREE.WebGLRenderer({ canvas, context: context });
+        renderer.setSize(SETTINGS.DISPLAY_WIDTH, SETTINGS.DISPLAY_HEIGHT);
         renderer.autoClear = false;
 
         let game = new Phaser.Game({
@@ -43,21 +54,24 @@ window.onload = () => {
             dom: {
                 createContainer: true
             },
-            canvas: renderer.domElement,
-            context: renderer.getContext() as any,
+            canvas: canvas,
+            context: context as any,
         });
         (game as any).threeRenderer = renderer;
-    
+
         const aznopoly = new AzNopolyGame();
         game.scene.add('title', new TitleScene(aznopoly));
         game.scene.add('lobby', new LobbyScene(aznopoly));
         game.scene.add('game', new BoardScene(aznopoly));
-    
+
         //Minigames
         game.scene.add('minigame-roomba', new RoombaScene(aznopoly));
         game.scene.add('minigame-shitty-shooter', new ShittyShooterScene(aznopoly));
         game.scene.add('minigame-water-drop', new WaterDropScene(aznopoly));
-    
+
+        //Debug
+        game.scene.add('debug', new DebugScene());
+
         const params = new URLSearchParams(window.location.search);
         const debug = params.get('debug');
         if (debug !== null) {
@@ -67,8 +81,8 @@ window.onload = () => {
         } else {
             game.scene.start('title');
         }
-        
+
         Object.assign(window, { game });
-        
+
     }, 250)
 };

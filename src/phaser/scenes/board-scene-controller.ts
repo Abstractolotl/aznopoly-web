@@ -17,7 +17,7 @@ interface Player {
 
 export default class BoardSceneController extends SyncedSceneController {
 
-    declare protected scene: BoardScene;
+    declare public scene: BoardScene;
 
     /**
      * List of players in turn order
@@ -43,6 +43,9 @@ export default class BoardSceneController extends SyncedSceneController {
         this.registerSyncedProp("scene");
         this.registerSyncedMethod(this.scene.updatePlayerPosition, false);
         this.registerSyncedMethod(this.scene.showDiceRoll, false);
+        this.registerSyncedMethod(this.scene.showBoardIntro, true);
+        this.registerSyncedMethod(this.scene.hidePlayerTurnMenu, true);
+        this.registerSyncedMethod(this.scene.setPreviewDice, false);
 
         this.registerSyncedMethod(this.rollDice, false);
         this.registerSyncedMethod(this.buyProperty, false)
@@ -60,8 +63,15 @@ export default class BoardSceneController extends SyncedSceneController {
 
             const tiles = BoardGenerator.generateFields(this.aznopoly.room.host, SETTINGS.BOARD_SIDE_LENGTH);
             this.syncProxy.initBoard(tiles, players);
-            this.doTurn(players[0].uuid);
+            this.syncProxy.scene.showBoardIntro();
         }
+    }
+
+    public onIntroOver() {
+        if (!this.aznopoly.isHost) {
+            throw new Error("Only the host should call this method");
+        }
+        this.doTurn(this.players[0].uuid);
     }
 
     onSceneWake(_: any, minigameResult: ResultData): void {
@@ -171,7 +181,6 @@ export default class BoardSceneController extends SyncedSceneController {
     }
 
     public onRollClick() {
-        this.scene.disableRollButton();
         this.syncProxy.rollDice();
     }
 
@@ -206,7 +215,7 @@ export default class BoardSceneController extends SyncedSceneController {
             return;
         }
 
-        this.syncProxy.startBuyProperty(uuid, this.propertyManager.getPropertyLevel(player.position));
+        this.syncProxy.startBuyProperty(uuid, this.propertyManager.getPropertyLevel(player.position), this.tiles[player.position]);
     }
 
     public onHasToPayRent(uuid: string) {
@@ -253,9 +262,13 @@ export default class BoardSceneController extends SyncedSceneController {
             return;
         }
 
+        console.log("Player rolled", roll);
         await this.syncProxy.scene.showDiceRoll(roll);
+        console.log("Player rolled 2", roll);
+
+        const startPosition = player.position;
         player.position = (player.position +  roll) % ((SETTINGS.BOARD_SIDE_LENGTH * 4) + 4);
-        await this.syncProxy.scene.updatePlayerPosition(uuid, player.position);
+        await this.syncProxy.scene.updatePlayerPosition(uuid, startPosition, player.position);
     }
 
     /* Network Functions */
@@ -273,6 +286,8 @@ export default class BoardSceneController extends SyncedSceneController {
         if (!this.aznopoly.isHost) {
             return;
         }
+
+        this.syncProxy.scene.hidePlayerTurnMenu();
 
         const sender = arguments[arguments.length - 1]; // Black Magic to get the player uuid that started the roll
         if (!this.currentTurn) {
@@ -296,19 +311,16 @@ export default class BoardSceneController extends SyncedSceneController {
     }
 
     private startTurn(uuid: string) {
-        if(uuid == this.aznopoly.uuid) {
-            this.scene.enableRollButton();
-        }
-
+        this.scene.showPlayerTurnMenu(uuid);
         this.scene.setCurrentTurn(uuid);
     }
 
-    private startBuyProperty(uuid: string, level: number) {
+    private startBuyProperty(uuid: string, level: number, tileType: TileType) {
         if(uuid != this.aznopoly.uuid) {
             return;
         }
 
-        this.scene.showBuyTilePopUp((level > 0), this.propertyManager.calculatePropertyPrice(level));
+        this.scene.showBuyTilePopUp(level, this.propertyManager.calculatePropertyPrice(level), "COOL PROPERTRY", tileType);
     }
 
     /** Utility Functions **/

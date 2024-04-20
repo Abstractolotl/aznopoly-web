@@ -1,5 +1,5 @@
 import AzNopolyBar from "@/phaser/components/ui/bar";
-import { FONT_STYLE_HEADLINE, FRAME_PADDING } from "../../../style";
+import { FONT_STYLE_PANEL_HEADLINE, FRAME_PADDING } from "../../../style";
 import { BaseScene } from "./base-scene";
 import MinigameSceneController, { ResultData } from "./minigame-scene-controller";
 import AzNopolyPanel from "@/phaser/components/ui/panel";
@@ -45,7 +45,7 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
         this.overlay.setDepth(1000);
         this.overlay.setVisible(false);
 
-        this.centerText = this.add.text(SETTINGS.DISPLAY_WIDTH/2, SETTINGS.DISPLAY_HEIGHT/2, 'Waiting for players...', FONT_STYLE_HEADLINE);
+        this.centerText = this.add.text(SETTINGS.DISPLAY_WIDTH/2, SETTINGS.DISPLAY_HEIGHT/2, 'Waiting for players...', FONT_STYLE_PANEL_HEADLINE);
         this.centerText.setOrigin(0.5, 0.5);
         this.centerText.setDepth(1000);
 
@@ -101,7 +101,9 @@ export default abstract class MinigameScene<T extends MinigameSceneController> e
         this.overlay.scale = 1;
         this.overlay.y -= 100;
 
-        const names = playerWon.map(uuid => this.aznopoly.room.getPlayerName(uuid) + " won");
+        const names = playerWon
+            .filter(uuid => !!uuid)
+            .map(uuid => this.aznopoly.getProfile(uuid).name + " won");
         this.centerText.setText(names.join("\n"))
         this.centerText.setVisible(true);
 

@@ -14,9 +14,8 @@ const PLAYER_SIZE = 32;
 
 export default interface GameBoard {
     init(tiles: TileType[]): void;
-    addPlayer(uuid: string, profile: PlayerProfile, startPos?: number): BoardPlayer;
+    addPlayer(uuid: string, profile: PlayerProfile, startPos?: number): void;
     teleportPlayerToPosition(uuid: string, pos: number): void;
-    getPlayerPosition(uuid: string): number | undefined;
     updateTileOwner(ownerProfile: PlayerProfile, tileIndex: number): void;
 }
 
