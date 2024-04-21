@@ -13,10 +13,10 @@ const textureLoader = new THREE.TextureLoader()
 const mapTree = textureLoader.load('assets/sprites/tree_1.png');
 const mapGrass = textureLoader.load('assets/sprites/grass.png');
 
-const materialTree = unlitMaterial(mapTree);
-const materialGrass = unlitMaterial(mapGrass);
+const materialTree = unlitMaterial(mapTree, true);
+const materialGrass = unlitMaterial(mapGrass, true);
 
-function unlitMaterial(texture: THREE.Texture) {
+export function unlitMaterial(texture: THREE.Texture, transparent: boolean = false) {
     return new THREE.ShaderMaterial( {
         uniforms: {
             color: {value: new THREE.Vector3(1, 1, 1)},
@@ -24,7 +24,7 @@ function unlitMaterial(texture: THREE.Texture) {
         },
         vertexShader: vertShaderCode,
         fragmentShader: fragShaderCode,
-        transparent: true,
+        transparent,
         side: THREE.DoubleSide,
     } );
 }

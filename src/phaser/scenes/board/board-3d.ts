@@ -6,7 +6,7 @@ import { SETTINGS } from '@/settings';
 import { PLAYER_COLORS, toHex } from '@/style';
 import { TileOrientation, TileType } from '@/types/board';
 import * as THREE from 'three';
-import { addGrass, addTree } from './fauna';
+import { addGrass, addTree, unlitMaterial } from './fauna';
 
 // Dimensions of PNG: 447 x 612
 const TILE_WIDTH = 4.5;
@@ -29,15 +29,15 @@ const playerTextures = {
 }
 
 const fieldMaterials: any = {
-    [TileType.PROPERTY_BLUE]: new THREE.MeshBasicMaterial({map: textureLoader.load('assets/board/tile_prop_coorp.png') }),
-    [TileType.PROPERTY_GREEN]: new THREE.MeshBasicMaterial({map: textureLoader.load('assets/board/tile_prop_poop.png') }),
-    [TileType.PROPERTY_RED]: new THREE.MeshBasicMaterial({map: textureLoader.load('assets/board/tile_prop_education.png') }),
-    [TileType.PROPERTY_YELLOW]: new THREE.MeshBasicMaterial({map: textureLoader.load('assets/board/tile_prop_rainbow.png') }),
-    [TileType.PROPERTY_PURPLE]: new THREE.MeshBasicMaterial({map: textureLoader.load('assets/board/tile_prop_sailor.png') }),
-    [TileType.ACTION]: new THREE.MeshBasicMaterial({ map: textureLoader.load('assets/board/tile_action.png') }),
-    [TileType.START]: new THREE.MeshBasicMaterial({ map: textureLoader.load('assets/board/tile_corner_start.png') }),
-    [TileType.JAIL]: new THREE.MeshBasicMaterial({ map: textureLoader.load('assets/board/tile_corner_jail.png') }),
-    [TileType.FREE]: new THREE.MeshBasicMaterial({ map: textureLoader.load('assets/board/tile_corner_parking.png') }),
+    [TileType.PROPERTY_BLUE]: unlitMaterial(textureLoader.load('assets/board/tile_prop_coorp.png')),
+    [TileType.PROPERTY_GREEN]: unlitMaterial(textureLoader.load('assets/board/tile_prop_poop.png')),
+    [TileType.PROPERTY_RED]: unlitMaterial(textureLoader.load('assets/board/tile_prop_education.png')),
+    [TileType.PROPERTY_YELLOW]: unlitMaterial(textureLoader.load('assets/board/tile_prop_rainbow.png')),
+    [TileType.PROPERTY_PURPLE]: unlitMaterial(textureLoader.load('assets/board/tile_prop_sailor.png')),
+    [TileType.ACTION]: unlitMaterial(textureLoader.load('assets/board/tile_action.png')),
+    [TileType.START]: unlitMaterial(textureLoader.load('assets/board/tile_corner_start.png')),
+    [TileType.JAIL]: unlitMaterial(textureLoader.load('assets/board/tile_corner_jail.png')),
+    [TileType.FREE]: unlitMaterial(textureLoader.load('assets/board/tile_corner_parking.png')),
 }
 
 const CAM_DISTANCE = 4;
@@ -93,10 +93,9 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
             addTree(this.threeScene, x, y);
         }
 
-
         for (let i = 0; i < 35; i++) {
-            const x = Math.random() * 13 * 2 - 13;
-            const y = Math.random() * 13 * 2 - 13;
+            const x = Math.random() * 12 * 2 - 12;
+            const y = Math.random() * 12 * 2 - 12;
             addGrass(this.threeScene, x, y);
         }
     }
@@ -362,7 +361,7 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
 
 
         const tile = this.tileMeshes[tileIndex];
-        const mesh = new THREE.Mesh(geometryPlayerAvatar, new THREE.MeshBasicMaterial({map: texture, transparent: true }));
+        const mesh = new THREE.Mesh(geometryPlayerAvatar, unlitMaterial(texture));
         mesh.position.set(tile.position.x, tile.position.y + 0.001, tile.position.z + TILE_HEIGHT * 0.5 -  0.75 - .15);
         mesh.rotation.x = Math.PI * -0.5;
         mesh.rotation.z = Math.PI;
