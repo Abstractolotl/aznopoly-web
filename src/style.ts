@@ -14,7 +14,7 @@ export const FRAME_PADDING = 14;
 export const FRAME_BORDER_RADIUS = 5;
 export const FRAME_BORDER_WIDTH = 0;
 
-const toHex = (color: number) => {
+export const toHex = (color: number) => {
     return "#" + color.toString(16);
 }
 

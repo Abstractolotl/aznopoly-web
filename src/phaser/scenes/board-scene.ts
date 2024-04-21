@@ -11,6 +11,7 @@ import { TileType } from "@/types/board";
 import Board3D from "./board/board-3d";
 import TurnMenu from "../components/ui/board/turn-menu";
 import RoundPanel from "../components/ui/board/round-panel";
+import TextPanel from "../components/ui/board/text-panel";
 
 export default class BoardScene extends BaseScene<BoardSceneController> {
 
@@ -58,6 +59,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.tilePopUp = new BoardTilePopUp(this, SETTINGS.DISPLAY_WIDTH / 2, SETTINGS.DISPLAY_HEIGHT / 2);
 
         this.roundPanel.setVisible(false);
+        this.playerList.setVisible(false);
         this.roundPanel.setOnActionClick(action => {
             switch (action) {
                 case "OVERVIEW":
@@ -96,6 +98,8 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     public initBoard(tiles: TileType[], players: (PlayerInfo & { uuid: string })[]) {
         this.board.init(tiles);
         this.addPlayers(players);
+
+        this.board3D.updateTileOwner(this.aznopoly.getProfile(this.aznopoly.uuid), 1);
     }
 
     public async showBoardIntro() {

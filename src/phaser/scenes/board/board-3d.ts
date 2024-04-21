@@ -3,20 +3,23 @@ import { Avatars } from '@/phaser/components/ui/avatar';
 import Dice from '@/phaser/components/ui/board/dice';
 import { PlayerProfile } from '@/phaser/components/ui/player-info';
 import { SETTINGS } from '@/settings';
-import { PLAYER_COLORS } from '@/style';
+import { PLAYER_COLORS, toHex } from '@/style';
 import { TileOrientation, TileType } from '@/types/board';
 import * as THREE from 'three';
+import { addGrass, addTree } from './fauna';
 
 // Dimensions of PNG: 447 x 612
-const geometryTileSide = new THREE.BoxGeometry(4.47, 0.25, 6.12);
+const TILE_WIDTH = 4.5;
+const TILE_HEIGHT = 6;
+const geometryTileSide = new THREE.BoxGeometry(TILE_WIDTH, 0.25, TILE_HEIGHT);
 // Dimensions of PNG: 612 x 612
-const geometryTileCorner = new THREE.BoxGeometry(6.12, 0.25, 6.12);
-
+const geometryTileCorner = new THREE.BoxGeometry(TILE_HEIGHT, 0.25, TILE_HEIGHT);
 const geometryPlayer = new THREE.CylinderGeometry(0.5, 0.5, 0.25);
+const geometryPlayerAvatar = new THREE.BoxGeometry(TILE_WIDTH - 0.5, 1.5, 0.25);
 
 const textureLoader = new THREE.TextureLoader();
-const map = textureLoader.load('assets/board/tile-down.png');
-const materialTile = new THREE.MeshBasicMaterial({ color: 0xffffff, map });
+const texturePropCoorp = textureLoader.load('assets/board/tile_prop_coorp.png');
+const materialTile = new THREE.MeshBasicMaterial({ color: 0xffffff, map: texturePropCoorp });
 
 const playerTextures = {
     [Avatars.ABSTRACT]: textureLoader.load('assets/avatars/avatar_abstract.png'),
@@ -26,17 +29,16 @@ const playerTextures = {
 }
 
 const fieldMaterials: any = {
-    [TileType.PROPERTY_BLUE]: new THREE.MeshBasicMaterial({ color: 0x0000ff, map }),
-    [TileType.PROPERTY_GREEN]: new THREE.MeshBasicMaterial({ color: 0x00ff00, map }),
-    [TileType.PROPERTY_RED]: new THREE.MeshBasicMaterial({ color: 0xff0000, map }),
-    [TileType.PROPERTY_YELLOW]: new THREE.MeshBasicMaterial({ color: 0xffff00, map }),
-    [TileType.PROPERTY_PURPLE]: new THREE.MeshBasicMaterial({ color: 0x800080, map }),
+    [TileType.PROPERTY_BLUE]: new THREE.MeshBasicMaterial({map: textureLoader.load('assets/board/tile_prop_coorp.png') }),
+    [TileType.PROPERTY_GREEN]: new THREE.MeshBasicMaterial({map: textureLoader.load('assets/board/tile_prop_poop.png') }),
+    [TileType.PROPERTY_RED]: new THREE.MeshBasicMaterial({map: textureLoader.load('assets/board/tile_prop_education.png') }),
+    [TileType.PROPERTY_YELLOW]: new THREE.MeshBasicMaterial({map: textureLoader.load('assets/board/tile_prop_rainbow.png') }),
+    [TileType.PROPERTY_PURPLE]: new THREE.MeshBasicMaterial({map: textureLoader.load('assets/board/tile_prop_sailor.png') }),
+    [TileType.ACTION]: new THREE.MeshBasicMaterial({ map: textureLoader.load('assets/board/tile_action.png') }),
+    [TileType.START]: new THREE.MeshBasicMaterial({ map: textureLoader.load('assets/board/tile_corner_start.png') }),
+    [TileType.JAIL]: new THREE.MeshBasicMaterial({ map: textureLoader.load('assets/board/tile_corner_jail.png') }),
+    [TileType.FREE]: new THREE.MeshBasicMaterial({ map: textureLoader.load('assets/board/tile_corner_parking.png') }),
 }
-
-// Dimensions of PNG: 126 x 149
-const geometryTree = new THREE.PlaneGeometry(1.26 * 4, 1.49 * 4, 1);
-const mapTree = new THREE.TextureLoader().load('assets/sprites/tree_1.png');
-const materialTree = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, map: mapTree, transparent: true });
 
 const CAM_DISTANCE = 4;
 
@@ -69,11 +71,10 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         this.setupTHREE();
         this.setupUI();
 
-        const groundGeometry = new THREE.PlaneGeometry(100, 100, 32);
-        const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x82e75f, side: THREE.DoubleSide });
+        const groundGeometry = new THREE.BoxGeometry(100, 100, 0.1);
+        const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x106d35, side: THREE.DoubleSide, reflectivity: 0 });
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = Math.PI * 0.5;
-
         this.threeScene.add(ground);
 
         this.group = new THREE.Group();
@@ -89,7 +90,14 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
             if (Math.abs(x) > deadStart && Math.abs(x) < deadEnd || Math.abs(y) > deadStart && Math.abs(y) < deadEnd) {
                 continue;
             }
-            this.addTree(x, y);
+            addTree(this.threeScene, x, y);
+        }
+
+
+        for (let i = 0; i < 35; i++) {
+            const x = Math.random() * 13 * 2 - 13;
+            const y = Math.random() * 13 * 2 - 13;
+            addGrass(this.threeScene, x, y);
         }
     }
 
@@ -112,10 +120,12 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
             this.threeCamera.lookAt(tile.position);
             return;
         }
+        this.threeCamera.position.set(0, 22, 0);
+        this.threeCamera.rotation.set(Math.PI * -0.5, 0, 0)
         Object.values(this.players).forEach(player => { this.threeScene.remove(player.mesh) });
-        this.threeCamera.lookAt(tile.position);
+        //this.threeCamera.lookAt(tile.position);
         await sleep(500);
-        await this.moveCameraToPosition(tile.position.x, 5, tile.position.z - 5, 2000, {lock: tile.position});
+        await this.moveCameraToPosition(tile.position.x, 5, tile.position.z - 5, 2000, {targetRotation: ROT_FOCUS_TILE});
         this.focusTile(0);
         Object.values(this.players).forEach(async (player, index) => {
             player.mesh.position.y = 25;
@@ -150,9 +160,8 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         this.threeScene = new THREE.Scene();
         this.threeCamera = new THREE.PerspectiveCamera(75, SETTINGS.DISPLAY_WIDTH / SETTINGS.DISPLAY_HEIGHT, 0.1, 1000);
 
-        this.threeCamera.position.x = 0;
-        this.threeCamera.position.y = 50;
-        this.threeCamera.position.z = 0;
+        this.threeCamera.position.set(0, 22, 0);
+        this.threeCamera.rotation.set(Math.PI * 0.5, 0, 0)
 
         this.threeCamera.lookAt(0, 0, 0);
     }
@@ -202,18 +211,12 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         });
     }
 
-    private addTree(x: number, y: number) {
-        const tree = new THREE.Mesh(geometryTree, materialTree);
-        tree.position.set(x, 1.49 * 2, y);
-        this.threeScene.add(tree);
-    }
-
     private generateTileMeshes(tiles: TileType[]) {
         const tileMeshes: THREE.Mesh[] = [];
         tileMeshes.length = SETTINGS.BOARD_SIDE_LENGTH * 4 + 4
 
-        const tileWidth = 4.47;
-        const tileHeight = 6.12;
+        const tileWidth = TILE_WIDTH;
+        const tileHeight = TILE_HEIGHT;
 
         const boardSize = (SETTINGS.BOARD_SIDE_LENGTH) * tileWidth + 2 * tileHeight;
         const offsetX = 0;
@@ -290,16 +293,16 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         const endX = tile.position.x;
         const endY = tile.position.z - CAM_DISTANCE;
 
-        this.moveCameraToPosition(endX, CAM_DISTANCE * 1.25, endY, 250, {targetRotation: ROT_FOCUS_TILE});
+        this.moveCameraToPosition(endX, CAM_DISTANCE, endY, 250, {targetRotation: ROT_FOCUS_TILE});
     }
 
     private getRotationForOrientation(orientation: TileOrientation) {
         switch (orientation) {
-            case TileOrientation.CORNER: return 0;
-            case TileOrientation.DOWN: return 0;
-            case TileOrientation.RIGHT: return Math.PI * 0.5;
-            case TileOrientation.UP: return Math.PI;
-            case TileOrientation.LEFT: return Math.PI * 1.5;
+            case TileOrientation.CORNER: return Math.PI;
+            case TileOrientation.DOWN: return Math.PI;
+            case TileOrientation.RIGHT: return Math.PI * 1.5;
+            case TileOrientation.UP: return 0;
+            case TileOrientation.LEFT: return Math.PI * 0.5;
         }
         throw new Error("UNKNOWN TILE ORIENTATION " + orientation);
     }
@@ -339,7 +342,31 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
     }
 
     updateTileOwner(ownerProfile: PlayerProfile, tileIndex: number): void {
-        throw new Error('Method not implemented.');
+        const canvas = THREE.createCanvasElement();
+        canvas.width = 300;
+        canvas.height = 100;
+        const context = canvas.getContext('2d')!;
+        const size = 80;
+        context.fillStyle = "#ccc3d8";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(playerTextures[ownerProfile.avatar].image, canvas.width * 0.5 - size * 0.5, canvas.height * 0.5 - size * 0.5, size, size);
+
+        console.log(toHex(PLAYER_COLORS[ownerProfile.colorIndex]));
+        context.strokeStyle = toHex(PLAYER_COLORS[ownerProfile.colorIndex]) + "ff";
+        context.lineWidth = 8;
+        context.beginPath();
+        context.arc(canvas.width * 0.5, canvas.height * 0.5, size * 0.5, 0, Math.PI * 2);
+        context.stroke();
+
+        const texture = new THREE.CanvasTexture(canvas);
+
+
+        const tile = this.tileMeshes[tileIndex];
+        const mesh = new THREE.Mesh(geometryPlayerAvatar, new THREE.MeshBasicMaterial({map: texture, transparent: true }));
+        mesh.position.set(tile.position.x, tile.position.y + 0.001, tile.position.z + TILE_HEIGHT * 0.5 -  0.75 - .15);
+        mesh.rotation.x = Math.PI * -0.5;
+        mesh.rotation.z = Math.PI;
+        this.threeScene.add(mesh);
     }
 
     private resolvePlayerCollisions() {
@@ -354,7 +381,7 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         const offset = 0.6;
         const collisionNumOffsetsMap = [
             [{ x: 0, y: 0 }],
-            [{ x: offset, y: offset }, { x: -offset, y: -offset }],
+            [{ x: offset, y: 0 }, { x: -offset, y: 0 }],
             [{ x: offset, y: offset }, { x: -offset, y: offset }, { x: 0.0, y: -offset }],
             [{ x: offset, y: offset }, { x: -offset, y: offset }, { x: offset, y: -offset }, { x: -offset, y: -offset }],
         ]
@@ -397,7 +424,6 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         this.threeRenderer.render(this.threeScene, this.threeCamera);
         this.threeRenderer.resetState();
         this.threeRenderer.getContext().pixelStorei(37440, false);
-
     }
 
 }
