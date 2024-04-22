@@ -22,8 +22,9 @@ FROM nginx:alpine AS release
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 RUN rm -rf /usr/share/nginx/html/*
 # Copy the built app to the html directory
+COPY --from=install /temp/dev/node_modules /usr/share/nginx/html/node_modules
 COPY --from=prerelease /app/dist/* /usr/share/nginx/html/
-COPY --from=prerelease /app/dist/assets /usr/share/nginx/html/
+COPY --from=prerelease /app/dist/assets /usr/share/nginx/html/assets
 COPY --from=prerelease /app/package.json /usr/share/nginx/html/
 
 EXPOSE 8080
