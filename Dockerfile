@@ -17,12 +17,14 @@ ENV NODE_ENV=production
 RUN yarn build
 COPY assets dist/assets
 
-FROM base AS release
-COPY --from=install /temp/dev/node_modules node_modules
-COPY --from=prerelease /app/dist/* ./dist
-COPY --from=prerelease /app/dist/assets ./dist/assets
-COPY --from=prerelease /app/package.json .
-RUN yarn global add http-server
+FROM nginx/nginx:alpine AS release
+# Configure Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+RUN rm -rf /usr/share/nginx/html/*
+# Copy the built app to the html directory
+COPY --from=prerelease /app/dist/* /usr/share/nginx/html/
+COPY --from=prerelease /app/dist/assets /usr/share/nginx/html/
+COPY --from=prerelease /app/package.json /usr/share/nginx/html/
 
 EXPOSE 8080
-CMD [ "http-server", "dist" ]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
