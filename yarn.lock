@@ -2471,6 +2471,11 @@ v8-to-istanbul@^9.0.1:
     "@types/istanbul-lib-coverage" "^2.0.1"
     convert-source-map "^2.0.0"
 
+vite-plugin-patch-env@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.npmjs.org/vite-plugin-patch-env/-/vite-plugin-patch-env-0.0.5.tgz"
+  integrity sha512-kUTkPSTs5ah6Gn9kKyXlzfomhz1rrUb6bIBJXpjdx6Yu076FgwMG4YcTyrUZwApcDUkzMb8zYTnyrSpuMm2n+g==
+
 vite@^5.0.5:
   version "5.1.3"
   resolved "https://registry.npmjs.org/vite/-/vite-5.1.3.tgz"
