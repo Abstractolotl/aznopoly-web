@@ -19,7 +19,7 @@ COPY assets dist/assets
 
 FROM nginx:alpine AS release
 # Configure Nginx
-COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 RUN rm -rf /usr/share/nginx/html/*
 # Copy the built app to the html directory
 COPY --from=install /temp/dev/node_modules /usr/share/nginx/html/node_modules
