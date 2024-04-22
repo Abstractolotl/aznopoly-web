@@ -29,4 +29,4 @@ COPY --from=prerelease /app/dist/assets /usr/share/nginx/html/assets
 COPY --from=prerelease /app/package.json /usr/share/nginx/html/
 
 EXPOSE 8080
-ENTRYPOINT ["sh", "/entrypoint.sh"]
+CMD [ "sh", "/entrypoint.sh", "&&", "nginx", "-g", "daemon off;" ]
