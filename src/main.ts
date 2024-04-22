@@ -51,6 +51,7 @@ window.onload = async () => {
             game.scene.start('lobby');
         }, {once: true});
     } else if (params.get('discord') !== null) {
+        console.log(import.meta.env);
         let discordClient = new DiscordClient();
         await discordClient.handleAuthentication();
     } else {

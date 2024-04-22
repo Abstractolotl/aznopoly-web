@@ -13,7 +13,6 @@ export class DiscordClient {
         this.discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
     }
 
-
     async handleAuthentication() {
         await this.discordSdk.ready()
 
