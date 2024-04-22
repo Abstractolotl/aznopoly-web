@@ -21,12 +21,35 @@ export function unlitMaterial(texture: THREE.Texture, transparent: boolean = fal
         uniforms: {
             color: {value: new THREE.Vector3(1, 1, 1)},
             mytex: {value: texture},
+            intensity: {value: 0.0},
         },
         vertexShader: vertShaderCode,
         fragmentShader: fragShaderCode,
         transparent,
         side: THREE.DoubleSide,
     } );
+}
+
+export function initDecoration(scene: THREE.Scene) {
+    const range = 35;
+    const deadStart = 10;
+    const deadEnd = 25;
+    for (let i = 0; i < 35; i++) {
+        const x = Math.random() * range * 2 - range;
+        const y = Math.random() * range * 2 - range;
+
+        if (Math.abs(x) > deadStart && Math.abs(x) < deadEnd || Math.abs(y) > deadStart && Math.abs(y) < deadEnd) {
+            continue;
+        }
+        addTree(scene, x, y);
+    }
+
+    for (let i = 0; i < 35; i++) {
+        const x = Math.random() * 12 * 2 - 12;
+        const y = Math.random() * 12 * 2 - 12;
+        addGrass(scene, x, y);
+    }
+    
 }
 
 export const addTree = function (scene: THREE.Scene, x: number, y: number) {

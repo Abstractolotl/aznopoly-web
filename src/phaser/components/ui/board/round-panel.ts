@@ -39,12 +39,15 @@ export default class RoundPanel extends Phaser.GameObjects.Container {
             this.inOverview = !this.inOverview;
             if (this.inOverview) {
                 onClick("OVERVIEW");
-                this.overviewButton.setImage("icon-zoom-in");
             } else {
                 onClick("FOCUS");
-                this.overviewButton.setImage("icon-zoom-out");
             }
         });
+    }
+
+    public setZoomIcon(inOverview: boolean) {
+        this.inOverview = inOverview;
+        this.overviewButton.setImage(inOverview ? "icon-zoom-out" : "icon-zoom-in");
     }
 
 }

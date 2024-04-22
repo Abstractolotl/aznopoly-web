@@ -11,7 +11,6 @@ import { TileType } from "@/types/board";
 import Board3D from "./board/board-3d";
 import TurnMenu from "../components/ui/board/turn-menu";
 import RoundPanel from "../components/ui/board/round-panel";
-import TextPanel from "../components/ui/board/text-panel";
 
 export default class BoardScene extends BaseScene<BoardSceneController> {
 
@@ -27,6 +26,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
     private turnMenu!: TurnMenu;
     private currentTurnUUID!: string;
+    private tiles: TileType[] = [];
 
     preload() {
         AzNopolyPlayerInfo.preload(this);
@@ -60,16 +60,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
 
         this.roundPanel.setVisible(false);
         this.playerList.setVisible(false);
-        this.roundPanel.setOnActionClick(action => {
-            switch (action) {
-                case "OVERVIEW":
-                    this.board3D.showOverview();
-                    break;
-                case "FOCUS":
-                    this.board3D.focusPlayer(this.currentTurnUUID);
-                    break;
-            }
-        })
+        this.roundPanel.setOnActionClick(this.onActionClick.bind(this));
         //this.playerList.setVisible(false);
         this.tilePopUp.setSubmitButtonOnClick(this.controller.onClickSubmitProperty.bind(this.controller));
         this.tilePopUp.setCancelButtonOnClick(this.controller.onClickCancelProperty.bind(this.controller));
@@ -82,6 +73,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
                 this.controller.syncProxy.scene.setPreviewDice(false);
             }
         )
+        this.board3D.cameraManager.setListener(this.onCameraStateChange.bind(this));
 
         this.add.existing(this.board);
         this.add.existing(this.roundPanel);
@@ -91,15 +83,33 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.add.existing(this.tilePopUp);
     }
 
+    private onCameraStateChange(state: string) {
+        if (state === "OVERVIEW") {
+            this.roundPanel.setZoomIcon(true);
+        } else {
+            this.roundPanel.setZoomIcon(false);
+        }
+    }
+
+    private onActionClick(action: string) {
+        switch (action) {
+            case "OVERVIEW":
+                this.board3D.cameraManager.focusOverview();
+                break;
+            case "FOCUS":
+                this.board3D.focusPlayer(this.currentTurnUUID);
+                break;
+        }
+    }
+
     public setPreviewDice(isPreview: boolean) {
-        this.board3D.setPreviewDice(isPreview);
+        this.board3D.highlightDice(isPreview);
     }
 
     public initBoard(tiles: TileType[], players: (PlayerInfo & { uuid: string })[]) {
+        this.tiles = tiles;
         this.board.init(tiles);
         this.addPlayers(players);
-
-        this.board3D.updateTileOwner(this.aznopoly.getProfile(this.aznopoly.uuid), 1);
     }
 
     public async showBoardIntro() {
@@ -205,7 +215,17 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.turnMenu.setVisible(false);
     }
 
-    public showBuyTilePopUp(level: number, price: number, name: string, tileType: TileType) {
+    public async showBuyTilePopUp(level: number, price: number, name: string, tileType: TileType) {
+        const tileIndexes = this.tiles.reduce((acc: number[], tile, index) => {
+            if (tile === tileType) {
+                acc.push(index);
+            }
+            return acc;
+        }, []);
+
+        await this.board3D.cameraManager.focusOverview(250);
+        await sleep(250);
+        this.board3D.highlightTiles(tileIndexes);
         this.popupSound.play();
         this.tilePopUp.show({
             upgradeLevel: level,
@@ -216,6 +236,7 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     }
 
     public hideBuyTilePopUp() {
+        this.board3D.resetTileHighlights();
         this.tilePopUp.hide();
     }
 
@@ -238,4 +259,10 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     }
 
 
+}
+
+function sleep(time: number) {
+    return new Promise<void>(resolve => {
+        setTimeout(resolve, time);
+    });
 }

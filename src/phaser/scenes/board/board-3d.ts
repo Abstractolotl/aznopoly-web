@@ -6,7 +6,8 @@ import { SETTINGS } from '@/settings';
 import { PLAYER_COLORS, toHex } from '@/style';
 import { TileOrientation, TileType } from '@/types/board';
 import * as THREE from 'three';
-import { addGrass, addTree, unlitMaterial } from './fauna';
+import { initDecoration, unlitMaterial } from './fauna';
+import CameraManager from './camera-manager';
 
 // Dimensions of PNG: 447 x 612
 const TILE_WIDTH = 4.5;
@@ -40,72 +41,49 @@ const fieldMaterials: any = {
     [TileType.FREE]: unlitMaterial(textureLoader.load('assets/board/tile_corner_parking.png')),
 }
 
-const CAM_DISTANCE = 4;
-
 type PlayerObject = {
     mesh: THREE.Mesh;
     position: number;
 }
-
-const ROT_FOCUS_TILE = new THREE.Euler(-Math.PI * 0.75, 0, -Math.PI);
-const ROT_FOCUS_OVERVIEW = new THREE.Euler(-Math.PI * 0.55, 0, -Math.PI);
 export default class Board3D extends Phaser.GameObjects.Extern implements GameBoard {
 
+    public readonly cameraManager: CameraManager;
     private threeScene!: THREE.Scene;
-    private threeCamera!: THREE.PerspectiveCamera;
     private threeRenderer: THREE.WebGLRenderer;
-
     private diceMesh!: Dice;
-
     private tileMeshes: THREE.Mesh[] = [];
-
     private group: THREE.Group;
-    //private tiles!: TileType[];
-
     private players: { [uuid: string]: PlayerObject } = {};
 
     constructor(scene: Phaser.Scene) {
         super(scene);
 
         this.threeRenderer = (scene.game as any).threeRenderer;
-        this.setupTHREE();
-        this.setupUI();
+        this.threeScene = new THREE.Scene();
+        this.cameraManager = new CameraManager(scene.tweens, {
+            getTilePosition: (tileIndex: number) => this.tileMeshes[tileIndex].position
+        });
+        
+        this.group = new THREE.Group();
+        this.diceMesh = new Dice();
 
+        this.initGround();
+        initDecoration(this.threeScene);
+
+        this.threeScene.add(this.group);
+    }
+
+    private initGround() {
         const groundGeometry = new THREE.BoxGeometry(100, 100, 0.1);
         const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x106d35, side: THREE.DoubleSide, reflectivity: 0 });
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = Math.PI * 0.5;
         this.threeScene.add(ground);
-
-        this.group = new THREE.Group();
-        this.threeScene.add(this.group);
-
-        const range = 35;
-        const deadStart = 10;
-        const deadEnd = 25;
-        for (let i = 0; i < 35; i++) {
-            const x = Math.random() * range * 2 - range;
-            const y = Math.random() * range * 2 - range;
-
-            if (Math.abs(x) > deadStart && Math.abs(x) < deadEnd || Math.abs(y) > deadStart && Math.abs(y) < deadEnd) {
-                continue;
-            }
-            addTree(this.threeScene, x, y);
-        }
-
-        for (let i = 0; i < 35; i++) {
-            const x = Math.random() * 12 * 2 - 12;
-            const y = Math.random() * 12 * 2 - 12;
-            addGrass(this.threeScene, x, y);
-        }
     }
 
     init(tiles: TileType[]): void {
-        //this.tiles = tiles;
         this.tileMeshes = this.generateTileMeshes(tiles);
         this.tileMeshes.forEach(mesh => this.group.add(mesh));
-        const tile = this.tileMeshes[0];
-        this.threeCamera.lookAt(tile.position);
     }
 
     public update(delta: number) {
@@ -113,19 +91,12 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
     }
 
     public async doIntro() {
-        const tile = this.tileMeshes[0];
         if (SETTINGS.SKIP_INTRO) {
-            this.threeCamera.position.set(tile.position.x, 5, tile.position.z - 5);
-            this.threeCamera.lookAt(tile.position);
+            this.cameraManager.focusTile(0);
             return;
         }
-        this.threeCamera.position.set(0, 22, 0);
-        this.threeCamera.rotation.set(Math.PI * -0.5, 0, 0)
         Object.values(this.players).forEach(player => { this.threeScene.remove(player.mesh) });
-        //this.threeCamera.lookAt(tile.position);
-        await sleep(500);
-        await this.moveCameraToPosition(tile.position.x, 5, tile.position.z - 5, 2000, {targetRotation: ROT_FOCUS_TILE});
-        this.focusTile(0);
+        await this.cameraManager.showIntroCutscene();
         Object.values(this.players).forEach(async (player, index) => {
             player.mesh.position.y = 25;
             await sleep(150 * index);
@@ -143,10 +114,28 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         await sleep(1500);
     }
 
-    public setPreviewDice(preview: boolean) {
+    public highlightTiles(tiles: number[]) {
+        tiles.forEach(tileIndex => {
+            this.tileMeshes[tileIndex].position.y = 0.5;
+            this.tileMeshes[tileIndex].scale.set(1.15, 1.15, 1.15);
+            (this.tileMeshes[tileIndex].material as any).uniforms.intensity = { value: 0.35 };
+        });
+    }
+
+    public resetTileHighlights() {
+        this.tileMeshes.forEach(mesh => {
+            mesh.position.y = 0;
+            mesh.scale.set(1, 1, 1);
+            if ((mesh.material as any).uniforms?.intensity) {
+                (mesh.material as any).uniforms.intensity = { value: 0.0 };
+            }
+        });
+    }
+
+    public highlightDice(highlight: boolean) {
         this.scene.tweens.addCounter({
-            from: preview ? 1 : 1.25,
-            to: preview ? 1.25 : 1,
+            from: highlight ? 1 : 1.25,
+            to: highlight ? 1.25 : 1,
             duration: 50,
             onUpdate: (tween) => {
                 const value = tween.getValue();
@@ -154,62 +143,6 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
             }
         });
     }
-
-    private setupTHREE() {
-        this.threeScene = new THREE.Scene();
-        this.threeCamera = new THREE.PerspectiveCamera(75, SETTINGS.DISPLAY_WIDTH / SETTINGS.DISPLAY_HEIGHT, 0.1, 1000);
-
-        this.threeCamera.position.set(0, 22, 0);
-        this.threeCamera.rotation.set(Math.PI * 0.5, 0, 0)
-
-        this.threeCamera.lookAt(0, 0, 0);
-    }
-
-    private setupUI() {
-        // this.uiScene = new THREE.Group();
-        // this.threeScene.add(this.uiScene)
-
-        this.diceMesh = new Dice();
-    }
-
-    private moveCameraToPosition(x: number, y: number, z: number, time: number, {lock, targetRotation}: { lock?: THREE.Vector3, targetRotation?: THREE.Euler} = {}) {
-        const startX = this.threeCamera.position.x;
-        const startY = this.threeCamera.position.y;
-        const startZ = this.threeCamera.position.z;
-
-        const endX = x;
-        const endY = y;
-        const endZ = z;
-
-        const startRotation = this.threeCamera.rotation.clone();
-        const endRotation = targetRotation || this.threeCamera.rotation.clone();
-
-        return new Promise<void>((resolve) => {
-            this.scene.tweens.addCounter({
-                from: 0,
-                to: 1,
-                duration: time,
-                onUpdate: (tween) => {
-                    const value = tween.getValue();
-                    this.threeCamera.position.x = startX + (endX - startX) * value;
-                    this.threeCamera.position.y = startY + (endY - startY) * value;
-                    this.threeCamera.position.z = startZ + (endZ - startZ) * value;
-
-                    this.threeCamera.rotation.x = startRotation.x + (endRotation.x - startRotation.x) * value;
-                    this.threeCamera.rotation.y = startRotation.y + (endRotation.y - startRotation.y) * value;
-                    this.threeCamera.rotation.z = startRotation.z + (endRotation.z - startRotation.z) * value;
-
-                    if (lock) {
-                        this.threeCamera.lookAt(lock);
-                    }
-                },
-                onComplete: () => {
-                    resolve();
-                }
-            });
-        });
-    }
-
     private generateTileMeshes(tiles: TileType[]) {
         const tileMeshes: THREE.Mesh[] = [];
         tileMeshes.length = SETTINGS.BOARD_SIDE_LENGTH * 4 + 4
@@ -286,15 +219,6 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         return tileMeshes;
     }
 
-    private focusTile(tileIndex: number) {
-        const tile = this.tileMeshes[tileIndex];
-
-        const endX = tile.position.x;
-        const endY = tile.position.z - CAM_DISTANCE;
-
-        this.moveCameraToPosition(endX, CAM_DISTANCE, endY, 250, {targetRotation: ROT_FOCUS_TILE});
-    }
-
     private getRotationForOrientation(orientation: TileOrientation) {
         switch (orientation) {
             case TileOrientation.CORNER: return Math.PI;
@@ -329,12 +253,13 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         this.threeScene.add(player);
         this.resolvePlayerCollisions();
     }
+
     teleportPlayerToPosition(uuid: string, pos: number): void {
         const player = this.players[uuid];
         const tile = this.tileMeshes[pos];
 
         player.mesh.position.set(tile.position.x, 0.5, tile.position.z);
-        this.focusTile(pos);
+        this.cameraManager.focusTile(pos);
 
         player.position = pos;
         this.resolvePlayerCollisions();
@@ -396,10 +321,6 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
             }
         });
     }
-
-    public async showOverview() {
-        await this.moveCameraToPosition(0, 22, -5.5, 500, {targetRotation: new THREE.Euler(-Math.PI * 0.55, 0, -Math.PI)});
-    }
     
     public showDiceForPlayer(uuid: string): void {
         const player = this.players[uuid];
@@ -415,12 +336,12 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
 
     public focusPlayer(uuid: string): void {
         const player = this.players[uuid];
-        this.focusTile(player.position);
+        this.cameraManager.focusTile(player.position);
     }
 
     render() {
         this.threeRenderer.getContext().pixelStorei(37440, true);
-        this.threeRenderer.render(this.threeScene, this.threeCamera);
+        this.threeRenderer.render(this.threeScene, this.cameraManager.camera);
         this.threeRenderer.resetState();
         this.threeRenderer.getContext().pixelStorei(37440, false);
     }
