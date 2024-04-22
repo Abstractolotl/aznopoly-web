@@ -6,12 +6,11 @@ export class DiscordClient {
     private discordSdk: DiscordSDK | DiscordSDKMock;
 
     constructor() {
-        console.log(import.meta.env.VITE_CLIENT_ID)
-        if(import.meta.env.VITE_CLIENT_ID === undefined) {
+        if(import.meta.env.VITE_DISCORD_CLIENT_ID === undefined) {
             throw new Error('Client ID is not defined');
         }
 
-        this.discordSdk = new DiscordSDK(import.meta.env.VITE_CLIENT_ID);
+        this.discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
     }
 
 
@@ -19,7 +18,7 @@ export class DiscordClient {
         await this.discordSdk.ready()
 
         const { code} = await this.discordSdk.commands.authorize({
-            client_id: import.meta.env.VITE_CLIENT_ID,
+            client_id: import.meta.env.VITE_DISCORD_CLIENT_ID,
             response_type: 'code',
             state: '',
             prompt: 'none',

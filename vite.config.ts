@@ -9,5 +9,4 @@ export default {
             },
         ],
     },
-    envDir: "/config/",
 };
