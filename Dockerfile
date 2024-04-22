@@ -17,7 +17,7 @@ ENV NODE_ENV=production
 RUN yarn build
 COPY assets dist/assets
 
-FROM nginx/nginx:alpine AS release
+FROM nginx:alpine AS release
 # Configure Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 RUN rm -rf /usr/share/nginx/html/*
