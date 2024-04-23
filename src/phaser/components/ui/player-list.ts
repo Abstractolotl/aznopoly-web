@@ -6,7 +6,11 @@ import { PlayerProfile } from "./player-info";
 
 const LINE_HEIGHT = 60;
 const LINE_GAP = FRAME_PADDING;
+const WIDTH = 400;
+const HEIGHT = 360;
 export default class PlayerList extends AzNopolyPanel {
+    public static WIDTH = WIDTH;
+    public static HEIGHT = HEIGHT;
 
     static preload(scene: Phaser.Scene) {
         scene.load.image("host-crown", "assets/crown.png");
@@ -19,8 +23,8 @@ export default class PlayerList extends AzNopolyPanel {
     private playerEntries: Phaser.GameObjects.Container[] = [];
 
     constructor(scene: Phaser.Scene, hostView: boolean, x: number, y: number) {
-        super(scene, x, y, 400, 360, "CONNECTED PLAYERS");
-        this.setPosition(x - 200, y - 180);
+        super(scene, x, y, WIDTH, HEIGHT, "CONNECTED PLAYERS");
+        this.setPosition(x - WIDTH * 0.5, y - HEIGHT * 0.5);
 
         this.hostView = hostView;
     }

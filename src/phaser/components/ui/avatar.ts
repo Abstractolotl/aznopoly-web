@@ -79,5 +79,15 @@ export default class AzNopolyAvatar extends Phaser.GameObjects.Container {
     public getBorderColor() {
         return this.colorIndex;
     }
+
+    public setLocked(locked: boolean) {
+        this.graphics.clear();
+        this.setBorderColor(this.colorIndex);
+        if (locked) {
+            this.image.setTint(0x444444);
+        } else {
+            this.image.clearTint();
+        }
+    }
     
 }

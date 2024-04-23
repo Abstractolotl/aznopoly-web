@@ -5,7 +5,11 @@ import AzNopolyInput from "../input-field";
 import { PlayerProfile } from "../player-info";
 
 
+const WIDTH = 600;
+const HEIGHT = 360;
 export default class ProfileCustomizationPanel extends AzNopolyPanel {
+    public static WIDTH = WIDTH;
+    public static HEIGHT = HEIGHT;
 
     static preload(scene: Phaser.Scene) {
         AzNopolyAvatar.preload(scene);
@@ -20,10 +24,15 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
     private inputName: AzNopolyInput;
     private arrowLeft: AzNopolyAvatar;
     private arrowRight: AzNopolyAvatar;
+    private colorSelectRect: Phaser.GameObjects.Rectangle;
+    private colorRects: Phaser.GameObjects.Rectangle[] = [];
+    
+    private availableColorIndexes = PLAYER_COLORS.map((_, i) => i);
+    private availableAvatars = Object.values(Avatars);
 
     constructor(scene: Phaser.Scene, x: number, y: number, profile: PlayerProfile) {
-        super(scene, x, y, 600, 360, "PROFILE CUSTOMIZATION");
-        this.setPosition(x - 300, y - 180);
+        super(scene, x, y, WIDTH, HEIGHT, "PROFILE CUSTOMIZATION");
+        this.setPosition(x - WIDTH * 0.5, y - HEIGHT * 0.5);
         this.profile = profile;
 
         const bounds = this.contentRect;
@@ -70,12 +79,21 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
                 this.avatar.setAvatar(rotateAvatar(this.avatar.getAvatar(), -1));
                 this.arrowLeft.setAvatar(rotateAvatar(this.avatar.getAvatar(), 1));
                 this.arrowRight.setAvatar(rotateAvatar(this.avatar.getAvatar(), -1));
+
+                this.arrowLeft.setLocked(!this.availableAvatars.includes(this.arrowLeft.getAvatar()));
+                this.arrowRight.setLocked(!this.availableAvatars.includes(this.arrowRight.getAvatar()));
+                this.avatar.setLocked(!this.availableAvatars.includes(this.avatar.getAvatar()));
+
                 moveInProcess = false;
                 this.avatar.setVisible(true);
                 this.onAvatarChange(this.avatar.getAvatar());
             });
             this.tweenAvatars(this.avatar, this.arrowLeft, moving2);
             this.arrowRight.setAvatar(rotateAvatar(this.avatar.getAvatar(), 2));
+
+            this.arrowLeft.setLocked(!this.availableAvatars.includes(this.arrowLeft.getAvatar()));
+            this.arrowRight.setLocked(!this.availableAvatars.includes(this.arrowRight.getAvatar()));
+            this.avatar.setLocked(!this.availableAvatars.includes(this.avatar.getAvatar()));
         });
 
         const spacing = 50;
@@ -92,21 +110,21 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
         const labelColor = new Phaser.GameObjects.Text(scene, bounds.x + bounds.width * 0.5 - 25, bounds.y + 170 + spacing * 1, "COLOR", FONT_STYLE_BODY);
         labelColor.setOrigin(1, 0.5);
 
-        const selectedRect = new Phaser.GameObjects.Rectangle(scene, labelColor.x + 25, labelColor.y, 31, 31, 0xffffff);
-        this.add(selectedRect);
+        this.colorSelectRect = new Phaser.GameObjects.Rectangle(scene, labelColor.x + 25, labelColor.y, 31, 31, 0xffffff);
+        this.add(this.colorSelectRect);
         for (let i = 0; i < PLAYER_COLORS.length; i++) {
-            const posX = labelColor.x + 25 + (i % 5) * 50;
-            const posY = labelColor.y + Math.floor(i / 5) * 50;
+            const { x: posX, y: posY } = this.getColorPosition(i);
             if (i == this.profile.colorIndex) {
-                selectedRect.setPosition(posX, posY);
+                this.colorSelectRect.setPosition(posX, posY);
             }
-            this.createColor(posX, posY, PLAYER_COLORS[i], () => {
-                selectedRect.setPosition(posX, posY);
+            const rect = this.createColor(posX, posY, PLAYER_COLORS[i], () => {
+                this.colorSelectRect.setPosition(posX, posY);
                 [moving, moving2, this.avatar, this.arrowLeft, this.arrowRight].forEach((e) => {
                     e.setBorderColor(i);
-                    this.onColorChange(i);
                 });
+                this.onColorChange(i);
             });
+            this.colorRects.push(rect);
         }
 
         /*
@@ -129,6 +147,12 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
         this.add(this.graphics);
     }
 
+    private getColorPosition(index: number) {
+        const x = this.contentRect.x + this.contentRect.width * 0.5 + (index % 5) * 50;
+        const y = this.contentRect.y + 220 + Math.floor(index / 5) * 50;
+        return { x, y };
+    }
+
     private tweenAvatars(source: AzNopolyAvatar, target: AzNopolyAvatar, moving: AzNopolyAvatar, onComplete?: () => void) {
         moving.setPosition(source.x, source.y);
         moving.setAvatar(source.getAvatar());
@@ -136,6 +160,7 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
         moving.setVisible(true);
         moving.setAlpha(source.alpha);
         moving.setBorderColor(source.getBorderColor());
+        moving.setLocked(!this.availableAvatars.includes(moving.getAvatar()));
 
         return this.scene.tweens.addCounter({
             ease: 'Sine.easeInOut',
@@ -179,18 +204,29 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
     private onAvatarChange(avatar: Avatars) {
         localStorage.setItem("playerAvatar", avatar);
         this.profile.avatar = avatar;
-        this.callback?.(this.profile);
+
+        if (this.callback && this.availableAvatars.includes(avatar)) {
+            this.callback(this.profile);
+        } else {
+            console.log("Avatar not available");
+        }
     }
 
     private onColorChange(color: number) {
         localStorage.setItem("playerColor", color.toString());
         this.profile.colorIndex = color;
-        this.callback?.(this.profile);
+
+        if (this.callback && this.availableColorIndexes.includes(color)) {
+            this.callback(this.profile);
+        } else {
+            console.log("Color not available", this.availableColorIndexes, color);
+        }
     }
 
     public updateProfile(profile: PlayerProfile) {
         this.profile = profile;
 
+        this.inputName.setValue(profile.name);
         this.avatar.setAvatar(profile.avatar);
 
         this.avatar.setBorderColor(profile.colorIndex);
@@ -199,6 +235,21 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
 
         this.arrowLeft.setAvatar(rotateAvatar(profile.avatar, 1));
         this.arrowRight.setAvatar(rotateAvatar(profile.avatar, -1));
+
+        this.colorSelectRect.setPosition(this.getColorPosition(profile.colorIndex).x, this.getColorPosition(profile.colorIndex).y);
+    }
+
+    public updateAvailable(colors: number[], avatars: Avatars[]) {
+        this.availableColorIndexes = colors;
+        this.availableAvatars = avatars;
+
+        this.colorRects.forEach((rect, i) => {
+            rect.setVisible(colors.includes(i));
+        });
+
+        this.arrowLeft.setLocked(!this.availableAvatars.includes(this.arrowLeft.getAvatar()));
+        this.arrowRight.setLocked(!this.availableAvatars.includes(this.arrowRight.getAvatar()));
+        this.avatar.setLocked(!this.availableAvatars.includes(this.avatar.getAvatar()));
     }
 
     private createColor(x: number, y: number, color: number, onClick: () => void) {
@@ -206,6 +257,7 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
         rect.setInteractive();
         rect.on('pointerdown', onClick);
         this.add(rect);
+        return rect;
     }
 
 }

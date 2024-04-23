@@ -1,10 +1,11 @@
+import { PLAYER_COLORS } from "@/style";
 import AzNopolyGame from "../../game";
 import { RoomEvent } from "../../room";
 import { SceneSwitcher } from "../../util/scene-switcher";
 import { PlayerProfile } from "../components/ui/player-info";
 import NetworkSceneController from "./base/base-scene-controller";
 import LobbyScene from "./lobby-scene";
-
+import { Avatars } from "../components/ui/avatar";
 
 export default class LobbySceneController extends NetworkSceneController {
 
@@ -16,7 +17,8 @@ export default class LobbySceneController extends NetworkSceneController {
         super(scene, aznopoly);
         SceneSwitcher.listen(scene, aznopoly)
 
-        this.registerSyncedMethod(this.updatePlayerProfile, false);
+        this.registerSyncedMethod(this.sendProfileUpdateIntent, false);
+        this.registerSyncedMethod(this.updateProfile, true);
     }
 
     onSceneCreate(): void {
@@ -24,20 +26,55 @@ export default class LobbySceneController extends NetworkSceneController {
         this.aznopoly.room.addEventListener(RoomEvent.LEAVE, this.onRoomUpdated.bind(this));
         this.aznopoly.room.addEventListener(RoomEvent.UPDATE, this.onRoomUpdated.bind(this));
         
-        this.syncProxy.updatePlayerProfile(this.aznopoly.getProfile(this.aznopoly.uuid));
+        this.syncProxy.sendProfileUpdateIntent(this.aznopoly.getProfile(this.aznopoly.uuid));
         this.scene.setNumConnectedPlayers(this.aznopoly.connectedUuids.length);
     }
 
-    public updatePlayerProfile(profile: PlayerProfile) {
+    public sendProfileUpdateIntent(profile: PlayerProfile) {
+        if (!this.aznopoly.isHost) {
+            return;
+        }
+        
         const sender = arguments[arguments.length - 1];
 
-        if (this.unknownUsers.includes(sender)) {
-            this.unknownUsers = this.unknownUsers.filter(e => e !== sender);
-            this.syncProxy.updatePlayerProfile(this.aznopoly.getProfile(this.aznopoly.uuid));
+        // check wether profile is valid
+        this.validateProfile(sender, profile);
+
+        // send profile to all players
+        this.syncProxy.updateProfile(sender, profile);
+    }
+
+    private updateProfile(uuid: string, profile: PlayerProfile) {
+        this.aznopoly.setProfile(uuid, profile);
+
+        if (this.unknownUsers.includes(uuid)) {
+            this.unknownUsers = this.unknownUsers.filter(e => e !== uuid);
+            this.syncProxy.sendProfileUpdateIntent(this.aznopoly.getProfile(this.aznopoly.uuid));
+        }
+        this.updatePlayerList();
+    }
+
+    private validateProfile(uuid: string, profile: PlayerProfile) {
+        console.log("Validating profile", uuid, profile)
+        const otherPlayers = this.aznopoly.connectedUuids.filter(e => e !== uuid);
+
+        const usedColors = otherPlayers.map(e => this.aznopoly.getProfile(e).colorIndex);
+        const usedAvatars = otherPlayers.map(e => this.aznopoly.getProfile(e).avatar);
+        const usedNames = otherPlayers.map(e => this.aznopoly.getProfile(e).name);
+        
+        if (usedColors.includes(profile.colorIndex)) {
+            const availableColors = PLAYER_COLORS.map((_, i) => i).filter(e => !usedColors.includes(e));
+            profile.colorIndex = availableColors[Math.floor(Math.random() * availableColors.length)];
         }
 
-        this.aznopoly.setProfile(sender, profile);
-        this.updatePlayerList();
+        if (usedAvatars.includes(profile.avatar)) {
+            const availableAvatars = Object.values(Avatars).filter(e => !usedAvatars.includes(e));
+            profile.avatar = availableAvatars[Math.floor(Math.random() * availableAvatars.length)];
+        }
+
+        if (usedNames.includes(profile.name)) {
+            profile.name = profile.name + " 2";
+        }
     }
 
     private onRoomJoined(packet: CustomEvent<string>) {

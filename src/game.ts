@@ -42,6 +42,10 @@ export default class AzNopolyGame {
         }
     }
 
+    public hasProfile(uuid: string): boolean {
+        return this.profiles[uuid] !== undefined;
+    }
+
     public getProfile(uuid: string): PlayerProfile {
         if (this.profiles[uuid]) {
             return this.profiles[uuid];
