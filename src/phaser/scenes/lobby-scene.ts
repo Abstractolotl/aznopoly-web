@@ -38,6 +38,10 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
         this.initButton();
     }
 
+    public setNumConnectedPlayers(num: number) {
+        this.playerList.setHeadline(`CONNECTED PLAYERS  (${num} / 4)`);
+    }
+
     private onProfileChange(profile: PlayerProfile) {
         this.aznopoly.setProfile(this.aznopoly.uuid, profile);
         this.controller.syncProxy.updatePlayerProfile(profile);

@@ -51,7 +51,6 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
         this.bgm.play();
         this.scene.scene.events.on(Phaser.Scenes.Events.WAKE, this.startMusic, this);
 
-
         this.roundPanel = new RoundPanel(this, SETTINGS.DISPLAY_WIDTH * 0.5, 25);
         this.playerList = new AzNopolyList(this, SETTINGS.DISPLAY_WIDTH - AzNopolyPlayerInfo.WIDTH - 25, SETTINGS.DISPLAY_HEIGHT * 0.5, "VERT", 20);
         this.turnMenu = new TurnMenu(this, SETTINGS.DISPLAY_WIDTH / 2, SETTINGS.DISPLAY_HEIGHT * 0.75);
@@ -115,10 +114,10 @@ export default class BoardScene extends BaseScene<BoardSceneController> {
     public async showBoardIntro() {
         await this.board3D.doIntro();
         if (this.aznopoly.isHost) {
-            await this.controller.onIntroOver();
-            this.roundPanel.setVisible(true);
-            this.playerList.setVisible(true);
+            this.controller.onIntroOver();
         }
+        this.roundPanel.setVisible(true);
+        this.playerList.setVisible(true);
     }
 
     private addPlayers(infos: (PlayerInfo & { uuid: string })[]) {

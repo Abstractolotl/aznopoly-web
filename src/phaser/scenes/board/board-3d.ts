@@ -4,7 +4,7 @@ import Dice from '@/phaser/components/ui/board/dice';
 import { PlayerProfile } from '@/phaser/components/ui/player-info';
 import { SETTINGS } from '@/settings';
 import { PLAYER_COLORS, toHex } from '@/style';
-import { TileOrientation, TileType } from '@/types/board';
+import { TileType } from '@/types/board';
 import * as THREE from 'three';
 import { initDecoration, unlitMaterial } from './fauna';
 import CameraManager from './camera-manager';
@@ -15,8 +15,8 @@ const TILE_HEIGHT = 6;
 const geometryTileSide = new THREE.BoxGeometry(TILE_WIDTH, 0.25, TILE_HEIGHT);
 // Dimensions of PNG: 612 x 612
 const geometryTileCorner = new THREE.BoxGeometry(TILE_HEIGHT, 0.25, TILE_HEIGHT);
-const geometryPlayer = new THREE.CylinderGeometry(0.5, 0.5, 0.25);
-const geometryPlayerAvatar = new THREE.BoxGeometry(TILE_WIDTH - 0.5, 1.5, 0.25);
+const geometryPlayer = new THREE.CylinderGeometry(0.45, 0.6, 0.2);
+const geometryPlayerAvatar = new THREE.BoxGeometry(TILE_WIDTH - 0.5, 0.25, 1.5);
 
 const textureLoader = new THREE.TextureLoader();
 const texturePropCoorp = textureLoader.load('assets/board/tile_prop_coorp.png');
@@ -63,7 +63,7 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         this.cameraManager = new CameraManager(scene.tweens, {
             getTilePosition: (tileIndex: number) => this.tileMeshes[tileIndex].position
         });
-        
+
         this.group = new THREE.Group();
         this.diceMesh = new Dice();
 
@@ -74,7 +74,7 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
     }
 
     private initGround() {
-        const groundGeometry = new THREE.BoxGeometry(100, 100, 0.1);
+        const groundGeometry = new THREE.PlaneGeometry(100, 100, 1);
         const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x106d35, side: THREE.DoubleSide, reflectivity: 0 });
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = Math.PI * 0.5;
@@ -109,16 +109,24 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
                 onUpdate: (tween) => {
                     player.mesh.position.y = tween.getValue();
                 },
-            }); 
+            });
         });
         await sleep(1500);
     }
 
     public highlightTiles(tiles: number[]) {
         tiles.forEach(tileIndex => {
-            this.tileMeshes[tileIndex].position.y = 0.5;
+            //this.tileMeshes[tileIndex].position.y = 0.5;
             this.tileMeshes[tileIndex].scale.set(1.15, 1.15, 1.15);
-            (this.tileMeshes[tileIndex].material as any).uniforms.intensity = { value: 0.35 };
+            this.scene.tweens.addCounter({
+                from: 0,
+                to: Math.PI * 3,
+                duration: 1000,
+                onUpdate: (tween) => {
+                    const value = Math.sin(tween.getValue() - Math.PI * 0.5) + 1;
+                    (this.tileMeshes[tileIndex].material as any).uniforms.intensity = { value: value * 0.25 };
+                }
+            });
         });
     }
 
@@ -162,28 +170,28 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
                 tiles[index],
                 offsetX - boardSize * 0.5 + tileHeight + tileWidth * 0.5 + i * tileWidth,
                 offsetY - boardSize * 0.5 + tileHeight * 0.5,
-                TileOrientation.DOWN
+                index
             );
             index = (SETTINGS.BOARD_SIDE_LENGTH + 1) * 1 + 1 + i;
             tileMeshes[index] = this.generateTileMesh(
                 tiles[index],
                 offsetX + boardSize * 0.5 - tileHeight * 0.5,
                 offsetY - boardSize * 0.5 + tileHeight + tileWidth * 0.5 + i * tileWidth,
-                TileOrientation.LEFT
+                index
             );
             index = (SETTINGS.BOARD_SIDE_LENGTH + 1) * 2 + 1 + i;
             tileMeshes[index] = this.generateTileMesh(
                 tiles[index],
                 offsetX + boardSize * 0.5 - tileHeight - tileWidth * 0.5 - i * tileWidth,
                 offsetY + boardSize * 0.5 - tileHeight * 0.5,
-                TileOrientation.UP
+                index
             );
             index = (SETTINGS.BOARD_SIDE_LENGTH + 1) * 3 + 1 + i;
             tileMeshes[index] = this.generateTileMesh(
                 tiles[index],
                 offsetX - boardSize * 0.5 + tileHeight * 0.5,
                 offsetY + boardSize * 0.5 - tileHeight - tileWidth * 0.5 - i * tileWidth,
-                TileOrientation.RIGHT
+                index
             );
         }
 
@@ -192,54 +200,55 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
             tiles[index],
             offsetX - boardSize * 0.5 + tileHeight * 0.5,
             offsetY - boardSize * 0.5 + tileHeight * 0.5,
-            TileOrientation.CORNER
+            index
         );
         index = (SETTINGS.BOARD_SIDE_LENGTH + 1) * 1;
         tileMeshes[index] = this.generateTileMesh(
             tiles[index],
             offsetX + boardSize * 0.5 - tileHeight * 0.5,
             offsetY - boardSize * 0.5 + tileHeight * 0.5,
-            TileOrientation.CORNER
+            index
         );
         index = (SETTINGS.BOARD_SIDE_LENGTH + 1) * 2;
         tileMeshes[index] = this.generateTileMesh(
             tiles[index],
             offsetX + boardSize * 0.5 - tileHeight * 0.5,
             offsetY + boardSize * 0.5 - tileHeight * 0.5,
-            TileOrientation.CORNER
+            index
         );
         index = (SETTINGS.BOARD_SIDE_LENGTH + 1) * 3;
         tileMeshes[index] = this.generateTileMesh(
             tiles[index],
             offsetX - boardSize * 0.5 + tileHeight * 0.5,
             offsetY + boardSize * 0.5 - tileHeight * 0.5,
-            TileOrientation.CORNER
+            index
         );
 
         return tileMeshes;
     }
 
-    private getRotationForOrientation(orientation: TileOrientation) {
-        switch (orientation) {
-            case TileOrientation.CORNER: return Math.PI;
-            case TileOrientation.DOWN: return Math.PI;
-            case TileOrientation.RIGHT: return Math.PI * 1.5;
-            case TileOrientation.UP: return 0;
-            case TileOrientation.LEFT: return Math.PI * 0.5;
+    private getRotationForTileIndex(tileIndex: number) {
+        const cornerIndex = (i: number) => (SETTINGS.BOARD_SIDE_LENGTH + 1) * i;
+        switch (true) {
+            case (tileIndex > cornerIndex(0) && tileIndex < cornerIndex(1)): return Math.PI * 1.0;
+            case (tileIndex > cornerIndex(1) && tileIndex < cornerIndex(2)): return Math.PI * 0.5;
+            case (tileIndex > cornerIndex(2) && tileIndex < cornerIndex(3)): return Math.PI * 0.0;
+            case (tileIndex > cornerIndex(3) && tileIndex < cornerIndex(4)): return Math.PI * 1.5;
+            default: return Math.PI;
         }
-        throw new Error("UNKNOWN TILE ORIENTATION " + orientation);
     }
 
-    private generateTileMesh(tile: TileType, x: number, y: number, orientation: TileOrientation): THREE.Mesh {
+    private generateTileMesh(tile: TileType, x: number, y: number, tileBoardIndex: number): THREE.Mesh {
         const geometry = TileType.isCorner(tile) ? geometryTileCorner : geometryTileSide;
         const material = fieldMaterials[tile] || materialTile;
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(x, 0, y);
-        mesh.rotation.y = this.getRotationForOrientation(orientation);
+        //mesh.rotation.z = Math.PI;
+        mesh.rotation.y = this.getRotationForTileIndex(tileBoardIndex);
         return mesh;
     }
 
-    addPlayer(uuid: string, profile: PlayerProfile, startPos?: number | undefined) {
+    addPlayer(uuid: string, profile: PlayerProfile) {
         const material = new THREE.MeshBasicMaterial({ color: 0xffffff, map: playerTextures[profile.avatar] });
         const player = new THREE.Mesh(geometryPlayer, [new THREE.MeshBasicMaterial({ color: PLAYER_COLORS[profile.colorIndex] }), material]);
         const tile = this.tileMeshes[0];
@@ -271,6 +280,7 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
         canvas.height = 100;
         const context = canvas.getContext('2d')!;
         const size = 80;
+
         context.fillStyle = "#ccc3d8";
         context.fillRect(0, 0, canvas.width, canvas.height);
         context.drawImage(playerTextures[ownerProfile.avatar].image, canvas.width * 0.5 - size * 0.5, canvas.height * 0.5 - size * 0.5, size, size);
@@ -284,12 +294,15 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
 
         const texture = new THREE.CanvasTexture(canvas);
 
-
         const tile = this.tileMeshes[tileIndex];
         const mesh = new THREE.Mesh(geometryPlayerAvatar, unlitMaterial(texture));
-        mesh.position.set(tile.position.x, tile.position.y + 0.001, tile.position.z + TILE_HEIGHT * 0.5 -  0.75 - .15);
-        mesh.rotation.x = Math.PI * -0.5;
-        mesh.rotation.z = Math.PI;
+        const offset = new THREE.Vector3(0, 0.001, -(TILE_HEIGHT * 0.5 - 0.75 - 0.15))
+        console.log(offset);
+        offset.applyEuler(new THREE.Euler(0, this.getRotationForTileIndex(tileIndex), 0))
+        console.log(offset);
+        mesh.position.add(tile.position).add(offset);
+        //mesh.rotation.z = Math.PI;
+        mesh.rotation.y = this.getRotationForTileIndex(tileIndex);
         this.threeScene.add(mesh);
     }
 
@@ -302,7 +315,7 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
             playerPositions[player.position].push(uuid);
         });
 
-        const offset = 0.6;
+        const offset = 0.65;
         const collisionNumOffsetsMap = [
             [{ x: 0, y: 0 }],
             [{ x: offset, y: 0 }, { x: -offset, y: 0 }],
@@ -321,7 +334,7 @@ export default class Board3D extends Phaser.GameObjects.Extern implements GameBo
             }
         });
     }
-    
+
     public showDiceForPlayer(uuid: string): void {
         const player = this.players[uuid];
         this.diceMesh.position.set(player.mesh.position.x, player.mesh.position.y + 1, player.mesh.position.z);

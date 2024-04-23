@@ -82,5 +82,9 @@ export default class PlayerList extends AzNopolyPanel {
         });
     }
 
+    public setNumConnectedPlayers(num: number) {
+        this.setHeadline(`CONNECTED PLAYERS (${num} / 4)`);
+    }
+
 
 }

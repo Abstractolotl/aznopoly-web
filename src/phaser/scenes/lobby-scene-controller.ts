@@ -25,6 +25,7 @@ export default class LobbySceneController extends NetworkSceneController {
         this.aznopoly.room.addEventListener(RoomEvent.UPDATE, this.onRoomUpdated.bind(this));
         
         this.syncProxy.updatePlayerProfile(this.aznopoly.getProfile(this.aznopoly.uuid));
+        this.scene.setNumConnectedPlayers(this.aznopoly.connectedUuids.length);
     }
 
     public updatePlayerProfile(profile: PlayerProfile) {
@@ -42,9 +43,11 @@ export default class LobbySceneController extends NetworkSceneController {
     private onRoomJoined(packet: CustomEvent<string>) {
         const uuid = packet.detail;
         this.unknownUsers.push(uuid);
+        this.scene.setNumConnectedPlayers(this.aznopoly.connectedUuids.length);
     }
 
     private onRoomUpdated() {
+        this.scene.setNumConnectedPlayers(this.aznopoly.connectedUuids.length);
         this.updatePlayerList();
     }
 
