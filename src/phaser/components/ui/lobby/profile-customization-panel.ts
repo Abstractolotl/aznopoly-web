@@ -56,26 +56,7 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
 
             this.avatar.setVisible(false);
             this.tweenAvatars(this.arrowLeft, this.avatar, moving, () => {
-                this.avatar.setAvatar(rotateAvatar(this.avatar.getAvatar(), -1));
-                this.arrowLeft.setAvatar(rotateAvatar(this.avatar.getAvatar(), 1));
-                this.arrowRight.setAvatar(rotateAvatar(this.avatar.getAvatar(), -1));
-
                 this.avatar.setAvatar(rotateAvatar(this.avatar.getAvatar(), 1));
-                this.arrowLeft.setAvatar(rotateAvatar(this.avatar.getAvatar(), 1));
-                this.arrowRight.setAvatar(rotateAvatar(this.avatar.getAvatar(), -1));
-                
-                moveInProcess = false;
-                this.avatar.setVisible(true);
-                this.onAvatarChange(this.avatar.getAvatar());
-            });
-            this.tweenAvatars(this.avatar, this.arrowRight, moving2);
-            this.arrowLeft.setAvatar(rotateAvatar(this.avatar.getAvatar(), 2));
-            if (moveInProcess) return;
-            moveInProcess = true;
-
-            this.avatar.setVisible(false);
-            this.tweenAvatars(this.arrowRight, this.avatar, moving, () => {
-                this.avatar.setAvatar(rotateAvatar(this.avatar.getAvatar(), -1));
                 this.arrowLeft.setAvatar(rotateAvatar(this.avatar.getAvatar(), 1));
                 this.arrowRight.setAvatar(rotateAvatar(this.avatar.getAvatar(), -1));
 
@@ -87,12 +68,12 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
                 this.avatar.setVisible(true);
                 this.onAvatarChange(this.avatar.getAvatar());
             });
-            this.tweenAvatars(this.avatar, this.arrowLeft, moving2);
-            this.arrowRight.setAvatar(rotateAvatar(this.avatar.getAvatar(), 2));
+            this.tweenAvatars(this.avatar, this.arrowRight, moving2);
+            this.arrowLeft.setAvatar(rotateAvatar(this.avatar.getAvatar(), 2));
 
-            this.arrowLeft.setLocked(!this.availableAvatars.includes(this.arrowLeft.getAvatar()));
-            this.arrowRight.setLocked(!this.availableAvatars.includes(this.arrowRight.getAvatar()));
-            this.avatar.setLocked(!this.availableAvatars.includes(this.avatar.getAvatar()));
+                this.arrowLeft.setLocked(!this.availableAvatars.includes(this.arrowLeft.getAvatar()));
+                this.arrowRight.setLocked(!this.availableAvatars.includes(this.arrowRight.getAvatar()));
+                this.avatar.setLocked(!this.availableAvatars.includes(this.avatar.getAvatar()));
         });
 
         this.arrowRight = new AzNopolyAvatar(scene, this.avatar.x + 75, this.avatar.y, 75, rotateAvatar(this.avatar.getAvatar(), -1), color);
