@@ -19,7 +19,6 @@ COPY assets dist/assets
 
 FROM nginx:alpine AS release
 # Configure Nginx
-COPY docker/entrypoint.sh /entrypoint.sh
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 RUN rm -rf /usr/share/nginx/html/*
 # Copy the built app to the html directory
@@ -29,4 +28,4 @@ COPY --from=prerelease /app/dist/assets /usr/share/nginx/html/assets
 COPY --from=prerelease /app/package.json /usr/share/nginx/html/
 
 EXPOSE 8080
-CMD [ "sh", "/entrypoint.sh", "&&", "nginx", "-g", "daemon off;" ]
+CMD [ "sh", "-c", "env >> /usr/share/nginx/html/.env && nginx -g 'daemon off;'" ]
