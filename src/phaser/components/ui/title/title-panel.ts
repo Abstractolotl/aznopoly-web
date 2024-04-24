@@ -6,7 +6,7 @@ import AzNopolyInput from "../input-field";
 
 const WIDTH = 650;
 const HEIGHT = 300;
-export default class TitlePanel extends AzNopolyPanel {
+export default class TitlePanel extends Phaser.GameObjects.Container {
 
     static preload(scene: Phaser.Scene) {
         scene.load.image('icon_group', 'assets/icons/icon_group.svg');
@@ -16,61 +16,99 @@ export default class TitlePanel extends AzNopolyPanel {
     private onJoin?: (code: string) => void;
     private onCreate?: () => void;
 
+    private leftPanel!: AzNopolyPanel;
+    private rightPanel!: AzNopolyPanel;
+
     constructor(scene: Phaser.Scene) {
-        super(scene, (SETTINGS.DISPLAY_WIDTH - WIDTH) * 0.5, (SETTINGS.DISPLAY_HEIGHT - HEIGHT) * 0.5, WIDTH, HEIGHT, "LOBBY");
+        super(scene, (SETTINGS.DISPLAY_WIDTH - WIDTH) * 0.5, (SETTINGS.DISPLAY_HEIGHT - HEIGHT) * 0.5 + 75);
+        this.setSize(WIDTH, HEIGHT);
         this.initLeft();
         this.initRight();
     }
 
     public setOnJoin(onJoin: (code: string) => void) {
-        this.onJoin = onJoin;
+        this.onJoin = (code) => {
+            this.outro();
+            onJoin(code);
+        };
     }
 
     public setOnCreate(onCreate: () => void) {
-        this.onCreate = onCreate;
+        this.onCreate = () => {
+            this.outro();
+            onCreate();
+        }
+    }
+
+    private outro() {
+        const leftStartX = this.leftPanel.x;
+        const leftEndX = -this.width * 0.5 - this.x;
+        const rightStartX = this.rightPanel.x;
+        const rightEndX = this.width * 0.5 + this.x + this.width;
+        
+        setTimeout(() => {
+            this.scene.tweens.addCounter({
+                from: 0,
+                to: 1,
+                duration: 350,
+                ease: 'Back.easeIn',
+                onUpdate: (tween) => {
+                    const scale = Math.max(0, -tween.getValue()) * 4;
+
+                    this.leftPanel.setScale(1 - scale, 1 + scale);
+                    this.leftPanel.x = (leftEndX - leftStartX) * tween.getValue() + leftStartX;
+                    this.rightPanel.setScale(1 - scale, 1 + scale);
+                    this.rightPanel.x = (rightEndX - rightStartX) * tween.getValue() + rightStartX;
+                }
+            })
+        }, 0)
     }
 
     private initLeft() {
-        const bounds = new Phaser.Geom.Rectangle(this.contentRect.x, this.contentRect.y, this.contentRect.width * 0.5, this.contentRect.height);
+        const bounds = new Phaser.Geom.Rectangle(-25, 0, this.width * 0.5, this.height);
+        this.leftPanel = new AzNopolyPanel(this.scene, bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.5, bounds.width, bounds.height, undefined, new Phaser.Math.Vector2(bounds.width * 0.5, bounds.height * 0.5));
+        this.add(this.leftPanel);
 
         const headline = new Phaser.GameObjects.Text(this.scene, bounds.x, bounds.y, "Create your own\nLobby", FONT_STYLE_EYECATCHER);
-        headline.setPosition(bounds.x + bounds.width * 0.5 - headline.width * 0.5, bounds.y + 20);
-        this.add(headline);
+        headline.setPosition(-headline.width * 0.5, 20 - bounds.height * 0.5);
+        this.leftPanel.add(headline);
 
-        const icon = new Phaser.GameObjects.Image(this.scene, bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.5, 'icon_crown');
+        const icon = new Phaser.GameObjects.Image(this.scene, 0, 0, 'icon_crown');
         icon.setOrigin(0.5, 0.5);
-        this.add(icon);
+        this.leftPanel.add(icon);
 
-        const button = new AzNopolyButton(this.scene, "CREATE", bounds.x + bounds.width * 0.5, bounds.y + bounds.height - 50);
+        const button = new AzNopolyButton(this.scene, "CREATE",  0, bounds.height * 0.5 - 50);
         button.setOnClick(() => this.onCreate?.());
-        this.add(button);
+        this.leftPanel.add(button);
     }
 
 
 
     private initRight() {
-        const bounds = new Phaser.Geom.Rectangle(this.contentRect.x + this.contentRect.width * 0.5, this.contentRect.y, this.contentRect.width * 0.5, this.contentRect.height);
+        const bounds = new Phaser.Geom.Rectangle( this.width * 0.5 + 25, 0, this.width * 0.5, this.height);
+        this.rightPanel = new AzNopolyPanel(this.scene, bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.5, bounds.width, bounds.height, undefined, new Phaser.Math.Vector2(bounds.width * 0.5, bounds.height * 0.5));
+        this.add(this.rightPanel);
 
         const headline = new Phaser.GameObjects.Text(this.scene, bounds.x, bounds.y, "Join your friends!", FONT_STYLE_EYECATCHER);
-        headline.setPosition(bounds.x + bounds.width * 0.5 - headline.width * 0.5, bounds.y + 35);
-        this.add(headline);
+        headline.setPosition(-headline.width * 0.5, 35 - bounds.height * 0.5);
+        this.rightPanel.add(headline);
 
-        const icon = new Phaser.GameObjects.Image(this.scene, bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.5, 'icon_group');
+        const icon = new Phaser.GameObjects.Image(this.scene, 0, 0, 'icon_group');
         icon.setOrigin(0.5, 0.5);
-        this.add(icon);
+        this.rightPanel.add(icon);
 
 
-        const input = new AzNopolyInput(this.scene, bounds.x + 50, bounds.y + bounds.height - 50, bounds.width * 0.5, 40, "code");
+        const input = new AzNopolyInput(this.scene, 50 - bounds.width * 0.5, bounds.height * 0.5 - 50, bounds.width * 0.5, 40, "code");
         input.setPosition(input.x, input.y - input.height * 0.5);
-        this.add(input);
+        this.rightPanel.add(input);
 
-        const button = new AzNopolyButton(this.scene, "JOIN", bounds.x + bounds.width * 0.75, bounds.y + bounds.height - 50);
+        const button = new AzNopolyButton(this.scene, "JOIN", bounds.width * 0.25, bounds.height * 0.5 - 50);
         button.setOnClick(() => {
             if (input.getValue().length === 6) {
                 this.onJoin?.(input.getValue());
             }
         });
-        this.add(button);
+        this.rightPanel.add(button);
     }
 
 }

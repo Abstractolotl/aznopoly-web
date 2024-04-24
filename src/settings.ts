@@ -17,5 +17,5 @@ export const SETTINGS = {
 
     THREE_HAS_RENDERED: false,
 
-    SKIP_INTRO: true,
+    SKIP_INTRO: false,
 }

@@ -39,6 +39,22 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
         this.add.existing(this.playerList);
         this.add.existing(this.profilePanel);
         this.initButton();
+
+        const startY = -this.playerList.height;
+        const endY = this.playerList.y;
+        this.tweens.addCounter({
+            from: 0,
+            to: 1,
+            duration: 500,
+            ease: 'Back.easeOut',
+            onUpdate: (tween) => {
+                this.playerList.y = startY + (endY - startY) * tween.getValue();
+                this.profilePanel.y = startY + (endY - startY) * tween.getValue();
+            }
+        })
+
+        this.playerList.y = startY;
+        this.profilePanel.y = startY;
     }
 
     public setNumConnectedPlayers(num: number) {
@@ -50,11 +66,31 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
         this.controller.syncProxy.sendProfileUpdateIntent(profile);
     }
 
+    private outtro() {
+        const startY = this.playerList.y;
+        const endY = -this.playerList.height;
+        this.tweens.addCounter({
+            from: 0,
+            to: 1,
+            duration: 500,
+            ease: 'Back.easeIn',
+            onUpdate: (tween) => {
+                this.playerList.y = startY + (endY - startY) * tween.getValue();
+                this.profilePanel.y = startY + (endY - startY) * tween.getValue();
+            }
+        })
+    }
+
     private initButton() {
         if (!this.aznopoly.isHost) return;
 
         const startButton = new AzNopolyButton(this, "Start Game", SETTINGS.DISPLAY_WIDTH / 2 + 10, SETTINGS.DISPLAY_HEIGHT * 0.5 + 150, 250);
-        startButton.setOnClick(this.controller.onStartClick.bind(this.controller));
+        startButton.setOnClick(() => {
+            this.outtro();
+            setTimeout(() => {
+                this.controller.onStartClick();
+            }, 600)
+        });
         this.add.existing(startButton);
 
         const leaveButton = new AzNopolyButton(this, "Leave", SETTINGS.DISPLAY_WIDTH / 2 - 250 - 10, SETTINGS.DISPLAY_HEIGHT * 0.5 + 150, 250);

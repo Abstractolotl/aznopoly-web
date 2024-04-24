@@ -16,7 +16,7 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
         AzNopolyInput.preload(this);
         TitlePanel.preload(this);
 
-        this.load.image('abstracto', 'assets/background_clouds.png');
+        this.load.image('abstracto', 'assets/background_aquatic.png');
         this.load.image('music-on', 'assets/music_on.png');
         this.load.image('music-off', 'assets/music_off.png');
         this.load.html('input_mask', 'assets/title_screen.html');
@@ -30,8 +30,8 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
     private bgm!: Audio;
     private audioStart!: Audio;
     private btnMusic!: Phaser.GameObjects.Image;
-
-    private lobbyInputField!: AzNopolyInput;
+    
+    private background!: Phaser.GameObjects.Image;
     
     constructor(aznopoly: AzNopolyGame) {
         super(aznopoly);
@@ -44,9 +44,9 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
     create() {
         const copyrightText = "© 2024 AzNopoly - (build " + ((pjson || {}) as any).buildNumber + ")";
 
-        const background = this.add.image(0, 0, 'abstracto');
-        background.setScale(SETTINGS.DISPLAY_WIDTH / background.width);
-        background.setOrigin(0, 0);
+        this.background = this.add.image(SETTINGS.DISPLAY_WIDTH * 0.5, SETTINGS.DISPLAY_HEIGHT * 0.5, 'abstracto');
+        this.background.setScale(SETTINGS.DISPLAY_WIDTH / this.background.width);
+        this.background.setOrigin(0.5, 0.5);
 
         this.bgm = this.game.sound.add('title-bgm', { loop: true });
         this.bgm.volume = 0.25;
@@ -56,6 +56,10 @@ export default class TitleScene extends BaseScene<TitleSceneController> {
 
         this.initButtons();
         this.add.text(SETTINGS.DISPLAY_WIDTH/2,SETTINGS.DISPLAY_HEIGHT - 20, copyrightText, FONT_STYLE_COPYRIGHT_FLAVOUR_TEXT).setOrigin(0.5, 0.5)
+     }
+
+     update(time: number, delta: number): void {
+         this.background.setScale(Math.sin(time / 2000) * 0.05 + 1.05);
      }
 
     private initButtons() {

@@ -12,7 +12,7 @@ export const COLOR_BUTTON_PRIMARY = COLORS_WHITE;
 
 export const FRAME_PADDING = 14;
 export const FRAME_BORDER_RADIUS = 5;
-export const FRAME_BORDER_WIDTH = 0;
+export const FRAME_BORDER_WIDTH = 6;
 
 export const toHex = (color: number) => {
     return "#" + color.toString(16);

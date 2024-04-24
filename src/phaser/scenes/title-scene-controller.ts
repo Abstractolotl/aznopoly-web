@@ -44,13 +44,13 @@ export default class TitleSceneController  {
             this.scene.stopMusic();
             this.aznopoly.init(room);
             this.aznopoly.room.addEventListener(RoomEvent.READY, () => {
-                this.scene.cameras.main.fadeOut(100, 0, 0, 0, (_: any, progress: number) => {
+                this.scene.cameras.main.fadeOut(400, 0, 0, 0, (_: any, progress: number) => {
                     if (progress === 1) {
                         this.scene.scene.start('lobby');
                     }
                 });
             }, { once: true });
-        }, 500)
+        }, 200)
     }
 
     private generateRoomName(length: number = 6) : string {
