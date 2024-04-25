@@ -1,3 +1,4 @@
+import { FRAME_BORDER_WIDTH } from "@/style";
 
 
 const PADDING_HORIZONTAL = 15;
@@ -22,8 +23,11 @@ export default class AzNopolyInput extends Phaser.GameObjects.Container {
         if (type === "code") {
             this.graphics.fillStyle(0xffffff, 0.25);
             for(let i = 0; i < 6; i++) {
-                this.graphics.fillRect(0 + i * 20 -2, height * 0.2, 17, height * 0.60);
+                this.graphics.fillRect(i * 20 - 2, height * 0.2, 17, height * 0.60);
             }
+            const borderWith = 4;
+            this.graphics.lineStyle(borderWith, 0xffffff, 0.25);
+            this.graphics.strokeRoundedRect(-7 - borderWith, 0, 20 * 6 + 11 + borderWith, height, 10);
     
             this.dom.createFromCache('input_mask');
             this.dom.node.id = "input-field-" + Math.random().toString(36).substring(7);

@@ -49,11 +49,14 @@ window.onload = () => {
             },
             scale: {
                 mode: Phaser.Scale.FIT,
-                autoCenter: Phaser.Scale.CENTER_BOTH
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+                autoRound: true
             },
             dom: {
                 createContainer: true
             },
+            antialias: true,
+            roundPixels: false,
             canvas: canvas,
             context: context as any,
         });

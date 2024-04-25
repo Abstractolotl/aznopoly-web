@@ -32,8 +32,8 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
         this.add.text(0, 0, `Lobby ( ${this.aznopoly.room.id} )`, FONT_STYLE_PANEL_HEADLINE);
 
         const totalWidth = PlayerList.WIDTH + ProfileCustomizationPanel.WIDTH + 20;
-        this.playerList = new PlayerList(this, this.aznopoly.isHost, SETTINGS.DISPLAY_WIDTH * 0.5 - totalWidth * 0.5 + PlayerList.WIDTH * 0.5, SETTINGS.DISPLAY_HEIGHT * 0.5 - 100);
-        this.profilePanel = new ProfileCustomizationPanel(this, SETTINGS.DISPLAY_WIDTH * 0.5 + totalWidth * 0.5 - ProfileCustomizationPanel.WIDTH * 0.5, SETTINGS.DISPLAY_HEIGHT * 0.5 - 100, this.aznopoly.getProfile(this.aznopoly.uuid));
+        this.playerList = new PlayerList(this, this.aznopoly.isHost, SETTINGS.DISPLAY_WIDTH * 0.5 - totalWidth * 0.5 + PlayerList.WIDTH * 0.5, SETTINGS.DISPLAY_HEIGHT * 0.5);
+        this.profilePanel = new ProfileCustomizationPanel(this, SETTINGS.DISPLAY_WIDTH * 0.5 + totalWidth * 0.5 - ProfileCustomizationPanel.WIDTH * 0.5, SETTINGS.DISPLAY_HEIGHT * 0.5, this.aznopoly.getProfile(this.aznopoly.uuid));
         this.profilePanel.setProfileChangeCallback(this.onProfileChange.bind(this));
 
         this.add.existing(this.playerList);
@@ -84,7 +84,7 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
     private initButton() {
         if (!this.aznopoly.isHost) return;
 
-        const startButton = new AzNopolyButton(this, "Start Game", SETTINGS.DISPLAY_WIDTH / 2 + 10, SETTINGS.DISPLAY_HEIGHT * 0.5 + 150, 250);
+        const startButton = new AzNopolyButton(this, "Start Game", SETTINGS.DISPLAY_WIDTH / 2 - 125, SETTINGS.DISPLAY_HEIGHT * 0.5 + 250, 250);
         startButton.setOnClick(() => {
             this.outtro();
             setTimeout(() => {
@@ -93,9 +93,9 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
         });
         this.add.existing(startButton);
 
-        const leaveButton = new AzNopolyButton(this, "Leave", SETTINGS.DISPLAY_WIDTH / 2 - 250 - 10, SETTINGS.DISPLAY_HEIGHT * 0.5 + 150, 250);
-        leaveButton.setOnClick(this.controller.onLeaveLobbyClick.bind(this.controller));
-        this.add.existing(leaveButton);
+        // const leaveButton = new AzNopolyButton(this, "Leave", SETTINGS.DISPLAY_WIDTH / 2 - 250 - 10, SETTINGS.DISPLAY_HEIGHT * 0.5 + 250, 250);
+        // leaveButton.setOnClick(this.controller.onLeaveLobbyClick.bind(this.controller));
+        // this.add.existing(leaveButton);
     }
 
     public updatePlayerList(player: PlayerProfile[]) {

@@ -55,7 +55,7 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
             moveInProcess = true;
 
             this.avatar.setVisible(false);
-            this.tweenAvatars(this.arrowLeft, this.avatar, moving, () => {
+            this.tweenAvatars(this.arrowLeft, this.avatar, moving, "Quad.easeOut", () => {
                 this.avatar.setAvatar(rotateAvatar(this.avatar.getAvatar(), 1));
                 this.arrowLeft.setAvatar(rotateAvatar(this.avatar.getAvatar(), 1));
                 this.arrowRight.setAvatar(rotateAvatar(this.avatar.getAvatar(), -1));
@@ -68,7 +68,7 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
                 this.avatar.setVisible(true);
                 this.onAvatarChange(this.avatar.getAvatar());
             });
-            this.tweenAvatars(this.avatar, this.arrowRight, moving2);
+            this.tweenAvatars(this.avatar, this.arrowRight, moving2, "Quad.easeOut");
             this.arrowLeft.setAvatar(rotateAvatar(this.avatar.getAvatar(), 2));
 
                 this.arrowLeft.setLocked(!this.availableAvatars.includes(this.arrowLeft.getAvatar()));
@@ -84,7 +84,7 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
             moveInProcess = true;
 
             this.avatar.setVisible(false);
-            this.tweenAvatars(this.arrowRight, this.avatar, moving, () => {
+            this.tweenAvatars(this.arrowRight, this.avatar, moving, "Quad.easeOut", () => {
                 this.avatar.setAvatar(rotateAvatar(this.avatar.getAvatar(), -1));
                 this.arrowLeft.setAvatar(rotateAvatar(this.avatar.getAvatar(), 1));
                 this.arrowRight.setAvatar(rotateAvatar(this.avatar.getAvatar(), -1));
@@ -97,7 +97,7 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
                 this.avatar.setVisible(true);
                 this.onAvatarChange(this.avatar.getAvatar());
             });
-            this.tweenAvatars(this.avatar, this.arrowLeft, moving2);
+            this.tweenAvatars(this.avatar, this.arrowLeft, moving2, "Quad.easeOut");
             this.arrowRight.setAvatar(rotateAvatar(this.avatar.getAvatar(), 2));
 
             this.arrowLeft.setLocked(!this.availableAvatars.includes(this.arrowLeft.getAvatar()));
@@ -162,7 +162,7 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
         return { x, y };
     }
 
-    private tweenAvatars(source: AzNopolyAvatar, target: AzNopolyAvatar, moving: AzNopolyAvatar, onComplete?: () => void) {
+    private tweenAvatars(source: AzNopolyAvatar, target: AzNopolyAvatar, moving: AzNopolyAvatar, ease: string, onComplete?: () => void) {
         moving.setPosition(source.x, source.y);
         moving.setAvatar(source.getAvatar());
         moving.setAvatarSize(source.getAvatarSize());
@@ -172,8 +172,8 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
         moving.setLocked(!this.availableAvatars.includes(moving.getAvatar()));
 
         return this.scene.tweens.addCounter({
-            ease: 'Sine.easeInOut',
-            duration: 150,
+            ease,
+            duration: 200,
             onUpdate: (tween) => {
                 const startX = source.x;
                 const endX = target.x;

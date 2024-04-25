@@ -17,7 +17,9 @@ export default class TurnMenu extends Phaser.GameObjects.Container {
         super(scene, x - WIDTH * 0.5, y - HEIGHT * 0.5);
         this.setSize(WIDTH, HEIGHT);
 
-        this.panel = new AzNopolyPanel(scene, 0, 0, WIDTH, HEIGHT, "Your Turn");
+        this.panel = new AzNopolyPanel(scene, 0, 0, WIDTH, HEIGHT, {
+            headline: "Your Turn",
+        });
         this.rollButton = new AzNopolyButton(scene, "Roll Dice", WIDTH * 0.5, this.panel.contentRect.y + this.panel.contentRect.height * 0.5);
         this.panelText = new Phaser.GameObjects.Text(scene, WIDTH * 0.5, this.panel.contentRect.y + this.panel.contentRect.height * 0.5, "Your Turn", FONT_STYLE_BODY);
         this.panelText.setOrigin(0.5);

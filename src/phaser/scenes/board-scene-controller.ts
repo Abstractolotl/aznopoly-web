@@ -255,7 +255,7 @@ export default class BoardSceneController extends SyncedSceneController {
 
     /* Host Functions */
     public async executeRoll(uuid: string) {
-        const roll = 1;
+        const roll = Math.floor(Math.random() * 6) + 1;
         const player = this.players.find(p => p.uuid == uuid);
         if (!player) {
             console.error("Player not found");

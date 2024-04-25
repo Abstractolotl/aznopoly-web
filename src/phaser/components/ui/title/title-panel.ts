@@ -24,6 +24,8 @@ export default class TitlePanel extends Phaser.GameObjects.Container {
         this.setSize(WIDTH, HEIGHT);
         this.initLeft();
         this.initRight();
+
+        this.leftPanel.setForceHover(true);
     }
 
     public setOnJoin(onJoin: (code: string) => void) {
@@ -66,7 +68,10 @@ export default class TitlePanel extends Phaser.GameObjects.Container {
 
     private initLeft() {
         const bounds = new Phaser.Geom.Rectangle(-25, 0, this.width * 0.5, this.height);
-        this.leftPanel = new AzNopolyPanel(this.scene, bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.5, bounds.width, bounds.height, undefined, new Phaser.Math.Vector2(bounds.width * 0.5, bounds.height * 0.5));
+        this.leftPanel = new AzNopolyPanel(this.scene, bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.5, bounds.width, bounds.height, {
+            alive: true,
+            origin: new Phaser.Math.Vector2(bounds.width * 0.5, bounds.height * 0.5),
+        });
         this.add(this.leftPanel);
 
         const headline = new Phaser.GameObjects.Text(this.scene, bounds.x, bounds.y, "Create your own\nLobby", FONT_STYLE_EYECATCHER);
@@ -82,11 +87,18 @@ export default class TitlePanel extends Phaser.GameObjects.Container {
         this.leftPanel.add(button);
     }
 
+    preUpdate(time: number, delta: number) {
+        this.leftPanel.preUpdate(time, delta);
+        this.rightPanel.preUpdate(time, delta);
+    }
 
 
     private initRight() {
         const bounds = new Phaser.Geom.Rectangle( this.width * 0.5 + 25, 0, this.width * 0.5, this.height);
-        this.rightPanel = new AzNopolyPanel(this.scene, bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.5, bounds.width, bounds.height, undefined, new Phaser.Math.Vector2(bounds.width * 0.5, bounds.height * 0.5));
+        this.rightPanel = new AzNopolyPanel(this.scene, bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.5, bounds.width, bounds.height, {
+            alive: true,
+            origin: new Phaser.Math.Vector2(bounds.width * 0.5, bounds.height * 0.5),
+        });
         this.add(this.rightPanel);
 
         const headline = new Phaser.GameObjects.Text(this.scene, bounds.x, bounds.y, "Join your friends!", FONT_STYLE_EYECATCHER);

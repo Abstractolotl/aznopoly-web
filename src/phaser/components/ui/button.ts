@@ -1,4 +1,4 @@
-import { COLOR_BUTTON_PRIMARY, FONT_STYLE_BUTTON, FONT_STYLE_BUTTON_HOVER } from "@/style";
+import { COLOR_BUTTON_PRIMARY, FONT_STYLE_BUTTON, FONT_STYLE_BUTTON_HOVER, toHex } from "@/style";
 
 type Audio = Phaser.Sound.WebAudioSound | Phaser.Sound.NoAudioSound | Phaser.Sound.HTML5AudioSound
 
@@ -23,6 +23,8 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
     private onClick?: () => void;
     private image?: Phaser.GameObjects.Image;
 
+    private alphaBackground: number = 0.0;
+
     constructor(scene: Phaser.Scene, title: string, x: number, y: number, width?: number) {
         super(scene);
 
@@ -40,11 +42,11 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         //this.audioButtonSound = scene.sound.add("soundEffect");
         this.graphic = new Phaser.GameObjects.Graphics(scene);
 
-        this.setInteractive()
+        this.setInteractive();
 
         this.on('pointerdown', this.onPointerDown.bind(this));
         this.on('pointerup', this.onPointerUp.bind(this));
-        this.on('pointerover', this.onHover.bind(this));
+        this.on('pointerover', this.onHoverIn.bind(this));
         this.on('pointerout', this.onHoverOut.bind(this));
 
         this.updateButtonShape();
@@ -103,17 +105,13 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         this.enabled = false;
 
         this.isDown = false;
-        this.isHovered = false;
     }
 
     private onPointerDown() {
         if (!this.enabled) return;
 
         this.isDown = true;
-        this.isHovered = true;
         this.updateButtonShape();
-
-        //this.audioOver.stop();
     }
 
     private onPointerUp() {
@@ -129,54 +127,70 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         this.onClick?.();
     }
 
-    private onHover() {
+    private onHoverIn() {
         if (!this.enabled) return;
 
-        this.isHovered = true;
-        this.updateButtonShape();
+        this.scene.tweens.addCounter({
+            from: 0,
+            to: 1,
+            duration: 100,
+            onUpdate: (tween) => {
+                this.alphaBackground = tween.getValue() * 0.8;
+                this.setScale(1 + tween.getValue() * 0.15);
+                this.updateButtonShape();
+                let c = FONT_STYLE_BUTTON.color as string;
+                const colorStart = Phaser.Display.Color.ValueToColor(c);
+
+                let c2 = FONT_STYLE_BUTTON_HOVER.color as string;
+                const colorEnd = Phaser.Display.Color.ValueToColor(c2);
+                
+                const color = Phaser.Display.Color.Interpolate.ColorWithColor(colorStart, colorEnd, 1, tween.getValue());
+                const hex = Phaser.Display.Color.RGBToString(color.r, color.g, color.b, color.a);
+                this.buttonText.setColor(hex);
+            },
+        })
     }
 
     private onHoverOut() {
         if (!this.enabled) return;
-
-        this.isHovered = false;
         this.isDown = false;
+
+        this.scene.tweens.addCounter({
+            from: 1,
+            to: 0,
+            duration: 100,
+            onUpdate: (tween) => {
+                this.alphaBackground = tween.getValue() * 0.8;
+                this.setScale(1 + tween.getValue() * 0.15);
+                this.updateButtonShape();
+
+                let c = FONT_STYLE_BUTTON.color as string;
+                const colorStart = Phaser.Display.Color.ValueToColor(c);
+
+                let c2 = FONT_STYLE_BUTTON_HOVER.color as string;
+                const colorEnd = Phaser.Display.Color.ValueToColor(c2);
+                const color = Phaser.Display.Color.Interpolate.ColorWithColor(colorStart, colorEnd, 1, tween.getValue());
+                const hex = Phaser.Display.Color.RGBToString(color.r, color.g, color.b, color.a);
+                this.buttonText.setColor(hex);
+            },
+            onComplete: () => {
+            }
+        
+        })
 
         this.updateButtonShape();
     }
 
     private updateButtonShape() {
-        const outlineColor = COLOR_BUTTON_PRIMARY;
-        //const fillColor = COLOR_BUTTON_PRIMARY;
-
         this.graphic.clear();
         this.buttonText.setStyle(FONT_STYLE_BUTTON);
-        if (this.isHovered) {
 
-            if (this.isDown) {
-                this.graphic.fillStyle(COLOR_BUTTON_PRIMARY, 1);
-            } else {
-                this.graphic.fillStyle(COLOR_BUTTON_PRIMARY, 0.8);
-            }
-            
-            this.graphic.fillRoundedRect(-this.width*0.5, -this.height*0.5, this.width, this.height, this.height*0.5);
-            this.buttonText.setStyle(FONT_STYLE_BUTTON_HOVER);
-        }
 
-        // if (this.isDown) {
-        //     this.buttonText.setStyle(FONT_STYLE_BUTTON_DOWN);
-        //     this.graphic.fillStyle(outlineColor, 1);
-        // } else {
-        //     this.buttonText.setStyle(FONT_STYLE_BUTTON);
-        //     this.graphic.fillStyle(fillColor, 1);
-        // }
+        this.graphic.fillStyle(COLOR_BUTTON_PRIMARY, this.alphaBackground);
+        this.graphic.fillRoundedRect(-this.width*0.5, -this.height*0.5, this.width, this.height, this.height*0.5);
 
-        //this.graphic.fillStyle(fillColor, 1);
-        //this.graphic.fillRect(-this.width*0.5, -this.height*0.5, this.width, this.height);
-        
         this.graphic.lineStyle(OUTLINE_WIDTH, COLOR_BUTTON_PRIMARY, 1);
         this.graphic.strokeRoundedRect(-this.width*0.5, -this.height*0.5, this.width, this.height, this.height*0.5);
-        //this.graphic.strokeRect(-this.width*0.5, -this.height*0.5, this.width, this.height);
     }
 
     private playButtonSound() {
