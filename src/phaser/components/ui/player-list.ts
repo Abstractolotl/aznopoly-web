@@ -1,84 +1,72 @@
-import { FONT_STYLE_BODY, FONT_STYLE_BUTTON, PLAYER_COLORS } from "../../../style";
+import { FONT_STYLE_BODY, FONT_STYLE_BUTTON, FRAME_PADDING, PLAYER_COLORS } from "../../../style";
+import AzNopolyAvatar from "./avatar";
+import AzNopolyPanel from "./panel";
 import { PlayerProfile } from "./player-info";
 
-interface Entry {
-    head: Phaser.GameObjects.Image;
-    text: Phaser.GameObjects.Text;
-    tail?: Phaser.GameObjects.Image;
-}
 
-
-const LINE_HEIGHT = FONT_STYLE_BODY.fontSize as number;
-const LINE_GAP = 10;
-const PADDING = 10;
-export default class PlayerList extends Phaser.GameObjects.Container {
+const LINE_HEIGHT = 60;
+const LINE_GAP = FRAME_PADDING;
+const WIDTH = 400;
+const HEIGHT = 360;
+export default class PlayerList extends AzNopolyPanel {
+    public static WIDTH = WIDTH;
+    public static HEIGHT = HEIGHT;
 
     static preload(scene: Phaser.Scene) {
         scene.load.image("host-crown", "assets/crown.png");
         scene.load.image("player-icon", "assets/default_avatar.png");
-        scene.load.image("player-kick", "assets/player_kick.png");
+        scene.load.image("player-kick", "assets/icons/icon_kick.svg");
     }
 
-    private entryWidth: number;
     private hostView: boolean;
 
-    private title!: Phaser.GameObjects.Text;
-    private graphics!: Phaser.GameObjects.Graphics;
-    private playerEntries: Entry[] = [];
+    private playerEntries: Phaser.GameObjects.Container[] = [];
 
-    constructor(scene: Phaser.Scene, hostView: boolean, x: number, y: number, entryWidth: number) {
-        super(scene);
+    constructor(scene: Phaser.Scene, hostView: boolean, x: number, y: number) {
+        super(scene, x, y, WIDTH, HEIGHT, { headline: "CONNECTED PLAYERS"});
+        this.setPosition(x - WIDTH * 0.5, y - HEIGHT * 0.5);
 
         this.hostView = hostView;
-        this.x = x;
-        this.y = y;
-        this.entryWidth = entryWidth;
-
-        this.graphics = new Phaser.GameObjects.Graphics(scene);
-        this.add(this.graphics);
-        this.graphics.fillStyle(0x000000, 0.5);        
-        this.graphics.fillRoundedRect(-PADDING, -PADDING, this.entryWidth + (2 * PADDING),  (2 * PADDING) + (LINE_HEIGHT * 5) + (LINE_GAP * 4), 5);
-        
-        this.title = new Phaser.GameObjects.Text(scene, 0, 0, "", FONT_STYLE_BODY);
-        this.add(this.title);
     }
 
-    public updateTitle(title: string = `Connected Players (${this.playerEntries.length} / 4)`) {
-        this.title.setText(title);
-    }
+    private createPlayerEntry(profile: PlayerProfile) {
+        const container = new Phaser.GameObjects.Container(this.scene, 0, 0);
 
-    private createPlayerEntry(profile: PlayerProfile): Entry {
-        const headKey = profile.host ? "host-crown" : "player-icon";
-        const head = new Phaser.GameObjects.Image(this.scene, 0, 0, headKey);
-        this.add(head);
-        const headScale = LINE_HEIGHT / head.height;
-        head.setScale(headScale, headScale);
-        head.setOrigin(0, 0.5);
-        head.tint = PLAYER_COLORS[profile.colorIndex];
+        const graphics = new Phaser.GameObjects.Graphics(this.scene);
+        graphics.fillStyle(0x000000, 0.2);
+        graphics.fillRect(0, 0, this.contentRect.width, LINE_HEIGHT);
 
-        const text = new Phaser.GameObjects.Text(this.scene, 50, 0, profile.name, FONT_STYLE_BODY);
-        this.add(text);
-        let tail: Phaser.GameObjects.Image | undefined = undefined;
-        if (this.hostView && !profile.host) {
-            tail = new Phaser.GameObjects.Image(this.scene, 0 + this.entryWidth, 0, "player-kick");
-            this.add(tail);
-            const tailScale = LINE_HEIGHT / tail.height;
+        const head = new AzNopolyAvatar(this.scene, LINE_HEIGHT * 0.5, LINE_HEIGHT * 0.5, LINE_HEIGHT * 0.7, profile.avatar, profile.colorIndex);
+        const text = new Phaser.GameObjects.Text(this.scene, head.width + 20, LINE_HEIGHT * 0.5, profile.name, FONT_STYLE_BODY);
+        text.setOrigin(0, 0.5);
+
+        let tail;
+        if (profile.host || this.hostView) {
+            const icon = !profile.host ? "player-kick" : "host-crown";
+
+            tail = new Phaser.GameObjects.Image(this.scene, this.contentRect.width - FRAME_PADDING, LINE_HEIGHT * 0.5, icon);
+            const tailScale = (LINE_HEIGHT * 0.5) / tail.height;
             tail.setScale(tailScale, tailScale);
             tail.setOrigin(1, 0.5);
         }
-        return { head, text, tail };
+
+        container.add(graphics);
+        container.add(head);
+        container.add(text);
+        if (tail) {
+            container.add(tail);
+        }
+
+        this.add(container);
+        return container;
     }
 
     public updatePlayerList(players: PlayerProfile[]) {
-        const newEntries: Entry[] = [];
+        const newEntries: Phaser.GameObjects.Container[] = [];
 
         const oldEntries = this.playerEntries;;
         oldEntries.forEach(entry => {
-            entry.head.destroy();
-            entry.text.destroy();
-            if (entry.tail) {
-                entry.tail.destroy();
-            }
+            entry.destroy();
         });
 
         players.forEach(player => {
@@ -88,19 +76,18 @@ export default class PlayerList extends Phaser.GameObjects.Container {
 
         this.playerEntries = newEntries;
         this.updatePlayerPositions();
-        this.updateTitle();
     }
     
     private updatePlayerPositions() {
-        let y = LINE_GAP + LINE_HEIGHT;
+        let y = this.contentRect.y;
         this.playerEntries.forEach(entry => {
-            entry.head.y = y + LINE_HEIGHT / 2;
-            entry.text.y = y;
-            if (entry.tail) {
-                entry.tail.y = y + LINE_HEIGHT / 2;
-            }
+            entry.setPosition(this.contentRect.x, y);
             y += LINE_HEIGHT + LINE_GAP;
         });
+    }
+
+    public setNumConnectedPlayers(num: number) {
+        this.setHeadline(`CONNECTED PLAYERS (${num} / 4)`);
     }
 
 

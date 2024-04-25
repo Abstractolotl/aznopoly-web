@@ -25,13 +25,12 @@ export default class TitleSceneController  {
         }
     }
 
-    public onJoinRoomClick() {
-        const code = this.scene.getInputtedLobbyCode();
+    public onJoinRoomClick(code: string) {
         if (!code || code.length !== 6) {
             return
         }
         
-        this.joinRoom(code);
+        this.joinRoom(code.toLowerCase());
     }
 
     public onCreateRoom() {
@@ -45,9 +44,13 @@ export default class TitleSceneController  {
             this.scene.stopMusic();
             this.aznopoly.init(room);
             this.aznopoly.room.addEventListener(RoomEvent.READY, () => {
-                this.scene.scene.start('lobby');
+                this.scene.cameras.main.fadeOut(400, 0, 0, 0, (_: any, progress: number) => {
+                    if (progress === 1) {
+                        this.scene.scene.start('lobby');
+                    }
+                });
             }, { once: true });
-        }, 500)
+        }, 200)
     }
 
     private generateRoomName(length: number = 6) : string {
