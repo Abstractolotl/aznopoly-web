@@ -103,7 +103,6 @@ export class AzNopolyButton extends Phaser.GameObjects.Container {
         this.alpha = 0;
 
         this.enabled = false;
-
         this.isDown = false;
     }
 

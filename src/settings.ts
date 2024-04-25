@@ -9,6 +9,7 @@ export const SETTINGS = {
         'minigame-roomba',
         'minigame-shitty-shooter',
         'minigame-water-drop',
+        'minigame-clicker-race',
     ],
 
     ROOMBA_OUTRAGE: {

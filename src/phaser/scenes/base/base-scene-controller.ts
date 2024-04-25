@@ -1,5 +1,5 @@
-import AzNopolyGame from "../../../game";
-import { DynamicPacket } from "../../../types/client";
+import AzNopolyGame from "@/game";
+import { DynamicPacket } from "@/types/client";
 
 
 /**
