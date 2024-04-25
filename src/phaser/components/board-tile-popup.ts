@@ -29,7 +29,7 @@ export default class BoardTilePopUp extends Phaser.GameObjects.Container {
         super(scene, x - (WIDTH / 2), y - (HEIGHT / 2));
         this.setSize(WIDTH, HEIGHT);
 
-        this.panel = new AzNopolyPanel(scene, 0, 0, WIDTH, HEIGHT, "Buy Property");
+        this.panel = new AzNopolyPanel(scene, 0, 0, WIDTH, HEIGHT, { headline: "Buy Property" });
 
         this.priceText = new Phaser.GameObjects.Text(scene, this.width*0.5, this.height - 150, "Price: ???", FONT_STYLE_BODY);
         this.priceText.setOrigin(0.5, 0.5);

@@ -31,7 +31,7 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
     private availableAvatars = Object.values(Avatars);
 
     constructor(scene: Phaser.Scene, x: number, y: number, profile: PlayerProfile) {
-        super(scene, x, y, WIDTH, HEIGHT, "PROFILE CUSTOMIZATION");
+        super(scene, x, y, WIDTH, HEIGHT, { headline: "PROFILE CUSTOMIZATION"});
         this.setPosition(x - WIDTH * 0.5, y - HEIGHT * 0.5);
         this.profile = profile;
 

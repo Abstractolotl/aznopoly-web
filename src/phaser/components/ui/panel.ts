@@ -56,7 +56,7 @@ export default class AzNopolyPanel extends Phaser.GameObjects.Container {
         if (!this.forceHover && (!this.alive || !this._hover)) {
             return;
         }
-        const size = 0.02;
+        const size = 0.005;
         this.graphics.setScale(Math.sin(time / 150) * size + size + 1);
     }
 

@@ -23,7 +23,7 @@ export default class PlayerList extends AzNopolyPanel {
     private playerEntries: Phaser.GameObjects.Container[] = [];
 
     constructor(scene: Phaser.Scene, hostView: boolean, x: number, y: number) {
-        super(scene, x, y, WIDTH, HEIGHT, "CONNECTED PLAYERS");
+        super(scene, x, y, WIDTH, HEIGHT, { headline: "CONNECTED PLAYERS"});
         this.setPosition(x - WIDTH * 0.5, y - HEIGHT * 0.5);
 
         this.hostView = hostView;
