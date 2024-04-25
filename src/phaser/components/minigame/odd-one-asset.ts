@@ -6,9 +6,8 @@ import {Player} from "@/types";
 
 const SIZE = 60;
 
-export class oddOneAsset extends Phaser.GameObjects.Container {
+export class OddOneAsset extends Phaser.GameObjects.Container {
     static SIZE = SIZE;
-
 
     private graphics: Phaser.GameObjects.Graphics;
 
@@ -26,19 +25,12 @@ export class oddOneAsset extends Phaser.GameObjects.Container {
     }
 
     constructor(scene: Phaser.Scene, id: number, x: number, y: number, isOdd: boolean = false) {
-        super(scene, x, y);
+        super(scene, x + SIZE * 0.5, y + SIZE * 0.5);
         this.setSize(SIZE, SIZE);
         this.isOdd = isOdd;
         this.id = id.toString();
 
-        this.setInteractive({
-            hitArea: new Phaser.Geom.Circle(0, 0, SIZE / 2),
-            hitAreaCallback: Phaser.Geom.Circle.Contains,
-            useHandCursor: false,
-            draggable: true
-        }, Phaser.Geom.Circle.Contains);
-        //this.scene.input.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, this.onClicked.bind(this));
-
+        //this.scene.input.on(Phaser.Input.Events.POINTER_DOWN, this.onClicked.bind(this));
         //this.image = new Phaser.GameObjects.Image(scene, 0, 0, 'chubbyRacer');
         //this.image.setScale(SIZE / this.image.width);
 
@@ -49,7 +41,7 @@ export class oddOneAsset extends Phaser.GameObjects.Container {
             this.graphics.fillStyle(0x00FF00);
         }
 
-        this.graphics.fillCircle(0, 0, (SIZE / 2));
+        this.graphics.fillCircle(-SIZE / 2, -SIZE /2, SIZE / 2);
 
 
         //this.add(this.image);

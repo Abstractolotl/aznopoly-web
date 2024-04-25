@@ -1,8 +1,6 @@
 import MinigameSceneController from "@/phaser/scenes/base/minigame-scene-controller.ts";
-import {OddOneOutScene} from "@/phaser/scenes/minigame/oddOneOut-scene.ts";
+import {OddOneOutScene} from "@/phaser/scenes/minigame/odd-one-out-scene";
 import AzNopolyGame from "@/game.ts";
-import {oddOneAsset} from "@/phaser/components/minigame/oddOneAsset.ts";
-import {Player} from "@/types";
 
 const MAX_GAME_TIME = 30000;
 export class OddOneOutSceneController extends MinigameSceneController {

@@ -3,8 +3,8 @@ import MinigameScene from "../base/minigame-scene";
 import {FRAME_PADDING, PLAYER_COLORS} from "@/style";
 import {SETTINGS} from "@/settings";
 
-import {oddOneAsset} from "@/phaser/components/minigame/oddOneAsset.ts";
-import {OddOneOutSceneController} from "@/phaser/scenes/minigame/oddOneOut-scene-controller.ts";
+import {OddOneAsset as OddOneAsset} from "@/phaser/components/minigame/odd-one-asset";
+import {OddOneOutSceneController} from "@/phaser/scenes/minigame/odd-one-out-scene-controller";
 import AzNopolyPanel from "@/phaser/components/ui/panel.ts";
 
 const WORLD_BOUNDS = (() => {
@@ -14,7 +14,7 @@ const WORLD_BOUNDS = (() => {
 
 export class OddOneOutScene extends MinigameScene<OddOneOutSceneController> {
 
-    private oddOneAssets: oddOneAsset[] = [];
+    private oddOneAssets: OddOneAsset[] = [];
     private graphics!: Phaser.GameObjects.Graphics;
     private playerPoints: number[] = [];
 
@@ -22,7 +22,7 @@ export class OddOneOutScene extends MinigameScene<OddOneOutSceneController> {
 
     preload() {
         super.preload();
-        oddOneAsset.preload(this);
+        OddOneAsset.preload(this);
     }
 
     init() {
@@ -42,12 +42,17 @@ export class OddOneOutScene extends MinigameScene<OddOneOutSceneController> {
     }
 
     initiateOddOne(id: number, x: number, y: number, isOdd: boolean) {
-        let oddOne = this.add.existing(new oddOneAsset(this, id, x, y, isOdd));
-        oddOne.setInteractive()
-        oddOne.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => this.onClicked(oddOne));
+        let oddOne = this.add.existing(new OddOneAsset(this, id, x, y, isOdd));
+        oddOne.setInteractive({
+            hitArea: new Phaser.Geom.Circle(0, 0, OddOneAsset.SIZE / 2),
+            hitAreaCallback: Phaser.Geom.Circle.Contains,
+        });
+        oddOne.on(Phaser.Input.Events.POINTER_DOWN, () => {
+            this.onClicked(oddOne)
+        });
     }
 
-    onClicked(oddOne: oddOneAsset) {
+    onClicked(oddOne: OddOneAsset) {
         console.log("clicked" + oddOne.id);
         //oddOne.destroy();
     }
