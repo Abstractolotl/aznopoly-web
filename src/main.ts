@@ -3,11 +3,13 @@ import TitleScene from './phaser/scenes/title-scene';
 import BoardScene from './phaser/scenes/board-scene';
 import LobbyScene from './phaser/scenes/lobby-scene';
 import AzNopolyGame from './game';
-import { RoombaScene } from './phaser/scenes/minigame/roomba-scene';
 import { mock } from './util/debug-util';
 import { COLOR_BACKGROUND } from './style';
 
-import ShittyShooterScene from './phaser/scenes/minigame/shitty-shooter-scene';
+import { RoombaScene } from '@/phaser/scenes/minigame/roomba-scene';
+import ShittyShooterScene from '@/phaser/scenes/minigame/shitty-shooter-scene';
+import ClickerRaceScene from "@/phaser/scenes/minigame/clicker-race-scene";
+
 import { SETTINGS } from './settings';
 import WaterDropScene from './phaser/scenes/minigame/water-drop-scene';
 
@@ -71,6 +73,7 @@ window.onload = () => {
         game.scene.add('minigame-roomba', new RoombaScene(aznopoly));
         game.scene.add('minigame-shitty-shooter', new ShittyShooterScene(aznopoly));
         game.scene.add('minigame-water-drop', new WaterDropScene(aznopoly));
+        game.scene.add('minigame-clicker-race', new ClickerRaceScene(aznopoly));
 
         //Debug
         game.scene.add('debug', new DebugScene());
