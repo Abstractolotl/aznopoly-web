@@ -49,7 +49,6 @@ export default class RoombaSceneController extends MinigameSceneController {
 
     private getPlayersWon() {
         const paintMap = this.scene.getPaintMap();
-        console.log(paintMap);
         const paintedColors = Object.keys(paintMap).filter(e => e != "000000");
 
         const won = paintedColors.sort()

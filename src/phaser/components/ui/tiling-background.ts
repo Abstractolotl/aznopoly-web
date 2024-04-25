@@ -14,8 +14,10 @@ export default class TilingBackground extends Phaser.GameObjects.TileSprite {
         this._speed = speed;
         this._scale = scale;
 
+        this.postFX.addBlur(2, 10, 10, 0.5);
+
         this.setOrigin(0, 0);
-        this.setScale(1 / scale);
+        this.setScale(1);
         this.setScrollFactor(0);
     }
 

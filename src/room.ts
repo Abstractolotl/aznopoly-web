@@ -13,7 +13,6 @@ export default class Room extends EventTarget {
 
     private _id: string;
     private _connectedIds: Set<string> = new Set();
-    private _playerNames: Map<string, string> = new Map();
     private _host!: string;
     private client: AzNopolyClient;
     private aznopoly: AzNopolyGame;
@@ -30,7 +29,6 @@ export default class Room extends EventTarget {
         this.client.addEventListener(PacketType.ROOM_INIT, this.onRoomInit.bind(this) as EventListener);
         this.client.addEventListener(PacketType.ROOM_JOIN, this.onRoomJoin.bind(this) as EventListener);
         this.client.addEventListener(PacketType.ROOM_LEAVE, this.onRoomLeave.bind(this) as EventListener);
-        this.client.addEventListener(PacketType.ROOM_NAME, this.onNameChange.bind(this) as EventListener);
     }
 
     public lockRoom() {
@@ -40,27 +38,13 @@ export default class Room extends EventTarget {
     private onRoomInit(event: CustomEvent<RoomInitPacket>) {
         const packet = event.detail;
 
+        
         this._host = packet.data.room.host;
         packet.data.room.clients.forEach(client => {
             this._connectedIds.add(client);
         });
-
-        this._playerNames.set(this.aznopoly.client.id, this.aznopoly.player.name);
-        this.broadcastName(this.aznopoly.client.id, this.aznopoly.player.name);
-
-        this.dispatchEvent(new Event(RoomEvent.READY));
-    }
-
-    private broadcastName(id: string, name: string) {
-        const namePacket: RoomNamePacket = {
-            type: PacketType.ROOM_NAME,
-            sender: this.client.id,
-            data: {
-                name,
-                uuid: id,
-            }
-        }
-        this.client.sendPacket(namePacket)
+        
+        this.dispatchEvent(new CustomEvent(RoomEvent.READY));
     }
 
     private onRoomJoin(event: CustomEvent<RoomJoinPacket>) {
@@ -72,12 +56,6 @@ export default class Room extends EventTarget {
 
         this._connectedIds.add(packet.data.uuid);
         this.dispatchEvent(new CustomEvent(RoomEvent.JOIN, { detail: packet.data.uuid }));
-
-        if (this.aznopoly.isHost) {
-            this._playerNames.forEach((name, id) => {
-                this.broadcastName(id, name);
-            })
-        }
     }
 
     private onRoomLeave(event: CustomEvent<RoomLeavePacket>) {
@@ -85,21 +63,6 @@ export default class Room extends EventTarget {
 
         this._connectedIds.delete(packet.data.uuid);
         this.dispatchEvent(new CustomEvent(RoomEvent.LEAVE, { detail: packet.data.uuid }));
-    }
-
-    private onNameChange(event: CustomEvent<RoomNamePacket>) {
-        const packet = event.detail;
-
-        if (this.locked) {
-            console.warn("Player " + packet.sender + " tried to change their name, but the room is locked!");
-        }
-
-        this._playerNames.set(packet.data.uuid, packet.data.name);
-        this.dispatchEvent(new Event(RoomEvent.UPDATE));
-    }
-
-    public getPlayerName(uuid: string): string {
-        return this._playerNames.get(uuid) || "Unknown";
     }
 
     public get id() {
