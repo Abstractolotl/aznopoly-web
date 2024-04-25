@@ -53,8 +53,6 @@ jobs:
     steps:
       - name: 'Checkout'  # Checkout the repository code.
         uses: 'actions/checkout@v4'
-      - name: Install jq
-        uses: dcarbone/install-jq-action@v2.1.0
 
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v4
