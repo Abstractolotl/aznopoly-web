@@ -98,7 +98,6 @@ export class SimonSaysScene extends MinigameScene {
             }
         };
         this.aznopoly.client.sendPacket(packet);
-        console.log("sent", packet)
     };
 
     private onSimonSaysPacket(packet: SimonSaysPacket) {

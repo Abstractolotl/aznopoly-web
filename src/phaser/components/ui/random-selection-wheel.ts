@@ -38,6 +38,8 @@ export default class RandomSelectionWheel extends Phaser.GameObjects.Container {
         this.add(this.graphics);
         this.choiceTexts.forEach(text => this.add(text));
         this.add(this.titleText);
+
+        this.setVisible(false);
     }
 
     private redrawUi() {
