@@ -24,7 +24,9 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 RUN rm -rf /usr/share/nginx/html/*
 # Copy the built app to the html directory
 COPY --from=install /temp/dev/node_modules /usr/share/nginx/html/node_modules
-COPY --from=prerelease /app/dist/* /usr/share/nginx/html/
+COPY --from=prerelease /app/dist/index.html /usr/share/nginx/html/
+COPY --from=prerelease /app/dist/style.css /usr/share/nginx/html/
+COPY --from=prerelease /app/dist/favicon.ico /usr/share/nginx/html/
 COPY --from=prerelease /app/dist/assets /usr/share/nginx/html/assets
 COPY --from=prerelease /app/package.json /usr/share/nginx/html/
 
