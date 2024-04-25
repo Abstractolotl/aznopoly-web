@@ -11,13 +11,13 @@ import ShittyShooterScene from '@/phaser/scenes/minigame/shitty-shooter-scene';
 import ClickerRaceScene from "@/phaser/scenes/minigame/clicker-race-scene";
 
 import { SETTINGS } from './settings';
-import {OddOneOutScene} from "@/phaser/scenes/minigame/oddOneOut-scene.ts";
 import WaterDropScene from './phaser/scenes/minigame/water-drop-scene';
 
 import * as THREE from 'three';
 
 //import * as WebGLDebugUtils from './webgl-debug.js';
 import DebugScene from './phaser/scenes/debug-scene.js';
+import { OddOneOutScene } from './phaser/scenes/minigame/odd-one-out-scene.js';
 
 window.onload = () => {
     setTimeout(async () => {
