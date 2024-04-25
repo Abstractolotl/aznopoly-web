@@ -12,12 +12,12 @@ export class oddOneAsset extends Phaser.GameObjects.Container {
 
     private graphics: Phaser.GameObjects.Graphics;
 
-    private image: Phaser.GameObjects.Image;
-    private speed: number;
+    // private image: Phaser.GameObjects.Image;
+    // private speed: number;
 
-    private weight: number;
+    // private weight: number;
     private isOdd: boolean;
-    private player: Player;
+    // private player: Player;
 
     public readonly id: string;
 
@@ -29,6 +29,7 @@ export class oddOneAsset extends Phaser.GameObjects.Container {
         super(scene, x, y);
         this.setSize(SIZE, SIZE);
         this.isOdd = isOdd;
+        this.id = id.toString();
 
         this.setInteractive({
             hitArea: new Phaser.Geom.Circle(0, 0, SIZE / 2),
