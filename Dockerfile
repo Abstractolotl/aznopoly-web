@@ -14,8 +14,9 @@ COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
 ENV NODE_ENV=production
+ARG vite_discord_client_id
+ENV VITE_DISCORD_CLIENT_ID=$vite_discord_client_id
 RUN yarn build
-COPY assets dist/assets
 
 FROM nginx:alpine AS release
 # Configure Nginx
@@ -28,4 +29,4 @@ COPY --from=prerelease /app/dist/assets /usr/share/nginx/html/assets
 COPY --from=prerelease /app/package.json /usr/share/nginx/html/
 
 EXPOSE 8080
-CMD [ "sh", "-c", "env >> /usr/share/nginx/html/.env && nginx -g 'daemon off;'" ]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

@@ -25,8 +25,19 @@ jobs:
           HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
 
+      - name: Import Secrets
+        id: import-secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          method: userpass
+          username: ${{ secrets.VAULT_USERNAME }}
+          password: ${{ secrets.VAULT_PASSWORD }}
+          secrets: |
+            applications/data/aznopoly DISCORD_CLIENT_ID | VITE_DISCORD_CLIENT_ID;
+
       - name: Build the Docker image
-        run: docker buildx build . --file Dockerfile --tag $HARBOR_URI/abstractolotl/aznopoly-web:${IMAGE_NAME} --tag $HARBOR_URI/abstractolotl/aznopoly-web:latest
+        run: docker buildx build . --build-arg vite_discord_client_id=$VITE_DISCORD_CLIENT_ID --file Dockerfile --tag $HARBOR_URI/abstractolotl/aznopoly-web:${IMAGE_NAME} --tag $HARBOR_URI/abstractolotl/aznopoly-web:latest
         env:
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
           IMAGE_NAME: ${{ steps.image_name.outputs.image }}
@@ -45,26 +56,10 @@ jobs:
       - name: Install jq
         uses: dcarbone/install-jq-action@v2.1.0
 
-      - name: Import Secrets
-        id: import-secrets
-        uses: hashicorp/vault-action@v3
-        with:
-          url: ${{ secrets.VAULT_ADDR }}
-          method: userpass
-          username: ${{ secrets.VAULT_USERNAME }}
-          password: ${{ secrets.VAULT_PASSWORD }}
-          secrets: |
-            applications/data/aznopoly DISCORD_CLIENT_ID | VITE_DISCORD_CLIENT_ID;
-
-      - name: Step following 'Import Secrets'
-        run: |
-          touch secrets.json
-          echo '${{ toJson(steps.import-secrets.outputs) }}' | jq ". | {"secrets": .}" > secrets.json
-
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v4
         with:
-          exec: helm upgrade --install --atomic --timeout 5m --history-max 5 -f secrets.json --namespace=frontend --set image.tag=${IMAGE_NAME} aznopoly-web helm-charts
+          exec: helm upgrade --install --atomic --timeout 5m --history-max 5 --namespace=frontend --set image.tag=${IMAGE_NAME} aznopoly-web helm-charts
           kubeconfig: '${{ secrets.KUBECONFIG }}'
         env:
           HARBOR_URI: ${{ secrets.HARBOR_URI }}
