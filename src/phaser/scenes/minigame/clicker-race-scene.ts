@@ -109,11 +109,11 @@ export default class ClickerRaceScene extends MinigameScene<ClickerRaceSceneCont
         const actionPanel = new AzNopolyPanel(this, gamePanel.width / 2 - (ACTION_BOUNDS.width / 2), (gameBounds.y / 2) + gameBounds.height - ACTION_BOUNDS.height, ACTION_BOUNDS.width, ACTION_BOUNDS.height)
         this.add.existing(actionPanel)
 
-        this.button = new AzNopolyButton(this, "Race", actionPanel.x + (FRAME_PADDING * 3), actionPanel.y + FRAME_PADDING, actionPanel.width - (FRAME_PADDING * 6), 50, false, () => {
+        this.button = new AzNopolyButton(this, "Race", actionPanel.x + (FRAME_PADDING * 3), actionPanel.y + FRAME_PADDING, actionPanel.width - (FRAME_PADDING * 6));
+        this.slider = new AzNopolySlider(this, actionPanel.x + (FRAME_PADDING * 3), actionPanel.y + FRAME_PADDING, actionPanel.width - (FRAME_PADDING * 6), 50, 100, this.onSlider.bind(this))
+        this.button.setOnClick(() => {
             this.controller.onPlayerClick(this.aznopoly.uuid);
         });
-
-        this.slider = new AzNopolySlider(this, actionPanel.x + (FRAME_PADDING * 3), actionPanel.y + FRAME_PADDING, actionPanel.width - (FRAME_PADDING * 6), 50, 100, this.onSlider.bind(this))
 
         this.add.existing(this.slider);
         this.add.existing(this.button);

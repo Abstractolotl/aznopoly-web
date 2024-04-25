@@ -1,5 +1,4 @@
-import {COLOR_CONTRAST, COLOR_PRIMARY} from "@/style.ts";
-import {FONT_STYLE_BUTTON} from "@/phaser/components/ui/button.ts";
+import {COLOR_CONTRAST, COLOR_PRIMARY, FONT_STYLE_BUTTON} from "@/style.ts";
 
 export class AzNopolySlider extends Phaser.GameObjects.Container {
 
