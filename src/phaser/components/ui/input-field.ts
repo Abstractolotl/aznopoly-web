@@ -59,6 +59,10 @@ export default class AzNopolyInput extends Phaser.GameObjects.Container {
         this.add(this.graphics);
     }
 
+    public setDisabled(value: boolean) {
+        this.inputDom.disabled = value;
+    }
+
     public getValue() {
         return this.inputDom.value;
     }
@@ -69,6 +73,7 @@ export default class AzNopolyInput extends Phaser.GameObjects.Container {
 
     public setChangeListener(callback: (value: string) => void) {
         this.inputDom.addEventListener("input", () => {
+            if (this.inputDom.disabled) return;
             callback(this.inputDom.value);
         });
     }

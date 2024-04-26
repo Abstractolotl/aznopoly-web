@@ -23,11 +23,20 @@ export default class AzNopolyClient extends EventTarget {
         }
 
         this.state = ClientState.CONNECTING;
-        this.socket = new WebSocket("wss://" + BASE_URL + "/room/" + roomId)
+        this.socket = new WebSocket("wss://" + this.getBaseUrl() + "/room/" + roomId)
 
         this.socket.addEventListener("open", this.onOpen.bind(this))
         this.socket.addEventListener("close", this.onClose.bind(this))
         this.socket.addEventListener("message", this.onMessage.bind(this))
+    }
+
+    private getBaseUrl() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('frame_id') !== null) {
+            // Discord rooting is different
+            return location.host + "/server";
+        }
+        return BASE_URL;
     }
 
     private publishClientEvent(event: PacketType, data: ClientPacket) {

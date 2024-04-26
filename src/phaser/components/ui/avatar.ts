@@ -31,6 +31,7 @@ export default class AzNopolyAvatar extends Phaser.GameObjects.Container {
 
     constructor(scene: Phaser.Scene, x: number, y: number, size: number, avatar: Avatars, colorIndex: number) {
         super(scene, x, y);
+
         this.colorIndex = colorIndex;
         this.scene = scene;
 

@@ -31,6 +31,10 @@ export default class Room extends EventTarget {
         this.client.addEventListener(PacketType.ROOM_LEAVE, this.onRoomLeave.bind(this) as EventListener);
     }
 
+    public getName() {
+        return sessionStorage.getItem('discordChannel') || this.id;
+    }
+
     public lockRoom() {
         this.locked = true;
     }

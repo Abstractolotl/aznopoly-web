@@ -110,6 +110,9 @@ export default class ProfileCustomizationPanel extends AzNopolyPanel {
         labelName.setOrigin(1, 0.5);
 
         this.inputName = new AzNopolyInput(scene, bounds.x + bounds.width * 0.5, labelName.y, 200, 40, "text");
+        if (sessionStorage.getItem("discordName") !== null) {
+            this.inputName.setDisabled(true)
+        }
         this.inputName.setPosition(this.inputName.x, this.inputName.y - this.inputName.height * 0.5);
         this.inputName.setValue(this.profile.name);
         this.inputName.setChangeListener((value) => {

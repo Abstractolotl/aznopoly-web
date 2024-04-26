@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@discord/embedded-app-sdk": "^1.1.2",
     "@types/color-convert": "^2.0.3",
     "@types/seedrandom": "^3.0.8",
     "babylonjs": "^7.3.0",

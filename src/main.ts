@@ -17,6 +17,8 @@ import * as THREE from 'three';
 
 //import * as WebGLDebugUtils from './webgl-debug.js';
 import DebugScene from './phaser/scenes/debug-scene.js';
+import {DiscordClient} from "@/util/discord.ts";
+import {RoomEvent} from "@/room.ts";
 
 window.onload = () => {
     setTimeout(async () => {
@@ -45,7 +47,7 @@ window.onload = () => {
             physics: {
                 default: 'arcade',
                 arcade: {
-                    gravity: { y: 0 },
+                    gravity: { y: 0, x: 0 },
                     debug: true
                 }
             },
@@ -80,10 +82,19 @@ window.onload = () => {
 
         const params = new URLSearchParams(window.location.search);
         const debug = params.get('debug');
+
         if (debug !== null) {
             console.log('Debug mode enabled', debug);
             mock(aznopoly);
             game.scene.start(debug || 'lobby');
+        } else if (params.get('frame_id') !== null) {
+            let discordClient = new DiscordClient();
+            await discordClient.handleAuthentication();
+
+            aznopoly.init(discordClient.getRoomId())
+            aznopoly.room.addEventListener(RoomEvent.READY, () => {
+                game.scene.start('lobby')
+            }, { once: true });
         } else {
             game.scene.start('title');
         }

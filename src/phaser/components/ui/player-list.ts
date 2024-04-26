@@ -64,7 +64,7 @@ export default class PlayerList extends AzNopolyPanel {
     public updatePlayerList(players: PlayerProfile[]) {
         const newEntries: Phaser.GameObjects.Container[] = [];
 
-        const oldEntries = this.playerEntries;;
+        const oldEntries = this.playerEntries;
         oldEntries.forEach(entry => {
             entry.destroy();
         });
@@ -89,6 +89,5 @@ export default class PlayerList extends AzNopolyPanel {
     public setNumConnectedPlayers(num: number) {
         this.setHeadline(`CONNECTED PLAYERS (${num} / 4)`);
     }
-
 
 }

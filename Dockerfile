@@ -14,15 +14,21 @@ COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
 ENV NODE_ENV=production
+ARG vite_discord_client_id
+ENV VITE_DISCORD_CLIENT_ID=$vite_discord_client_id
 RUN yarn build
-COPY assets dist/assets
 
-FROM base AS release
-COPY --from=install /temp/dev/node_modules node_modules
-COPY --from=prerelease /app/dist/* ./dist
-COPY --from=prerelease /app/dist/assets ./dist/assets
-COPY --from=prerelease /app/package.json .
-RUN yarn global add http-server
+FROM nginx:alpine AS release
+# Configure Nginx
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+RUN rm -rf /usr/share/nginx/html/*
+# Copy the built app to the html directory
+COPY --from=install /temp/dev/node_modules /usr/share/nginx/html/node_modules
+COPY --from=prerelease /app/dist/index.html /usr/share/nginx/html/
+COPY --from=prerelease /app/dist/style.css /usr/share/nginx/html/
+COPY --from=prerelease /app/dist/favicon.ico /usr/share/nginx/html/
+COPY --from=prerelease /app/dist/assets /usr/share/nginx/html/assets
+COPY --from=prerelease /app/package.json /usr/share/nginx/html/
 
 EXPOSE 8080
-CMD [ "http-server", "dist" ]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

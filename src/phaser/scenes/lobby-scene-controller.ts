@@ -1,7 +1,7 @@
 import { PLAYER_COLORS } from "@/style";
 import AzNopolyGame from "../../game";
-import { RoomEvent } from "../../room";
-import { SceneSwitcher } from "../../util/scene-switcher";
+import { RoomEvent } from "@/room.ts";
+import { SceneSwitcher } from "@/util/scene-switcher.ts";
 import { PlayerProfile } from "../components/ui/player-info";
 import NetworkSceneController from "./base/base-scene-controller";
 import LobbyScene from "./lobby-scene";
