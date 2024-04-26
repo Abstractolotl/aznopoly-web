@@ -86,6 +86,9 @@ window.onload = () => {
             console.log("Discord embedded frame detected");
             let discordClient = new DiscordClient();
             await discordClient.handleAuthentication();
+
+            aznopoly.init(discordClient.generateRoomToken())
+            game.scene.start('lobby')
         }
 
         if (debug !== null) {

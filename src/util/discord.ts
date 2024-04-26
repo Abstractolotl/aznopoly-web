@@ -61,6 +61,13 @@ export class DiscordClient {
         if (auth === null) {
             throw new Error('Authentication failed');
         }
+
+        console.log(this.discordSdk.instanceId)
+        console.log(this.discordSdk.instanceId.slice(3, 8))
+    }
+
+    public generateRoomToken() {
+        return this.discordSdk.instanceId.slice(3, 8)
     }
 
     async getChannelName() {
