@@ -74,8 +74,8 @@ export class DiscordClient {
                 return null;
             });
 
-        localStorage.setItem('playerName', this.getUsername({guildMember: guildMember, user: auth.user}))
-        localStorage.setItem('discordAvatar', this.getAvatar({guildMember: guildMember, user: auth.user}))
+        sessionStorage.setItem('discordName', this.getUsername({guildMember: guildMember, user: auth.user}))
+        sessionStorage.setItem('discordAvatar', this.getAvatar({guildMember: guildMember, user: auth.user}))
     }
 
     public getRoomId() {

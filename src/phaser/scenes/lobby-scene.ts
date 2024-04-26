@@ -1,4 +1,4 @@
-import { FONT_STYLE_PANEL_HEADLINE, PLAYER_COLORS } from "../../style";
+import { FONT_STYLE_PANEL_HEADLINE, PLAYER_COLORS } from "@/style.ts";
 
 import TilingBackground from "../components/ui/tiling-background";
 import { AzNopolyButton } from "../components/ui/button";

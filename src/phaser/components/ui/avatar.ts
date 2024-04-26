@@ -23,6 +23,10 @@ export default class AzNopolyAvatar extends Phaser.GameObjects.Container {
         scene.load.image(Avatars.AXOLOTL, 'assets/avatars/avatar_axolotl.png');
         scene.load.image(Avatars.ABSTRACT, 'assets/avatars/avatar_abstract.png');
         scene.load.image(Avatars.BANANA, 'assets/avatars/avatar_banana.png');
+
+        if (localStorage.getItem('discordAvatar') !== null) {
+            scene.load.image('discord_avatar', localStorage.getItem('discordAvatar')!);
+        }
     }
 
     private image: Phaser.GameObjects.Image;

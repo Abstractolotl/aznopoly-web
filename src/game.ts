@@ -24,8 +24,12 @@ export default class AzNopolyGame {
 
         this._client.addEventListener(PacketType.ROOM_INIT, ((event: CustomEvent<RoomInitPacket>) => {
             const uuid = event.detail.data.uuid;
+            let userName = localStorage.getItem("playerName");
+            if (sessionStorage.getItem('discordName') !== null) {
+                userName = sessionStorage.getItem('discordName');
+            }
             this.setProfile(uuid, {
-                name: localStorage.getItem("playerName") || "Player",
+                name: userName || "Player",
                 colorIndex: parseInt(localStorage.getItem("playerColor") || "0"),
                 avatar: localStorage.getItem("playerAvatar") as Avatars || Avatars.AXOLOTL,
                 host: uuid === event.detail.data.room.host,
