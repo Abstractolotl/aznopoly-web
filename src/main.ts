@@ -50,7 +50,7 @@ window.onload = async () => {
         aznopoly.room.addEventListener(RoomEvent.READY, () => {
             game.scene.start('lobby');
         }, {once: true});
-    } else if (params.get('discord') !== null) {
+    } else if (params.get('frame_id') !== null) {
         let discordClient = new DiscordClient();
         await discordClient.handleAuthentication();
     } else {
