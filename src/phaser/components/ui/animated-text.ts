@@ -3,6 +3,7 @@ export enum TextAnimationType {
     SHAKE,
     GRAVITY_FALL,
     FALL_INTO,
+    SIDE
 }
 
 export interface TextAnimationConfig {
@@ -29,6 +30,11 @@ export default class AnimatedText extends Phaser.GameObjects.Container {
             altTextVisible: true,
             textDelayed: true,
         },
+        [TextAnimationType.SIDE]: {
+            duration: 1000,
+            altTextVisible: true,
+            textDelayed: true,
+        }
     }
 
     private nextText: string;
@@ -74,12 +80,18 @@ export default class AnimatedText extends Phaser.GameObjects.Container {
         }
     }
 
+    private reset() {
+        this.animationTimer = 0;
+        this.animationType = TextAnimationType.NONE;
+        this.text.setPosition(this.text.width / 2, this.text.height / 2);
+        this.text.setScale(1);
+        this.altText.setVisible(false);
+    }
+
     private shakeUpdate(time: number, delta: number) {
         this.animationTimer += delta;
         if (this.animationTimer >= this.animationDuration) {
-            this.animationTimer = 0;
-            this.animationType = TextAnimationType.NONE;
-            this.text.setPosition(this.text.width / 2, this.text.height / 2);
+            this.reset();
         } else {
             this.text.setPosition(this.text.width / 2 + Phaser.Math.Between(-5, 5), this.text.height / 2 + Phaser.Math.Between(-5, 5));
         }
@@ -88,10 +100,7 @@ export default class AnimatedText extends Phaser.GameObjects.Container {
     private gravityFallUpdate(time: number, delta: number) {
         this.animationTimer += delta;
         if (this.animationTimer >= this.animationDuration) {
-            this.animationTimer = 0;
-            this.animationType = TextAnimationType.NONE;
-            this.text.setPosition(this.text.width / 2, this.text.height / 2);
-            this.altText.setVisible(false);
+            this.reset();
         } else {
             const t = this.animationTimer / this.animationDuration;
 
@@ -106,11 +115,7 @@ export default class AnimatedText extends Phaser.GameObjects.Container {
     private fallIntoUpdate(time: number, delta: number) {
         this.animationTimer += delta;
         if (this.animationTimer >= this.animationDuration) {
-            this.animationTimer = 0;
-            this.animationType = TextAnimationType.NONE;
-            this.text.setPosition(this.text.width / 2, this.text.height / 2);
-            this.text.setScale(1);
-            this.altText.setVisible(false);
+            this.reset();
         } else {
             const t = this.animationTimer / this.animationDuration;
             const t2 = Math.max(t - 0.45, 0);
@@ -151,6 +156,34 @@ export default class AnimatedText extends Phaser.GameObjects.Container {
 
         this.animationType = animationType;
         this.animationDuration = config.duration || 0;
+
+        switch (animationType) {
+            case TextAnimationType.SIDE:
+                this.setSide();
+                break;
+        }
+    }
+
+    private setSide() {
+        this.altText.x = this.text.x + this.text.width + 10;
+        this.altText.y = this.text.y;
+        
+        const startX = this.text.x + this.text.width + 10;
+        const endX  = this.text.x;
+        setTimeout(() => {
+            this.scene.tweens.addCounter({
+                from: 0,
+                to: 1,
+                duration: this.animationDuration * 0.25,
+                onUpdate: (tween) => {
+                    this.altText.x = tween.getValue() * (endX - startX) + startX;
+                    this.altText.alpha = 1 - tween.getValue();
+                },
+                onComplete: () => {
+                    this.text.setText(this.nextText);
+                }
+            })
+        }, this.animationDuration * 0.75);
     }
 
 }
