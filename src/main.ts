@@ -17,6 +17,7 @@ import * as THREE from 'three';
 
 //import * as WebGLDebugUtils from './webgl-debug.js';
 import DebugScene from './phaser/scenes/debug-scene.js';
+import {DiscordClient} from "@/util/discord.ts";
 
 window.onload = () => {
     setTimeout(async () => {
@@ -45,7 +46,7 @@ window.onload = () => {
             physics: {
                 default: 'arcade',
                 arcade: {
-                    gravity: { y: 0 },
+                    gravity: { y: 0, x: 0 },
                     debug: true
                 }
             },
@@ -80,6 +81,13 @@ window.onload = () => {
 
         const params = new URLSearchParams(window.location.search);
         const debug = params.get('debug');
+
+        if (params.get('frame_id') !== null) {
+            console.log("Discord embedded frame detected");
+            let discordClient = new DiscordClient();
+            await discordClient.handleAuthentication();
+        }
+
         if (debug !== null) {
             console.log('Debug mode enabled', debug);
             mock(aznopoly);
