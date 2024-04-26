@@ -33,7 +33,7 @@ export class DiscordClient {
                 // "gdm.join",
                 'guilds',
                 // "guilds.join",
-                // "guilds.members.read",
+                "guilds.members.read",
                 // "messages.read",
                 // "relationships.read",
                 // 'rpc.activities.write',
