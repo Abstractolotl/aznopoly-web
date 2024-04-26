@@ -87,7 +87,7 @@ window.onload = () => {
             let discordClient = new DiscordClient();
             await discordClient.handleAuthentication();
 
-            aznopoly.init(discordClient.generateRoomToken())
+            aznopoly.init(discordClient.getRoomId())
             game.scene.start('lobby')
         }
 

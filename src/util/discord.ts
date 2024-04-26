@@ -66,8 +66,8 @@ export class DiscordClient {
         console.log(this.discordSdk.instanceId.slice(3, 8))
     }
 
-    public generateRoomToken() {
-        return this.discordSdk.instanceId.slice(3, 8)
+    public getRoomId() {
+        return this.discordSdk.instanceId.slice(2, 8)
     }
 
     async getChannelName() {
