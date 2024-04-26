@@ -30,7 +30,7 @@ export default class LobbyScene extends BaseScene<LobbySceneController> {
     create() {
         this.cameras.main.fadeIn(100);
         this.add.existing(new TilingBackground(this, 'lobby_bg', new Phaser.Math.Vector2(2, 1), 35, 1.75));
-        this.add.text(0, 0, `Lobby ( ${this.aznopoly.room.id} )`, FONT_STYLE_PANEL_HEADLINE);
+        this.add.text(0, 0, `Lobby ( ${this.aznopoly.room.getName()} )`, FONT_STYLE_PANEL_HEADLINE);
 
         const totalWidth = PlayerList.WIDTH + ProfileCustomizationPanel.WIDTH + 20;
         this.playerList = new PlayerList(this, this.aznopoly.isHost, SETTINGS.DISPLAY_WIDTH * 0.5 - totalWidth * 0.5 + PlayerList.WIDTH * 0.5, SETTINGS.DISPLAY_HEIGHT * 0.5);

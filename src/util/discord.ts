@@ -76,6 +76,7 @@ export class DiscordClient {
 
         sessionStorage.setItem('discordName', this.getUsername({guildMember: guildMember, user: auth.user}))
         sessionStorage.setItem('discordAvatar', this.getAvatar({guildMember: guildMember, user: auth.user}))
+        sessionStorage.setItem('discordChannel', await this.getChannelName())
     }
 
     public getRoomId() {
