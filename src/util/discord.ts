@@ -44,7 +44,7 @@ export class DiscordClient {
             ],
         });
 
-        const response = await fetch('https://aznopoly.abstractolotl.de/server/token', {
+        const response = await fetch('/server/token', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
