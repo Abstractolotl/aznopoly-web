@@ -74,19 +74,28 @@ export class DiscordClient {
                 return null;
             });
 
-        if (guildMember != null) {
-            localStorage.setItem('playerName', this.getUsername({guildMember: guildMember, user: auth.user}))
-        }
-
-        console.log(this.discordSdk.instanceId)
-        console.log(this.discordSdk.instanceId.slice(3, 8))
+        localStorage.setItem('playerName', this.getUsername({guildMember: guildMember, user: auth.user}))
+        localStorage.setItem('discordAvatar', this.getAvatar({guildMember: guildMember, user: auth.user}))
     }
 
     public getRoomId() {
         return this.discordSdk.instanceId.slice(2, 8)
     }
 
-    public getUsername({guildMember, user}: GetUserDisplayNameArgs) {
+    private getAvatar({guildMember, user}: GetUserDisplayNameArgs) {
+        let guildAvatarSrc = '';
+        if (guildMember?.avatar) {
+            guildAvatarSrc = `https://cdn.discordapp.com/guilds/${this.discordSdk.guildId}/users/${user.id}/avatars/${guildMember.avatar}.png?size=256`;
+        } else if (user.avatar) {
+            guildAvatarSrc = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
+        } else {
+            const defaultAvatarIndex = Math.abs(Number(user.id) >> 22) % 6;
+            guildAvatarSrc = `https://cdn.discordapp.com/embed/avatars/${defaultAvatarIndex}.png`;
+        }
+        return guildAvatarSrc;
+    }
+
+    private getUsername({guildMember, user}: GetUserDisplayNameArgs) {
         if (guildMember?.nick != null && guildMember.nick !== '') return guildMember.nick;
 
         if (user.discriminator !== '0') return `${user.username}#${user.discriminator}`;
