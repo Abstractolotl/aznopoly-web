@@ -1,4 +1,4 @@
-import {DiscordSDK, DiscordSDKMock} from '@discord/embedded-app-sdk';
+import {DiscordSDK, DiscordSDKMock, Types} from '@discord/embedded-app-sdk';
 
 const queryParams = new URLSearchParams(window.location.search);
 
@@ -62,12 +62,38 @@ export class DiscordClient {
             throw new Error('Authentication failed');
         }
 
+        const guildMember: IGuildsMembersRead | null = await fetch(
+            `/discord/api/users/@me/guilds/${this.discordSdk.guildId}/member`,
+            {
+                method: 'get',
+                headers: {Authorization: `Bearer ${access_token}`},
+            },
+        )
+            .then((j) => j.json())
+            .catch(() => {
+                return null;
+            });
+
+        if (guildMember != null) {
+            localStorage.setItem('playerName', this.getUsername({guildMember: guildMember, user: auth.user}))
+        }
+
         console.log(this.discordSdk.instanceId)
         console.log(this.discordSdk.instanceId.slice(3, 8))
     }
 
     public getRoomId() {
         return this.discordSdk.instanceId.slice(2, 8)
+    }
+
+    public getUsername({guildMember, user}: GetUserDisplayNameArgs) {
+        if (guildMember?.nick != null && guildMember.nick !== '') return guildMember.nick;
+
+        if (user.discriminator !== '0') return `${user.username}#${user.discriminator}`;
+
+        if (user.global_name != null && user.global_name !== '') return user.global_name;
+
+        return user.username ?? 'Player';
     }
 
     async getChannelName() {
@@ -105,4 +131,29 @@ enum SessionStorageQueryParam {
     user_id = 'user_id',
     guild_id = 'guild_id',
     channel_id = 'channel_id',
+}
+
+interface GetUserDisplayNameArgs {
+    guildMember: IGuildsMembersRead | null;
+    user: Partial<Types.User>;
+}
+
+export interface IGuildsMembersRead {
+    roles: string[];
+    nick: string | null;
+    avatar: string | null;
+    premium_since: string | null;
+    joined_at: string;
+    is_pending: boolean;
+    pending: boolean;
+    communication_disabled_until: string | null;
+    user: {
+        id: string;
+        username: string;
+        avatar: string | null;
+        discriminator: string;
+        public_flags: number;
+    };
+    mute: boolean;
+    deaf: boolean;
 }
